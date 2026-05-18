@@ -6,8 +6,8 @@ module D_Grammatical.BA_Interpretation.BinaryIntpData
   )
 where
 
-import A_Categorical.B_Theory.StarTheory (Universe (..))
-import A_Categorical.BA_Interpretation.StarIntp (MeasU)
+import A_Categorical.Theory (Universe (..))
+import A_Categorical.Interpretation (MeasU)
 import B_Logical.BA_Interpretation.Boolean ()
 import C_Domain.B_Theory.BinaryTheory (BinarySorts (..))
 import C_Domain.BA_Interpretation.BinaryRealMLP (ParamsMLP)

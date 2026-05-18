@@ -1,24 +1,16 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE InstanceSigs #-}
 
--- | Star vocabulary: the monad types available in the universe.
---   These are names with their data structure -- realizations (Monad instances)
---   live in DA_Realization/.
-module A_Categorical.D_Vocabulary.StarVocab
-  ( Dist (..),
-    Giry (..),
+-- | The Giry monad: general probability measures (finite, countable, continuous),
+--   together with its free-monad realization (symbolic/lazy).
+--   Evaluation lives in B_Logical/DA_Realization/ExpectGiry.
+module A_Categorical.Category.Monads.Giry
+  ( Giry (..),
   )
 where
 
+import Control.Monad (ap)
 import Statistics.Distribution (ContDistr, Mean, Variance)
-
--- | The Dist Monad: finitely supported probability distributions.
---   Represented as a free monad (symbolic/lazy) -- evaluation via expect.
---   Only finite support constructors are allowed.
-data Dist a where
-  Pure :: a -> Dist a
-  Bind :: Dist x -> (x -> Dist a) -> Dist a
-  FiniteSupp :: [(a, Double)] -> Dist a
-  FinUniform :: [a] -> Dist a
 
 -- | The Giry Monad: general probability measures (finite, countable, continuous).
 --   Also a free monad -- evaluation via expect.
@@ -43,3 +35,21 @@ data Giry a where
   StudentT :: Double -> Giry Double
   GenericCont :: (ContDistr d, Mean d, Variance d) => d -> Giry Double
   ContinuousPdf :: (Double -> Double) -> (Double, Double) -> Giry Double
+
+instance Functor Giry where
+  fmap :: (a -> b) -> Giry a -> Giry b
+  fmap f m = GBind m (GPure . f)
+
+instance Applicative Giry where
+  pure :: a -> Giry a
+  pure = GPure
+
+  (<*>) :: Giry (a -> b) -> Giry a -> Giry b
+  (<*>) = ap
+
+instance Monad Giry where
+  return :: a -> Giry a
+  return = pure
+
+  (>>=) :: Giry a -> (a -> Giry b) -> Giry b
+  (>>=) = GBind

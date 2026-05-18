@@ -10,13 +10,12 @@ maintainer: user@example.com
 library
   exposed-modules:
     -- Alpha: Categorical
-    A_Categorical.A_Category.STAR,
-    A_Categorical.B_Theory.StarTheory,
-    A_Categorical.BA_Interpretation.StarIntp,
-    A_Categorical.C_TypeSystem.StarTypes,
-    A_Categorical.D_Vocabulary.StarVocab,
-    A_Categorical.DA_Realization.Dist,
-    A_Categorical.DA_Realization.Giry,
+    A_Categorical.Theory,
+    A_Categorical.Interpretation,
+    A_Categorical.Category.Categories.Data,
+    A_Categorical.Category.Categories.Tens,
+    A_Categorical.Category.Monads.Dist,
+    A_Categorical.Category.Monads.Giry,
     -- Beta: Logical
     B_Logical.B_Theory.TwoMonBLatTheory,
     B_Logical.B_Theory.A2MonBLatTheory,
@@ -29,8 +28,6 @@ library
     B_Logical.DA_Realization.ExpectDist,
     B_Logical.DA_Realization.ExpectGiry,
     -- Gamma: Domain
-    C_Domain.C_TypeSystem.Data,
-    C_Domain.C_TypeSystem.Tens,
     C_Domain.B_Theory.BinaryTheory,
     C_Domain.BC_Extension.BinaryDataExtension,
     C_Domain.BC_Extension.BinaryTensExtension,
@@ -80,6 +77,7 @@ executable binary-benchmark
 
 executable binary-test-real
   main-is: BinaryTrain.hs
+  other-modules: BinaryTrainLib
   hs-source-dirs: _F_Training
   ghc-options: -rtsopts
   build-depends:
@@ -93,6 +91,7 @@ executable binary-test-real
 
 executable binary-test-real-beta
   main-is: BinaryTrainBeta.hs
+  other-modules: BinaryTrainLib
   hs-source-dirs: _F_Training
   ghc-options: -rtsopts
   build-depends:

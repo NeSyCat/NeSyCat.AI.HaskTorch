@@ -25,8 +25,8 @@ module B_Logical.BA_Interpretation.Boolean
   )
 where
 
-import A_Categorical.BA_Interpretation.StarIntp (MeasU)
-import A_Categorical.DA_Realization.Dist ()  -- Monad instance for Dist
+import A_Categorical.Interpretation (MeasU)
+import A_Categorical.Category.Monads.Dist ()  -- Monad instance for Dist
 import B_Logical.B_Theory.A2MonBLatTheory (A2MonBLatTheory (..), Guard)
 import B_Logical.B_Theory.TwoMonBLatTheory (TwoMonBLatTheory (..))
 

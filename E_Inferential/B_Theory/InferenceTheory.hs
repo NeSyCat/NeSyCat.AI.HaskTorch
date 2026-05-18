@@ -14,10 +14,12 @@ module E_Inferential.B_Theory.InferenceTheory
   )
 where
 
+import Data.Kind (Type)
+
 -- | Function symbols of the inference theory.
 --   Each interpretation (instance) assigns concrete morphisms.
 class InferenceFun cat where
-  type Loss cat :: *
+  type Loss cat :: Type
 
   lossKnow :: cat -> Loss cat
 

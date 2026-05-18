@@ -20,7 +20,7 @@ module B_Logical.BA_Interpretation.Tensor
   )
 where
 
-import A_Categorical.BA_Interpretation.StarIntp (GeomU)
+import A_Categorical.Interpretation (GeomU)
 import B_Logical.B_Theory.A2MonBLatTheory
 import B_Logical.B_Theory.TwoMonBLatTheory
 import Data.Functor.Identity (Identity (..), runIdentity)

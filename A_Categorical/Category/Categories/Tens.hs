@@ -1,7 +1,6 @@
--- | The TENS type system (geometry paradigm).
---   TensObj marks which types are objects of the geometry domain category.
-module C_Domain.C_TypeSystem.Tens
-  ( TensObj (..),
+-- | Objects of the TENS category (geometry paradigm).
+module A_Categorical.Category.Categories.Tens
+  ( TensObj,
   )
 where
 
@@ -11,5 +10,7 @@ import qualified Torch
 class TensObj a
 
 instance TensObj Torch.Tensor
+
 instance (TensObj a, TensObj b) => TensObj (a, b)
+
 instance TensObj ()

@@ -19,8 +19,8 @@ module C_Domain.BA_Interpretation.BinaryReal
   )
 where
 
-import A_Categorical.BA_Interpretation.StarIntp (GeomU, MeasU)
-import A_Categorical.DA_Realization.Dist (Dist (..))
+import A_Categorical.Interpretation (GeomU, MeasU)
+import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.BA_Interpretation.Boolean as BoolLogic
 import B_Logical.BA_Interpretation.Tensor hiding (Omega)
 import qualified B_Logical.BA_Interpretation.Tensor as TensLogic

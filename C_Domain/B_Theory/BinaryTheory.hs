@@ -5,7 +5,7 @@
 
 module C_Domain.B_Theory.BinaryTheory where
 
-import A_Categorical.B_Theory.StarTheory (Universe (..))
+import A_Categorical.Theory (Universe (..))
 import C_Domain.BA_Interpretation.BinaryRealMLP (ParamsMLP)
 import Data.Kind (Type)
 

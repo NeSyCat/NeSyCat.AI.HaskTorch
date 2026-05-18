@@ -7,7 +7,7 @@ module D_Grammatical.BA_Interpretation.BinaryIntpTens
   )
 where
 
-import A_Categorical.BA_Interpretation.StarIntp (GeomU)
+import A_Categorical.Interpretation (GeomU)
 import C_Domain.B_Theory.BinaryTheory (BinarySorts (..))
 import C_Domain.BA_Interpretation.BinaryReal ()
 import C_Domain.BA_Interpretation.BinaryRealMLP (ParamsMLP)

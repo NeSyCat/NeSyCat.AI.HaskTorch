@@ -10,8 +10,7 @@ module B_Logical.DA_Realization.ExpectDist
   )
 where
 
-import A_Categorical.DA_Realization.Dist ()
-import A_Categorical.D_Vocabulary.StarVocab (Dist (..))
+import A_Categorical.Category.Monads.Dist (Dist (..))
 import B_Logical.D_Vocabulary.QuantifierVocab (QuantVocabDist (..))
 
 -- | Universal instance: Dist is always finitely supported.

@@ -10,7 +10,7 @@ module B_Logical.B_Theory.A2MonBLatTheory (
 )
 where
 
-import A_Categorical.B_Theory.StarTheory (Universe (..))
+import A_Categorical.Theory (Universe (..))
 import B_Logical.B_Theory.TwoMonBLatTheory (TwoMonBLatTheory (..))
 import Data.Kind (Type)
 

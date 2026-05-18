@@ -15,7 +15,8 @@ module B_Logical.D_Vocabulary.QuantifierVocab
   )
 where
 
-import A_Categorical.D_Vocabulary.StarVocab (Dist, Giry)
+import A_Categorical.Category.Monads.Dist (Dist)
+import A_Categorical.Category.Monads.Giry (Giry)
 
 -- | Lattice quantifier symbols: sup and inf over a domain type.
 class QuantVocabLattice a where

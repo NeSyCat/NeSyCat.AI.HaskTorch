@@ -14,11 +14,13 @@ module F_Statistical.B_Theory.BenchmarkTheory
   )
 where
 
+import Data.Kind (Type)
+
 -- | Function symbols of the benchmark theory.
 --   Each interpretation (instance) assigns concrete morphisms.
 --   Parameterized by the prediction type; label is Bool (binary classification).
 class BenchmarkFun pred where
-  type MetricVal pred :: *
+  type MetricVal pred :: Type
 
   -- | accuracy : fraction of predictions matching ground truth.
   accuracy :: [(pred, Bool)] -> MetricVal pred

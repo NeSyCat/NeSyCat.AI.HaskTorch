@@ -3,7 +3,7 @@
 -- | Sort assignment (Point, Omega) for the measure theory universe.
 module C_Domain.BC_Extension.BinaryDataExtension where
 
-import A_Categorical.BA_Interpretation.StarIntp (MeasU)
+import A_Categorical.Interpretation (MeasU)
 import C_Domain.B_Theory.BinaryTheory (BinarySorts (..))
 import qualified B_Logical.BA_Interpretation.Boolean as BoolLogic
 

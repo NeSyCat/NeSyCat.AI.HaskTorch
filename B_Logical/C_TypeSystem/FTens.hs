@@ -9,7 +9,7 @@ module B_Logical.C_TypeSystem.FTens
   )
 where
 
-import C_Domain.C_TypeSystem.Tens (TensObj)
+import A_Categorical.Category.Categories.Tens (TensObj)
 
 -- | Objects of FTENS: the Cartesian closed, monad-closed extension of TENS.
 class FTensObj a

@@ -15,7 +15,7 @@ module D_Grammatical.B_Theory.BinaryFormulas
   )
 where
 
-import A_Categorical.B_Theory.StarTheory (Universe (..))
+import A_Categorical.Theory (Universe (..))
 import B_Logical.B_Theory.A2MonBLatTheory (A2MonBLatTheory (..), Guard)
 import B_Logical.B_Theory.TwoMonBLatTheory (TwoMonBLatTheory (..))
 import C_Domain.B_Theory.BinaryTheory (BinaryRel (..), BinaryKlRel (..), BinarySorts (..))

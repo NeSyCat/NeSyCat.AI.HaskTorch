@@ -9,8 +9,7 @@ module B_Logical.DA_Realization.ExpectGiry
   )
 where
 
-import A_Categorical.D_Vocabulary.StarVocab (Giry (..))
-import A_Categorical.DA_Realization.Giry ()
+import A_Categorical.Category.Monads.Giry (Giry (..))
 import B_Logical.D_Vocabulary.QuantifierVocab (QuantVocabGiry (..))
 import Numeric.Natural (Natural)
 import Numeric.Tools.Integration (QuadParam (..), defQuad, quadBestEst, quadRes, quadRomberg)

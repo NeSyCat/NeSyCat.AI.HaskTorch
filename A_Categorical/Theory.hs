@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE NoStarIsType #-}
 
-module A_Categorical.B_Theory.StarTheory
+module A_Categorical.Theory
   ( Universe (..),
   )
 where

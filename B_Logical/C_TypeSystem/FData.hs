@@ -8,7 +8,7 @@ module B_Logical.C_TypeSystem.FData
   )
 where
 
-import C_Domain.C_TypeSystem.Data (DataObj)
+import A_Categorical.Category.Categories.Data (DataObj)
 
 -- | Objects of FDATA: the Cartesian closed, monad-closed extension of DATA.
 class FDataObj a
