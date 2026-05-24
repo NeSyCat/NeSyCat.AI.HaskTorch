@@ -20,8 +20,8 @@ import BinaryTrainLib
 
 -- Domain theory (gamma level) -- classifierA, labelA
 import A_Categorical.CategoricalInterpretation (MeasU)
-import C_Domain.BinarySignature (BinaryRel (..), BinaryKlRel (..), BinarySorts (..))
-import C_Domain.BinaryInterpretation ()
+import C_Domain.Examples.Binary.Signature (BinaryRel (..), BinaryKlRel (..), BinarySorts (..))
+import C_Domain.Examples.Binary.Interpretation ()
 
 -- Categorical realization -- distPTrue
 import A_Categorical.Category.Monads.DistExpect (distPTrue)

@@ -9,7 +9,7 @@
 -- | Abstract binary classification formula.
 --   Uses bigWedge from LogicalQuantSignature for quantification.
 --   Works for any universe (GeomU, MeasU, etc.).
-module D_Grammatical.BinaryFormulas
+module D_Grammatical.Examples.Binary.Formulas
   ( binaryPredicate,
     binarySentence,
   )
@@ -18,7 +18,7 @@ where
 import A_Categorical.CategoricalSignature (Universe (..))
 import B_Logical.LogicalQuantSignature (LogicalQuantSignature (..), Guard)
 import B_Logical.LogicalSignature (LogicalSignature (..))
-import C_Domain.BinarySignature (BinaryRel (..), BinaryKlRel (..), BinarySorts (..))
+import C_Domain.Examples.Binary.Signature (BinaryRel (..), BinaryKlRel (..), BinarySorts (..))
 
 -- | Abstract pointwise predicate for binary classification.
 binaryPredicate ::

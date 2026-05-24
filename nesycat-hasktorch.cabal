@@ -24,13 +24,13 @@ library
     B_Logical.Interpretations.Boolean,
     B_Logical.Interpretations.Tensor,
     -- Gamma: Domain
-    C_Domain.BinarySignature,
-    C_Domain.BinaryInterpretation,
+    C_Domain.Examples.Binary.Signature,
+    C_Domain.Examples.Binary.Interpretation,
     C_Domain.Models.MLP,
     -- Delta: Grammatical
-    D_Grammatical.BinaryFormulas,
-    D_Grammatical.BinaryIntpTens,
-    D_Grammatical.BinaryIntpData,
+    D_Grammatical.Examples.Binary.Formulas,
+    D_Grammatical.Examples.Binary.IntpTens,
+    D_Grammatical.Examples.Binary.IntpData,
     -- Epsilon: Inferential
     E_Inferential.A_Category.Diff,
     E_Inferential.B_Theory.InferenceTheory,

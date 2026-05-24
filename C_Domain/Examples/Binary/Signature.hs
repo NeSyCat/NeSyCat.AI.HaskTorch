@@ -3,7 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module C_Domain.BinarySignature where
+module C_Domain.Examples.Binary.Signature where
 
 import A_Categorical.CategoricalSignature (Universe (..))
 import Data.Kind (Type)

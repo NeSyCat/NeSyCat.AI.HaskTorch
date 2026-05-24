@@ -14,8 +14,8 @@
 --     labelA      : the circle-in-square ground truth
 --     classifierA : the MLP morphism hThetaReal -- the network *is* this semantics
 --     bridge      : encPoint / decOmega between MeasU and GeomU
-module C_Domain.BinaryInterpretation
-  ( module C_Domain.BinarySignature,
+module C_Domain.Examples.Binary.Interpretation
+  ( module C_Domain.Examples.Binary.Signature,
     module C_Domain.Models.MLP,
   )
 where
@@ -26,7 +26,7 @@ import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import B_Logical.Interpretations.Tensor hiding (Omega)
 import qualified B_Logical.Interpretations.Tensor as TensLogic
 import C_Domain.Models.MLP (ParamsMLP, binarySpecReal, hThetaReal)
-import C_Domain.BinarySignature (BinaryBridge (..), BinaryKlRel (..), BinaryRel (..), BinarySorts (..))
+import C_Domain.Examples.Binary.Signature (BinaryBridge (..), BinaryKlRel (..), BinaryRel (..), BinarySorts (..))
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional.Internal as F
