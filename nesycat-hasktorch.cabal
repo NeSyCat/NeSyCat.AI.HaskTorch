@@ -27,11 +27,18 @@ library
     C_Domain.Examples.Binary.Signature,
     C_Domain.Examples.Binary.Interpretation,
     C_Domain.Models.MLP,
+    C_Domain.Models.MnistCNN,
+    C_Domain.Examples.MnistAddition.Signature,
+    C_Domain.Examples.MnistAddition.Interpretation,
     -- Delta: Grammatical
     D_Grammatical.Examples.Binary.Formulas,
     D_Grammatical.Examples.Binary.IntpTens,
     D_Grammatical.Examples.Binary.IntpData,
+    D_Grammatical.Examples.MnistAddition.Formulas,
+    D_Grammatical.Examples.MnistAddition.IntpData,
+    D_Grammatical.Examples.MnistAddition.IntpTens,
     -- Epsilon: Inferential
+    E_Inferential.Train,
     E_Inferential.InferenceSignature,
     E_Inferential.InferenceInterpretation,
     E_Inferential.Library.Softplus,
@@ -40,6 +47,7 @@ library
     E_Inferential.Library.CrossEntropy,
     E_Inferential.Library.Convex,
     E_Inferential.Examples.Binary.Train,
+    E_Inferential.Examples.MnistAddition.Train,
     -- Zeta: Statistical
     F_Statistical.BenchmarkSignature,
     F_Statistical.BenchmarkInterpretation,
@@ -47,12 +55,17 @@ library
     F_Statistical.Library.Threshold,
     F_Statistical.Library.FractionTrue,
     F_Statistical.Library.HarmonicMean,
-    F_Statistical.Library.MeanWhere
+    F_Statistical.Library.MeanWhere,
+    -- Examples: generic runner + per-example registrations
+    Example,
+    Examples.Binary,
+    Examples.MnistAddition
   hs-source-dirs: .
   build-depends:
     base >=4.16,
     bytestring,
     containers,
+    directory,
     mtl,
     numeric-tools,
     hasktorch,
@@ -60,16 +73,13 @@ library
     time
   default-language: Haskell2010
 
-executable binary-benchmark
-  main-is: Benchmark.hs
-  hs-source-dirs: F_Statistical/Examples/Binary
+executable nesycat
+  main-is: Main.hs
+  hs-source-dirs: app
   ghc-options: -rtsopts
   build-depends:
     base,
     nesycat-hasktorch,
-    mtl,
-    containers,
-    hasktorch,
-    time
+    hasktorch
   default-language: Haskell2010
 

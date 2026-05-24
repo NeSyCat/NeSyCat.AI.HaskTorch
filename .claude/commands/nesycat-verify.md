@@ -79,7 +79,7 @@ Run `cabal build all` in the NeSyCat-HaskTorch project directory. Report whether
 ```
 Run the NeSyCat-HaskTorch experiments and capture performance metrics.
 
-1. Run `cabal run binary-benchmark -- +RTS -s` and capture accuracy, F1, scores, wall clock time, peak memory.
+1. Run `cabal run nesycat -- binary +RTS -s` and capture accuracy, F1, scores, wall clock time, peak memory.
 
 2. Run `cabal run binary-test-real -- +RTS -s` and capture final loss, wall clock time, peak memory.
 
