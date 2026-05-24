@@ -39,16 +39,16 @@ library
     E_Inferential.Library.NegLog,
     E_Inferential.Library.CrossEntropy,
     E_Inferential.Library.Convex,
+    E_Inferential.Examples.Binary.Train,
     -- Zeta: Statistical
     F_Statistical.BenchmarkSignature,
     F_Statistical.BenchmarkInterpretation,
+    F_Statistical.Report,
     F_Statistical.Library.Threshold,
     F_Statistical.Library.FractionTrue,
     F_Statistical.Library.HarmonicMean,
-    F_Statistical.Library.MeanWhere,
-    -- Training library
-    BinaryTrainLib
-  hs-source-dirs: ., _F_Training
+    F_Statistical.Library.MeanWhere
+  hs-source-dirs: .
   build-depends:
     base >=4.16,
     bytestring,
@@ -71,34 +71,5 @@ executable binary-benchmark
     containers,
     hasktorch,
     time
-  default-language: Haskell2010
-
-executable binary-test-real
-  main-is: BinaryTrain.hs
-  other-modules: BinaryTrainLib
-  hs-source-dirs: _F_Training
-  ghc-options: -rtsopts
-  build-depends:
-    base,
-    nesycat-hasktorch,
-    mtl,
-    containers,
-    hasktorch,
-    time
-  default-language: Haskell2010
-
-executable binary-test-real-beta
-  main-is: BinaryTrainBeta.hs
-  other-modules: BinaryTrainLib
-  hs-source-dirs: _F_Training
-  ghc-options: -rtsopts
-  build-depends:
-    base,
-    nesycat-hasktorch,
-    mtl,
-    containers,
-    hasktorch,
-    time,
-    statistics
   default-language: Haskell2010
 
