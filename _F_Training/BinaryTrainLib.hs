@@ -16,8 +16,8 @@ where
 import qualified B_Logical.Interpretations.Tensor as TENS
 import C_Domain.Models.MLP (ParamsMLP, binarySpecReal, hThetaReal)
 import D_Grammatical.Examples.Binary.IntpTens (binaryAxiomTens)
-import E_Inferential.B_Theory.InferenceTheory (InferenceFun (..))
-import E_Inferential.BA_Interpretation.InferenceIntpTens ()
+import E_Inferential.InferenceSignature (InferenceSignature (..))
+import E_Inferential.InferenceInterpretation ()
 
 import Data.Time.Clock (diffUTCTime, getCurrentTime)
 import Text.Printf (printf)

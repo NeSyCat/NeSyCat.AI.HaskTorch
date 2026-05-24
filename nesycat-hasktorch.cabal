@@ -32,11 +32,13 @@ library
     D_Grammatical.Examples.Binary.IntpTens,
     D_Grammatical.Examples.Binary.IntpData,
     -- Epsilon: Inferential
-    E_Inferential.A_Category.Diff,
-    E_Inferential.B_Theory.InferenceTheory,
-    E_Inferential.D_Vocabulary.InferenceVocabTens,
-    E_Inferential.DA_Realization.InferenceRlzTens,
-    E_Inferential.BA_Interpretation.InferenceIntpTens,
+    E_Inferential.InferenceSignature,
+    E_Inferential.InferenceInterpretation,
+    E_Inferential.Library.Softplus,
+    E_Inferential.Library.OneMinus,
+    E_Inferential.Library.NegLog,
+    E_Inferential.Library.CrossEntropy,
+    E_Inferential.Library.Convex,
     -- Zeta: Statistical
     F_Statistical.B_Theory.BenchmarkTheory,
     F_Statistical.D_Vocabulary.BenchmarkVocab,
