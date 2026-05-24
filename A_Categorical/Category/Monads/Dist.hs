@@ -3,7 +3,7 @@
 
 -- | The Dist monad: finitely supported probability distributions,
 --   together with its free-monad realization (symbolic/lazy).
---   Evaluation lives in B_Logical/DA_Realization/ExpectDist.
+--   Evaluation lives in A_Categorical/Category/Monads/DistExpect.
 module A_Categorical.Category.Monads.Dist
   ( Dist (..),
   )

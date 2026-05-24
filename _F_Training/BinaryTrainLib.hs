@@ -13,9 +13,9 @@ module BinaryTrainLib
   )
 where
 
-import qualified B_Logical.Tensor as TENS
-import C_Domain.BA_Interpretation.BinaryRealMLP (ParamsMLP, binarySpecReal, hThetaReal)
-import D_Grammatical.BA_Interpretation.BinaryIntpTens (binaryAxiomTens)
+import qualified B_Logical.Interpretations.Tensor as TENS
+import C_Domain.Models.MLP (ParamsMLP, binarySpecReal, hThetaReal)
+import D_Grammatical.BinaryIntpTens (binaryAxiomTens)
 import E_Inferential.B_Theory.InferenceTheory (InferenceFun (..))
 import E_Inferential.BA_Interpretation.InferenceIntpTens ()
 

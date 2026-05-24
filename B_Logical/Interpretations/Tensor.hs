@@ -13,8 +13,8 @@
 --
 -- ParamsLogic Omega = Torch.Tensor (the beta smoothing parameter).
 -- This is standard model theory over (R, +, x, <=).
-module B_Logical.Tensor
-  ( module B_Logical.Tensor,
+module B_Logical.Interpretations.Tensor
+  ( module B_Logical.Interpretations.Tensor,
     module B_Logical.LogicalQuantSignature,
     module B_Logical.LogicalSignature,
   )

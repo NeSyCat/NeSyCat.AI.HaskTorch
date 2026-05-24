@@ -6,31 +6,42 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
--- | Relation implementations for Binary Classification.
+-- | Interpretation I_gamma for Binary Classification: the assignment of the
+--   signature symbols to objects/morphisms of the domain category.
 --
---   This module provides:
---     1. BinaryRel MeasU / GeomU -- labelA for each universe
---     2. BinaryKlRel MeasU -- classifierA (Mon = Dist)
---     3. BinaryKlRel GeomU -- classifierA (Mon = Identity)
---     4. BinaryBridge MeasU GeomU -- encPoint + decOmega
-module C_Domain.BA_Interpretation.BinaryReal
-  ( module C_Domain.B_Theory.BinaryTheory,
-    module C_Domain.BA_Interpretation.BinaryRealMLP,
+--     Sorts       : I(Point), I(Omega)        per universe (MeasU, GeomU)
+--     Theta       : I(Theta) = ParamsMLP      (the MLP weight space, an actor object)
+--     labelA      : the circle-in-square ground truth
+--     classifierA : the MLP morphism hThetaReal -- the network *is* this semantics
+--     bridge      : encPoint / decOmega between MeasU and GeomU
+module C_Domain.BinaryInterpretation
+  ( module C_Domain.BinarySignature,
+    module C_Domain.Models.MLP,
   )
 where
 
 import A_Categorical.CategoricalInterpretation (GeomU, MeasU)
 import A_Categorical.Category.Monads.Dist (Dist (..))
-import qualified B_Logical.Boolean as BoolLogic
-import B_Logical.Tensor hiding (Omega)
-import qualified B_Logical.Tensor as TensLogic
-import C_Domain.BA_Interpretation.BinaryRealMLP (ParamsMLP, binarySpecReal, hThetaReal)
-import C_Domain.BC_Extension.BinaryDataExtension ()
-import C_Domain.BC_Extension.BinaryTensExtension ()
-import C_Domain.B_Theory.BinaryTheory (BinaryBridge (..), BinaryRel (..), BinaryKlRel (..), BinarySorts (..))
+import qualified B_Logical.Interpretations.Boolean as BoolLogic
+import B_Logical.Interpretations.Tensor hiding (Omega)
+import qualified B_Logical.Interpretations.Tensor as TensLogic
+import C_Domain.Models.MLP (ParamsMLP, binarySpecReal, hThetaReal)
+import C_Domain.BinarySignature (BinaryBridge (..), BinaryKlRel (..), BinaryRel (..), BinarySorts (..))
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional.Internal as F
+
+-- ============================================================
+--  Sort assignments: I(Point), I(Omega)
+-- ============================================================
+
+instance BinarySorts MeasU where
+  type Point MeasU = (Float, Float)   -- R^2 as a Cartesian product
+  type Omega MeasU = BoolLogic.Omega  -- = Bool
+
+instance BinarySorts GeomU where
+  type Point GeomU = Torch.Tensor     -- shape: [2], dtype: Float
+  type Omega GeomU = TensLogic.Omega  -- = Torch.Tensor
 
 -- ============================================================
 --  MeasU: plain relation symbols (BinaryRel)
@@ -48,6 +59,7 @@ instance BinaryRel MeasU where
 -- ============================================================
 
 instance BinaryKlRel MeasU where
+  type Theta MeasU = ParamsMLP
   classifierA :: ParamsMLP -> Point MeasU -> Dist (Omega MeasU)
   classifierA paramMLP pt =
     let ptTens = encPoint @MeasU @GeomU pt
@@ -79,6 +91,7 @@ logitScale = 10.0
 -- ============================================================
 
 instance BinaryKlRel GeomU where
+  type Theta GeomU = ParamsMLP
   classifierA :: ParamsMLP -> Point GeomU -> Identity (Omega GeomU)
   classifierA paramMLP ptTensor =
     Identity (hThetaReal paramMLP ptTensor)

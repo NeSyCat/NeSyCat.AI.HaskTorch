@@ -9,7 +9,7 @@
 --
 --   This module provides the interpretation of LogicalSignature and LogicalQuantSignature
 --   in the MeasU universe with Omega = Bool.
-module B_Logical.Boolean
+module B_Logical.Interpretations.Boolean
   ( Omega,
     -- * Re-exported typeclass interface
     module B_Logical.LogicalSignature,

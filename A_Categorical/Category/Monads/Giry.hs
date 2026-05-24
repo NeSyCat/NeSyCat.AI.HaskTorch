@@ -3,7 +3,7 @@
 
 -- | The Giry monad: general probability measures (finite, countable, continuous),
 --   together with its free-monad realization (symbolic/lazy).
---   Evaluation lives in B_Logical/DA_Realization/ExpectGiry.
+--   Evaluation lives in A_Categorical/Category/Monads/GiryExpect.
 module A_Categorical.Category.Monads.Giry
   ( Giry (..),
   )

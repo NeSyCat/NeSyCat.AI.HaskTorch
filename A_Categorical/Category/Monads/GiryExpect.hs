@@ -4,8 +4,8 @@
 -- | Realization of QuantVocabGiry: expectation under the Giry monad.
 --   Per-type dispatch: finite types enumerate, countable types lazy-fold,
 --   continuous types use numerical integration.
-module B_Logical.ExpectGiry
-  ( pTrueGiry,
+module A_Categorical.Category.Monads.GiryExpect
+  ( giryPTrue,
   )
 where
 
@@ -25,7 +25,7 @@ import qualified Statistics.Distribution.Uniform as U
 
 -- | Expectation under the Giry monad, dispatched per type.
 class QuantVocabGiry a where
-  expectGiry :: Giry a -> (a -> Double) -> Double
+  giryExpect :: Giry a -> (a -> Double) -> Double
 
 -- Finite types
 expectFinite :: Giry a -> (a -> Double) -> Double
@@ -33,7 +33,7 @@ expectFinite (GPure x) f = f x
 expectFinite (GBind m k) f = evalBind m (\x -> expectFinite (k x) f)
 expectFinite (GFiniteSupp xs) f = sum [p * f x | (x, p) <- xs]
 expectFinite (GFinUniform xs) f = expectFinite (GFiniteSupp [(x, 1.0 / fromIntegral (length xs)) | x <- xs]) f
-expectFinite _ _ = error "expectGiry (finite): unsupported constructor"
+expectFinite _ _ = error "giryExpect (finite): unsupported constructor"
 
 -- Countable types
 expectCountable :: Giry a -> (a -> Double) -> Double
@@ -43,25 +43,25 @@ expectCountable (GFiniteSupp xs) f = chainedDiscreteStrategy xs f
 expectCountable (GFinUniform xs) f = expectCountable (GFiniteSupp [(x, 1.0 / fromIntegral (length xs)) | x <- xs]) f
 expectCountable (Poisson lambda) f = chainedDiscreteStrategy [(k, probability (Poi.poisson lambda) k) | k <- [0 ..]] f
 expectCountable (Geometric p) f = chainedDiscreteStrategy [(k, probability (Geo.geometric0 p) k) | k <- [0 ..]] f
-expectCountable _ _ = error "expectGiry (countable): unsupported constructor"
+expectCountable _ _ = error "giryExpect (countable): unsupported constructor"
 
 -- QuantVocabGiry instances (realization of the vocabulary)
-instance QuantVocabGiry Bool where expectGiry = expectFinite
-instance QuantVocabGiry () where expectGiry _ f = f ()
-instance QuantVocabGiry Int where expectGiry = expectFinite
-instance QuantVocabGiry Char where expectGiry = expectFinite
-instance (QuantVocabGiry a, QuantVocabGiry b) => QuantVocabGiry (a, b) where expectGiry = expectFinite
-instance QuantVocabGiry Integer where expectGiry = expectCountable
-instance QuantVocabGiry Natural where expectGiry = expectCountable
+instance QuantVocabGiry Bool where giryExpect = expectFinite
+instance QuantVocabGiry () where giryExpect _ f = f ()
+instance QuantVocabGiry Int where giryExpect = expectFinite
+instance QuantVocabGiry Char where giryExpect = expectFinite
+instance (QuantVocabGiry a, QuantVocabGiry b) => QuantVocabGiry (a, b) where giryExpect = expectFinite
+instance QuantVocabGiry Integer where giryExpect = expectCountable
+instance QuantVocabGiry Natural where giryExpect = expectCountable
 
 instance QuantVocabGiry Double where
-  expectGiry (GPure x) f = f x
-  expectGiry (GBind m k) f = evalBind m (\x -> expectGiry (k x) f)
-  expectGiry (GFiniteSupp _) _ = error "Giry: FiniteSupp on Reals"
-  expectGiry giry f = evalContinuous giry f
+  giryExpect (GPure x) f = f x
+  giryExpect (GBind m k) f = evalBind m (\x -> giryExpect (k x) f)
+  giryExpect (GFiniteSupp _) _ = error "Giry: FiniteSupp on Reals"
+  giryExpect giry f = evalContinuous giry f
 
-pTrueGiry :: Giry Bool -> Double
-pTrueGiry m = expectGiry m (\b -> if b then 1.0 else 0.0)
+giryPTrue :: Giry Bool -> Double
+giryPTrue m = giryExpect m (\b -> if b then 1.0 else 0.0)
 
 -- Internal: bind evaluator
 evalBind :: Giry x -> (x -> Double) -> Double

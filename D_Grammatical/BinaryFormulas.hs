@@ -19,7 +19,6 @@ import A_Categorical.CategoricalSignature (Universe (..))
 import B_Logical.LogicalQuantSignature (LogicalQuantSignature (..), Guard)
 import B_Logical.LogicalSignature (LogicalSignature (..))
 import C_Domain.BinarySignature (BinaryRel (..), BinaryKlRel (..), BinarySorts (..))
-import C_Domain.Models.MLP (ParamsMLP)
 
 -- | Abstract pointwise predicate for binary classification.
 binaryPredicate ::
@@ -29,7 +28,7 @@ binaryPredicate ::
     Monad (M u)
   ) =>
   ParamsLogic (Omega u) ->
-  ParamsMLP ->
+  Theta u ->
   Point u ->
   M u (Omega u)
 binaryPredicate lp paramMLP pt = do
@@ -52,7 +51,7 @@ binarySentence ::
   ) =>
   ParamsLogic (Omega u) ->
   Guard u a ->
-  ParamsMLP ->
+  Theta u ->
   M u (Omega u)
 binarySentence lp guard paramMLP =
   bigWedge lp guard

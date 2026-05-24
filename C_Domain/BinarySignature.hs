@@ -3,31 +3,35 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module C_Domain.B_Theory.BinaryTheory where
+module C_Domain.BinarySignature where
 
 import A_Categorical.CategoricalSignature (Universe (..))
-import C_Domain.BA_Interpretation.BinaryRealMLP (ParamsMLP)
 import Data.Kind (Type)
 
--- | Non-Logical Theory Sigma_gamma for the Binary Classification domain.
+-- | Non-logical signature Sigma_gamma for the Binary Classification domain.
 --
--- Sorts  = {Point, Omega}
--- Rel    = {labelA : Point -> Omega}          (Tarski relation)
--- KlRel  = {classifierA : Theta -> Point -> M(Omega)}  (Kleisli relation)
+--   Vertical points (sorts)        : Point, Omega   -- objects of the domain category C_gamma
+--   Horizontal point (param space) : Theta          -- object of the actor A
+--   Relation symbols               : labelA      : Point -> Omega           (Tarski)
+--                                     classifierA : Theta . Point -> M Omega (parametrized Kleisli)
 --
--- The monad comes from the universe (M u).
--- The parameter Theta (= ParamsMLP) is external (from Para), curried in.
+--   Theta is only a *symbol* here; its semantics (e.g. an MLP weight space, a
+--   morphism of the actor) is supplied by an interpretation. The monad is M u.
 
--- | BinarySorts: assigns sort names to concrete Haskell types.
+-- | Sort symbols, assigned to concrete objects by an interpretation.
 class (Universe u) => BinarySorts u where
   type Point u :: Type
   type Omega u :: Type
 
+-- | Tarski relation symbol.
 class (BinarySorts u) => BinaryRel u where
   labelA :: Point u -> Omega u
 
+-- | Parametrized Kleisli relation symbol. @Theta u@ is the parameter-space
+--   symbol (a horizontal point); its semantics is fixed by the interpretation.
 class (BinaryRel u, Monad (M u)) => BinaryKlRel u where
-  classifierA :: ParamsMLP -> Point u -> M u (Omega u)
+  type Theta u :: Type
+  classifierA :: Theta u -> Point u -> M u (Omega u)
 
 -- | Bridge for encoding/decoding between two universe interpretations.
 class (BinarySorts from, BinarySorts to) => BinaryBridge from to where
