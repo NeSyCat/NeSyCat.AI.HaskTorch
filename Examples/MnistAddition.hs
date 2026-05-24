@@ -13,9 +13,11 @@ import C_Domain.Examples.MnistAddition.Interpretation ()
 import C_Domain.Examples.MnistAddition.Signature (MnistKlRel (..))
 import C_Domain.Models.MnistCNN (ParamsCNN, ParamsCNNSpec (..))
 import D_Grammatical.Examples.MnistAddition.IntpData (mnistProb)
+import D_Grammatical.Examples.MnistAddition.IntpTens (mnistSumLogits)
 import Data.Functor.Identity (runIdentity)
-import E_Inferential.Examples.MnistAddition.Train (MnistDataset (..), loadMnistDataset, lossForMnist)
+import Datasets.MnistAddition (MnistDataset (..), loadMnistDataset)
 import Example (Example (..))
+import E_Inferential.Examples.MnistAddition.Interpretation (mnistKnowLoss)
 import F_Statistical.Report (BenchmarkReport (..))
 import qualified Torch
 
@@ -29,9 +31,14 @@ instance Example MnistAdd where
 
   name = "MNIST single-digit addition (axiom-only; digits learned from sums)"
   spec = ParamsCNNSpec
-  trainConfig = (30, 0.001)
+  trainConfig = (200, 0.001)
   loadData = loadMnistDataset
-  objective ds theta = lossForMnist ds theta
+  -- objective = MNIST's inference interpretation (categorical NLL) of the
+  -- grammatical GeomU term  digit(x)+digit(y)  (the [19] sum-logits), with the
+  -- observed sums as target. softmax lives in mnistKnowLoss, never in GeomU.
+  objective ds theta =
+    let (xB, yB, oneHotSums) = trainBatch ds
+     in mnistKnowLoss (mnistSumLogits theta (xB, yB)) oneHotSums
   report theta ds = return (mnistReport theta ds)
 
 -- | Predicted digits = argmax of the GeomU logits (no softmax; logits give the

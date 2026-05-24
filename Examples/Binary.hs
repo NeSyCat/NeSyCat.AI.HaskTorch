@@ -12,8 +12,11 @@ import A_Categorical.Category.Monads.DistExpect (distPTrue)
 import C_Domain.Examples.Binary.Interpretation ()
 import C_Domain.Examples.Binary.Signature (BinaryKlRel (..), BinaryRel (..), BinarySorts (..))
 import C_Domain.Models.MLP (ParamsMLP, ParamsMLPSpec (..), binarySpecReal)
+import D_Grammatical.Examples.Binary.IntpTens (binaryAxiomTens)
+import Datasets.Binary (BinaryDataset (..), generateBinaryDataset)
 import Example (Example (..))
-import E_Inferential.Examples.Binary.Train (BinaryDataset (..), generateBinaryDataset, lossForBinary)
+import E_Inferential.InferenceInterpretation ()
+import E_Inferential.InferenceSignature (InferenceSignature (..))
 import F_Statistical.Report (evaluate, runMetrics)
 import qualified Torch
 
@@ -29,7 +32,10 @@ instance Example Binary where
   spec = binarySpecReal
   trainConfig = (1000, 0.001)
   loadData = generateBinaryDataset
-  objective ds theta = lossForBinary 1.75 1.0 ds theta -- beta=1.75, lambda=1.0 (pure axiom)
+  -- objective = inference penalty (epsilon) of the grammatical axiom (delta),
+  -- evaluated on the data (the points). The axiom reaches the net only through
+  -- classifierA @GeomU; nothing here touches hThetaReal directly. beta = 1.75.
+  objective ds theta = lossKnow (binaryAxiomTens (Torch.asTensor (1.75 :: Float)) (trainData ds) theta)
   report theta ds =
     let toPoints t = map (\[x1, x2] -> (x1, x2)) (Torch.asValue t :: [[Float]]) :: [Point MeasU]
         predict pt = distPTrue (classifierA @MeasU theta pt)

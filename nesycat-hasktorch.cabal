@@ -46,8 +46,7 @@ library
     E_Inferential.Library.NegLog,
     E_Inferential.Library.CrossEntropy,
     E_Inferential.Library.Convex,
-    E_Inferential.Examples.Binary.Train,
-    E_Inferential.Examples.MnistAddition.Train,
+    E_Inferential.Examples.MnistAddition.Interpretation,
     -- Zeta: Statistical
     F_Statistical.BenchmarkSignature,
     F_Statistical.BenchmarkInterpretation,
@@ -56,6 +55,9 @@ library
     F_Statistical.Library.FractionTrue,
     F_Statistical.Library.HarmonicMean,
     F_Statistical.Library.MeanWhere,
+    -- Datasets: prepared data, separate from training/loss
+    Datasets.Binary,
+    Datasets.MnistAddition,
     -- Examples: generic runner + per-example registrations
     Example,
     Examples.Binary,

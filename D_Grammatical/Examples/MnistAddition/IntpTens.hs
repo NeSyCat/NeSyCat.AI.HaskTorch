@@ -1,33 +1,31 @@
 {-# LANGUAGE TypeApplications #-}
 
--- | GeomU interpretation of the MNIST-addition formula: the 'Identity' monad in
---   tensor spaces. The same 'mnistFormula', read at @\@GeomU@ -- @digit@ is raw
---   logits and @plus@ is the log-space convolution (LogSumExp over @d1+d2=s@), so
---   each pair's satisfaction is a logit; the @forall@ is the logic's smooth-inf
---   'bigWedge'. Differentiable on logits (no softmax) -- this is the training signal.
+-- | GeomU interpretation of the MNIST-addition formula (Identity monad, tensor
+--   spaces). The same symbols, read at @\@GeomU@: @digit@ is raw logits and
+--   @plus@ is the log-space convolution, so the /term/ @digit(x) + digit(y)@
+--   interprets to a logit vector over sums @[B,19]@ -- pure logits, no softmax.
+--
+--   The remaining symbols are interpreted per universe in different layers: in
+--   MeasU @eqNat@/@(=)@ gives @P(sum=n)@ (via the bridge's softmax); in GeomU the
+--   @= add(x,y)@ and the @forall@ over pairs are realized by MNIST's /inference/
+--   interpretation (categorical NLL), keeping the softmax out of GeomU entirely.
 module D_Grammatical.Examples.MnistAddition.IntpTens
-  ( mnistAxiomTens,
+  ( mnistSumLogits,
   )
 where
 
 import A_Categorical.CategoricalInterpretation (GeomU)
-import B_Logical.Interpretations.Tensor () -- LogicalQuantSignature Tensor GeomU Omega (bigWedge)
-import B_Logical.LogicalQuantSignature (LogicalQuantSignature (..))
 import C_Domain.Examples.MnistAddition.Interpretation ()
+import C_Domain.Examples.MnistAddition.Signature (MnistArith (..), MnistKlRel (..))
 import C_Domain.Models.MnistCNN (ParamsCNN)
-import D_Grammatical.Examples.MnistAddition.Formulas (mnistFormula)
-import Data.Functor.Identity (Identity (..), runIdentity)
+import Data.Functor.Identity (runIdentity)
 import qualified Torch
 
--- | The MNIST axiom in GeomU. @betaT@ is the logic smoothing parameter; the batch
---   is (images x @[B,1,28,28]@, images y @[B,1,28,28]@, one-hot observed sums
---   @[B,19]@). 'mnistFormula' runs once on the batch giving per-pair satisfaction
---   logits @[B]@, then the universal quantifier (smooth-inf) reduces them to @[1]@.
-mnistAxiomTens ::
-  Torch.Tensor ->
-  (Torch.Tensor, Torch.Tensor, Torch.Tensor) ->
-  ParamsCNN ->
-  Torch.Tensor
-mnistAxiomTens betaT batch theta =
-  let sat = runIdentity (mnistFormula @GeomU theta batch) -- [B] per-pair logit truths
-   in runIdentity (bigWedge betaT sat Identity) -- forall = smooth-inf -> [1]
+-- | @digit(x) + digit(y)@ in GeomU: a logit vector over the 19 possible sums,
+--   @[B,1,28,28] x [B,1,28,28] -> [B,19]@, built from @digit \@GeomU@ (logits)
+--   and @plus \@GeomU@ (log-space convolution). No softmax, no normalization.
+mnistSumLogits :: ParamsCNN -> (Torch.Tensor, Torch.Tensor) -> Torch.Tensor
+mnistSumLogits theta (xB, yB) =
+  plus @GeomU
+    (runIdentity (digit @GeomU theta xB))
+    (runIdentity (digit @GeomU theta yB))
