@@ -1,79 +1,33 @@
 {-# LANGUAGE TypeApplications #-}
 
--- | Benchmark for binary classification.
+-- | Binary classification benchmark (the runnable example).
 --
---   1. Trains via BinaryTrainLib (epsilon level) -> theta*
---   2. Evaluates via classifierA @MeasU (gamma level) + BenchmarkSignature (zeta level)
+--   1. Trains theta* via E_Inferential (epsilon level).
+--   2. Scores classifierA @MeasU (gamma) with the zeta-level metrics.
 --
---   Training modes:
---     cabal run binary-benchmark                 -- fixed beta (default)
---     cabal run binary-benchmark -- beta          -- learnable beta
+--   All reporting is reused from F_Statistical.Report, so this driver only
+--   chooses the universe, the model application, and the data.
+--
+--   Run:  cabal run binary-benchmark
 module Main where
 
--- Training (epsilon level) -- separate module
-import BinaryTrainLib
-  ( BinaryDataset (..),
-    generateBinaryDataset,
-    trainBinary,
-    trainBinaryBeta,
-  )
-
--- Domain theory (gamma level) -- classifierA, labelA
 import A_Categorical.CategoricalInterpretation (MeasU)
-import C_Domain.Examples.Binary.Signature (BinaryRel (..), BinaryKlRel (..), BinarySorts (..))
-import C_Domain.Examples.Binary.Interpretation ()
-
--- Categorical realization -- distPTrue
 import A_Categorical.Category.Monads.DistExpect (distPTrue)
-
--- Benchmark theory (zeta level) -- accuracy, f1Score, etc.
-import F_Statistical.BenchmarkSignature (BenchmarkSignature (..))
-import F_Statistical.BenchmarkInterpretation ()
-
-import System.Environment (getArgs)
-import Text.Printf (printf)
+import C_Domain.Examples.Binary.Interpretation ()
+import C_Domain.Examples.Binary.Signature (BinaryKlRel (..), BinaryRel (..), BinarySorts (..))
+import E_Inferential.Examples.Binary.Train (BinaryDataset (..), generateBinaryDataset, trainBinary)
+import F_Statistical.Report (evaluate, printReport, runMetrics)
 import qualified Torch
 
 main :: IO ()
 main = do
-  args <- getArgs
-  let mode = case args of { ("beta":_) -> "beta"; ("jit":_) -> "jit"; _ -> "fixed" }
-
-  -- === TRAINING (epsilon level) ===
   ds <- generateBinaryDataset
-  thetaStar <- case mode of
-    "beta" -> do
-      (params, learnedBeta) <- trainBinaryBeta 1000 0.001 2.0 1.0 ds
-      putStrLn $ printf "Learned beta: %.4f" (Torch.asValue learnedBeta :: Float)
-      return params
-    _ ->
-      trainBinary 1000 0.001 1.0 1.75 ds
+  thetaStar <- trainBinary 1000 0.001 1.0 1.75 ds
 
-  -- === BENCHMARKING (zeta level) ===
-  -- Convert tensor data to MeasU points
   let toPoints t = map (\[x1, x2] -> (x1, x2)) (Torch.asValue t :: [[Float]]) :: [Point MeasU]
-      trainPts = toPoints (trainData ds)
-      testPts  = toPoints (testData ds)
+      predict pt = distPTrue (classifierA @MeasU thetaStar pt)
+      label = labelA @MeasU
+      trainPairs = evaluate predict label (toPoints (trainData ds))
+      testPairs = evaluate predict label (toPoints (testData ds))
 
-  -- Build (prediction, label) pairs using the universe
-  let evalPairs pts =
-        [ (distPTrue (classifierA @MeasU thetaStar pt), labelA @MeasU pt)
-        | pt <- pts
-        ]
-
-  -- Apply BenchmarkSignature metrics (from the theory)
-  let trainPairs = evalPairs trainPts
-      testPairs  = evalPairs testPts
-      accTrain   = accuracy trainPairs
-      accTest    = accuracy testPairs
-      f1Test     = f1Score testPairs
-      precTest   = precision testPairs
-      (pPos, pNeg) = confidence testPairs
-
-  -- Report
-  putStrLn ""
-  putStrLn $ printf "Binary Benchmark (mode=%s, classifierA @MeasU):" mode
-  putStrLn $ printf "  Accuracy:    Train=%.4f  Test=%.4f" accTrain accTest
-  putStrLn $ printf "  F1 Score:    %.4f" f1Test
-  putStrLn $ printf "  Precision:   %.4f" precTest
-  putStrLn $ printf "  Confidence:  P+=%.4f  P-=%.4f" pPos pNeg
+  printReport "Binary Benchmark (classifierA @MeasU)" (runMetrics trainPairs testPairs)
