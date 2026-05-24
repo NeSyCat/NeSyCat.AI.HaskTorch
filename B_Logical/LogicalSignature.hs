@@ -3,7 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module B_Logical.B_Theory.TwoMonBLatTheory where
+module B_Logical.LogicalSignature where
 
 import Data.Kind (Type)
 
@@ -13,7 +13,7 @@ import Data.Kind (Type)
 --   genuinely different: Bool in Set vs Bool in Meas are distinct objects
 --   even if they share the same underlying elements. To reuse a type
 --   across universes, use newtypes (e.g. newtype SetBool = SetBool Bool).
-class TwoMonBLatTheory u tau | tau -> u where
+class LogicalSignature u tau | tau -> u where
   vdash :: tau -> tau -> Bool
 
   vee :: ParamsLogic tau -> tau -> tau -> tau

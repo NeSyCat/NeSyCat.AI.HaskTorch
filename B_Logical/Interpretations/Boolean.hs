@@ -7,13 +7,13 @@
 
 -- | Logical interpretation: Classical Boolean Logic ($\Omega = \{\text{True}, \text{False}\}$)
 --
---   This module provides the interpretation of TwoMonBLatTheory and A2MonBLatTheory
+--   This module provides the interpretation of LogicalSignature and LogicalQuantSignature
 --   in the MeasU universe with Omega = Bool.
-module B_Logical.BA_Interpretation.Boolean
+module B_Logical.Boolean
   ( Omega,
     -- * Re-exported typeclass interface
-    module B_Logical.B_Theory.TwoMonBLatTheory,
-    module B_Logical.B_Theory.A2MonBLatTheory,
+    module B_Logical.LogicalSignature,
+    module B_Logical.LogicalQuantSignature,
     -- * Comparison predicates
     (.==),
     (./=),
@@ -25,10 +25,10 @@ module B_Logical.BA_Interpretation.Boolean
   )
 where
 
-import A_Categorical.Interpretation (MeasU)
+import A_Categorical.CategoricalInterpretation (MeasU)
 import A_Categorical.Category.Monads.Dist ()  -- Monad instance for Dist
-import B_Logical.B_Theory.A2MonBLatTheory (A2MonBLatTheory (..), Guard)
-import B_Logical.B_Theory.TwoMonBLatTheory (TwoMonBLatTheory (..))
+import B_Logical.LogicalQuantSignature (LogicalQuantSignature (..), Guard)
+import B_Logical.LogicalSignature (LogicalSignature (..))
 
 
 infix 4 .==, ./=, .<, .>, .<=, .>=
@@ -37,10 +37,10 @@ infix 4 .==, ./=, .<, .>, .<=, .>=
 type Omega = Bool
 
 ------------------------------------------------------
--- TwoMonBLatTheory instance: Boolean lattice operations
+-- LogicalSignature instance: Boolean lattice operations
 ------------------------------------------------------
 
-instance TwoMonBLatTheory MeasU Bool where
+instance LogicalSignature MeasU Bool where
   type ParamsLogic Bool = ()
   vdash = (<=)
   vee _ = (||)
@@ -61,13 +61,13 @@ instance TwoMonBLatTheory MeasU Bool where
 type instance Guard MeasU a = [a]
 
 ------------------------------------------------------
--- A2MonBLatTheory: one generic instance for all point types
+-- LogicalQuantSignature: one generic instance for all point types
 --   Guard MeasU a = [a], so guard :: [a] and phi :: a -> Dist Bool.
 --   bigWedge/bigVee = commutator (mapM) then lattice reduce (inf/sup)
 --   bigOplus/bigOtimes = commutator then measure reduce
 ------------------------------------------------------
 
-instance A2MonBLatTheory a MeasU Bool where
+instance LogicalQuantSignature a MeasU Bool where
   -- forall = commutator + inf (lattice meet = and)
   bigWedge _ guard phi = do
     omegas <- mapM phi guard       -- commutator: (M Omega)^A -> M(Omega^A)

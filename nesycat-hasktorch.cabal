@@ -10,23 +10,19 @@ maintainer: user@example.com
 library
   exposed-modules:
     -- Alpha: Categorical
-    A_Categorical.Theory,
-    A_Categorical.Interpretation,
+    A_Categorical.CategoricalSignature,
+    A_Categorical.CategoricalInterpretation,
     A_Categorical.Category.Categories.Data,
     A_Categorical.Category.Categories.Tens,
     A_Categorical.Category.Monads.Dist,
     A_Categorical.Category.Monads.Giry,
     -- Beta: Logical
-    B_Logical.B_Theory.TwoMonBLatTheory,
-    B_Logical.B_Theory.A2MonBLatTheory,
-    B_Logical.C_TypeSystem.FData,
-    B_Logical.C_TypeSystem.FTens,
-    B_Logical.D_Vocabulary.QuantifierVocab,
-    B_Logical.BA_Interpretation.Tensor,
-    B_Logical.BA_Interpretation.Boolean,
-    B_Logical.DA_Realization.Supremum,
-    B_Logical.DA_Realization.ExpectDist,
-    B_Logical.DA_Realization.ExpectGiry,
+    B_Logical.LogicalSignature,
+    B_Logical.LogicalQuantSignature,
+    B_Logical.Boolean,
+    B_Logical.Tensor,
+    B_Logical.ExpectDist,
+    B_Logical.ExpectGiry,
     -- Gamma: Domain
     C_Domain.B_Theory.BinaryTheory,
     C_Domain.BC_Extension.BinaryDataExtension,

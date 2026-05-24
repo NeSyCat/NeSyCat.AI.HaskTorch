@@ -46,7 +46,7 @@ The codebase mirrors the paper's layered categorical structure. Each top-level d
 
 - **`A_Categorical/`** — Alpha-level: the ambient 2-category (Hask). Defines monad theories (`Ident`, `Dist`, `Giry`) and their natural transformations (`eta`/`mu`). This is the categorical foundation that all other layers build on.
 
-- **`B_Logical/`** — Beta-level: logical connectives. The `TwoMonBLatTheory` class defines a double-monoid bounded lattice (∨, ∧, ⊕, ⊗ with bounds). Interpretations: `Boolean`, `Real` (LogSumExp/TensReal). The `TENS` and `FDATA` modules are the two main tensor-based interpretations.
+- **`B_Logical/`** — Beta-level: logical connectives. The `LogicalSignature` class defines a double-monoid bounded lattice (∨, ∧, ⊕, ⊗ with bounds). Interpretations: `Boolean`, `Real` (LogSumExp/TensReal). The `TENS` and `FDATA` modules are the two main tensor-based interpretations.
 
 - **`C_Domain/`** — Gamma-level: domain-specific theories. Currently only the Binary domain exists, with its own theory declaring domain sorts and relation symbols (Tarski and Kleisli), plus extensions and interpretations using HaskTorch tensors.
 

@@ -4,13 +4,12 @@
 -- | Realization of QuantVocabGiry: expectation under the Giry monad.
 --   Per-type dispatch: finite types enumerate, countable types lazy-fold,
 --   continuous types use numerical integration.
-module B_Logical.DA_Realization.ExpectGiry
+module B_Logical.ExpectGiry
   ( pTrueGiry,
   )
 where
 
 import A_Categorical.Category.Monads.Giry (Giry (..))
-import B_Logical.D_Vocabulary.QuantifierVocab (QuantVocabGiry (..))
 import Numeric.Natural (Natural)
 import Numeric.Tools.Integration (QuadParam (..), defQuad, quadBestEst, quadRes, quadRomberg)
 import Statistics.Distribution (ContDistr (density, quantile), DiscreteDistr (probability), Mean (mean), Variance (stdDev))
@@ -23,6 +22,10 @@ import qualified Statistics.Distribution.Normal as N
 import qualified Statistics.Distribution.Poisson as Poi
 import qualified Statistics.Distribution.StudentT as T
 import qualified Statistics.Distribution.Uniform as U
+
+-- | Expectation under the Giry monad, dispatched per type.
+class QuantVocabGiry a where
+  expectGiry :: Giry a -> (a -> Double) -> Double
 
 -- Finite types
 expectFinite :: Giry a -> (a -> Double) -> Double

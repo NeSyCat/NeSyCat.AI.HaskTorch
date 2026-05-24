@@ -7,13 +7,13 @@
 --   Provides the two concrete universes:
 --     GeomU : geometry paradigm (tensors + Identity)
 --     MeasU : measure theory paradigm (data + Dist)
-module A_Categorical.Interpretation
+module A_Categorical.CategoricalInterpretation
   ( GeomU,
     MeasU,
   )
 where
 
-import A_Categorical.Theory (Universe (..))
+import A_Categorical.CategoricalSignature (Universe (..))
 import A_Categorical.Category.Categories.Data (DataObj)
 import A_Categorical.Category.Categories.Tens (TensObj)
 import A_Categorical.Category.Monads.Dist (Dist)

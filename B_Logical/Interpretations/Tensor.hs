@@ -13,16 +13,16 @@
 --
 -- ParamsLogic Omega = Torch.Tensor (the beta smoothing parameter).
 -- This is standard model theory over (R, +, x, <=).
-module B_Logical.BA_Interpretation.Tensor
-  ( module B_Logical.BA_Interpretation.Tensor,
-    module B_Logical.B_Theory.A2MonBLatTheory,
-    module B_Logical.B_Theory.TwoMonBLatTheory,
+module B_Logical.Tensor
+  ( module B_Logical.Tensor,
+    module B_Logical.LogicalQuantSignature,
+    module B_Logical.LogicalSignature,
   )
 where
 
-import A_Categorical.Interpretation (GeomU)
-import B_Logical.B_Theory.A2MonBLatTheory
-import B_Logical.B_Theory.TwoMonBLatTheory
+import A_Categorical.CategoricalInterpretation (GeomU)
+import B_Logical.LogicalQuantSignature
+import B_Logical.LogicalSignature
 import Data.Functor.Identity (Identity (..), runIdentity)
 import qualified Torch
 import qualified Torch.Functional.Internal as F
@@ -34,7 +34,7 @@ type Omega = Torch.Tensor -- shape: [1], dtype: Float
 --  TwoMonBLat: Binary Logical Operations on Omega (R-valued)
 -- ============================================================
 
-instance TwoMonBLatTheory GeomU Omega where
+instance LogicalSignature GeomU Omega where
   type ParamsLogic Omega = Torch.Tensor
 
   vdash a b = Torch.asValue a <= (Torch.asValue b :: Float)
@@ -65,7 +65,7 @@ type instance Guard GeomU Torch.Tensor = Torch.Tensor
 -- Product functor (-)^N applies predicate once (PyTorch broadcasts).
 -- Reduction via smooth sup/inf (LogSumExp) -- the geometry paradigm's
 -- analogue of the lattice quantifiers.
-instance A2MonBLatTheory Torch.Tensor GeomU Omega where
+instance LogicalQuantSignature Torch.Tensor GeomU Omega where
   -- bigWedge = forall = smooth inf = De Morgan of LogSumExp
   bigWedge betaT guard phi =
     let result = runIdentity (phi guard)

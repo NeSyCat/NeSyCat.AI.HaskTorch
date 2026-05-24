@@ -1,18 +1,18 @@
 {-# LANGUAGE TypeApplications #-}
 
 -- | Grammatical interpretation of BinaryFormulas in MeasU (DATA + Dist).
-module D_Grammatical.BA_Interpretation.BinaryIntpData
+module D_Grammatical.BinaryIntpData
   ( binaryAxiomData,
   )
 where
 
-import A_Categorical.Theory (Universe (..))
-import A_Categorical.Interpretation (MeasU)
-import B_Logical.BA_Interpretation.Boolean ()
-import C_Domain.B_Theory.BinaryTheory (BinarySorts (..))
-import C_Domain.BA_Interpretation.BinaryRealMLP (ParamsMLP)
-import C_Domain.BA_Interpretation.BinaryReal ()
-import D_Grammatical.B_Theory.BinaryFormulas (binarySentence)
+import A_Categorical.CategoricalSignature (Universe (..))
+import A_Categorical.CategoricalInterpretation (MeasU)
+import B_Logical.Interpretations.Boolean ()
+import C_Domain.BinarySignature (BinarySorts (..))
+import C_Domain.Models.MLP (ParamsMLP)
+import C_Domain.BinaryInterpretation ()
+import D_Grammatical.BinaryFormulas (binarySentence)
 
 -- | Binary axiom in MeasU (DATA + Dist).
 --   Evaluates the formula probabilistically (Mon = Dist).

@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE NoStarIsType #-}
 
-module A_Categorical.Theory
+module A_Categorical.CategoricalSignature
   ( Universe (..),
   )
 where

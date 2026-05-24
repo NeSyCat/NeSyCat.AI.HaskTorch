@@ -7,25 +7,25 @@
 {-# LANGUAGE TypeOperators #-}
 
 -- | Abstract binary classification formula.
---   Uses bigWedge from A2MonBLatTheory for quantification.
+--   Uses bigWedge from LogicalQuantSignature for quantification.
 --   Works for any universe (GeomU, MeasU, etc.).
-module D_Grammatical.B_Theory.BinaryFormulas
+module D_Grammatical.BinaryFormulas
   ( binaryPredicate,
     binarySentence,
   )
 where
 
-import A_Categorical.Theory (Universe (..))
-import B_Logical.B_Theory.A2MonBLatTheory (A2MonBLatTheory (..), Guard)
-import B_Logical.B_Theory.TwoMonBLatTheory (TwoMonBLatTheory (..))
-import C_Domain.B_Theory.BinaryTheory (BinaryRel (..), BinaryKlRel (..), BinarySorts (..))
-import C_Domain.BA_Interpretation.BinaryRealMLP (ParamsMLP)
+import A_Categorical.CategoricalSignature (Universe (..))
+import B_Logical.LogicalQuantSignature (LogicalQuantSignature (..), Guard)
+import B_Logical.LogicalSignature (LogicalSignature (..))
+import C_Domain.BinarySignature (BinaryRel (..), BinaryKlRel (..), BinarySorts (..))
+import C_Domain.Models.MLP (ParamsMLP)
 
 -- | Abstract pointwise predicate for binary classification.
 binaryPredicate ::
   forall u.
   ( BinaryKlRel u,
-    TwoMonBLatTheory u (Omega u),
+    LogicalSignature u (Omega u),
     Monad (M u)
   ) =>
   ParamsLogic (Omega u) ->
@@ -45,8 +45,8 @@ binaryPredicate lp paramMLP pt = do
 binarySentence ::
   forall u a.
   ( BinaryKlRel u,
-    TwoMonBLatTheory u (Omega u),
-    A2MonBLatTheory a u (Omega u),
+    LogicalSignature u (Omega u),
+    LogicalQuantSignature a u (Omega u),
     Monad (M u),
     a ~ Point u
   ) =>

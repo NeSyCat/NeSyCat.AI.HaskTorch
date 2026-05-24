@@ -19,12 +19,12 @@ import BinaryTrainLib
   )
 
 -- Domain theory (gamma level) -- classifierA, labelA
-import A_Categorical.Interpretation (MeasU)
+import A_Categorical.CategoricalInterpretation (MeasU)
 import C_Domain.B_Theory.BinaryTheory (BinaryRel (..), BinaryKlRel (..), BinarySorts (..))
 import C_Domain.BA_Interpretation.BinaryReal ()
 
 -- Categorical realization -- pTrueDist
-import B_Logical.DA_Realization.ExpectDist (pTrueDist)
+import B_Logical.ExpectDist (pTrueDist)
 
 -- Benchmark theory (zeta level) -- accuracy, f1Score, etc.
 import F_Statistical.B_Theory.BenchmarkTheory (BenchmarkFun (..))

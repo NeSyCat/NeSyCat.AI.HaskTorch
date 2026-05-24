@@ -19,11 +19,11 @@ module C_Domain.BA_Interpretation.BinaryReal
   )
 where
 
-import A_Categorical.Interpretation (GeomU, MeasU)
+import A_Categorical.CategoricalInterpretation (GeomU, MeasU)
 import A_Categorical.Category.Monads.Dist (Dist (..))
-import qualified B_Logical.BA_Interpretation.Boolean as BoolLogic
-import B_Logical.BA_Interpretation.Tensor hiding (Omega)
-import qualified B_Logical.BA_Interpretation.Tensor as TensLogic
+import qualified B_Logical.Boolean as BoolLogic
+import B_Logical.Tensor hiding (Omega)
+import qualified B_Logical.Tensor as TensLogic
 import C_Domain.BA_Interpretation.BinaryRealMLP (ParamsMLP, binarySpecReal, hThetaReal)
 import C_Domain.BC_Extension.BinaryDataExtension ()
 import C_Domain.BC_Extension.BinaryTensExtension ()

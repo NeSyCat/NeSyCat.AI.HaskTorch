@@ -2,17 +2,17 @@
 {-# LANGUAGE TypeApplications #-}
 
 -- | Grammatical interpretation of BinaryFormulas in GeomU (TENS + Identity).
-module D_Grammatical.BA_Interpretation.BinaryIntpTens
+module D_Grammatical.BinaryIntpTens
   ( binaryAxiomTens,
   )
 where
 
-import A_Categorical.Interpretation (GeomU)
-import C_Domain.B_Theory.BinaryTheory (BinarySorts (..))
-import C_Domain.BA_Interpretation.BinaryReal ()
-import C_Domain.BA_Interpretation.BinaryRealMLP (ParamsMLP)
-import B_Logical.B_Theory.TwoMonBLatTheory (TwoMonBLatTheory (..))
-import D_Grammatical.B_Theory.BinaryFormulas (binarySentence)
+import A_Categorical.CategoricalInterpretation (GeomU)
+import C_Domain.BinarySignature (BinarySorts (..))
+import C_Domain.BinaryInterpretation ()
+import C_Domain.Models.MLP (ParamsMLP)
+import B_Logical.LogicalSignature (LogicalSignature (..))
+import D_Grammatical.BinaryFormulas (binarySentence)
 import Data.Functor.Identity (runIdentity)
 import qualified Torch
 
