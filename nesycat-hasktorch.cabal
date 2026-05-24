@@ -40,10 +40,12 @@ library
     E_Inferential.Library.CrossEntropy,
     E_Inferential.Library.Convex,
     -- Zeta: Statistical
-    F_Statistical.B_Theory.BenchmarkTheory,
-    F_Statistical.D_Vocabulary.BenchmarkVocab,
-    F_Statistical.DA_Realization.BenchmarkRlzData,
-    F_Statistical.BA_Interpretation.BenchmarkIntpData,
+    F_Statistical.BenchmarkSignature,
+    F_Statistical.BenchmarkInterpretation,
+    F_Statistical.Library.Threshold,
+    F_Statistical.Library.FractionTrue,
+    F_Statistical.Library.HarmonicMean,
+    F_Statistical.Library.MeanWhere,
     -- Training library
     BinaryTrainLib
   hs-source-dirs: ., _F_Training
@@ -59,8 +61,8 @@ library
   default-language: Haskell2010
 
 executable binary-benchmark
-  main-is: BinaryBenchmark.hs
-  hs-source-dirs: F_Statistical
+  main-is: Benchmark.hs
+  hs-source-dirs: F_Statistical/Examples/Binary
   ghc-options: -rtsopts
   build-depends:
     base,

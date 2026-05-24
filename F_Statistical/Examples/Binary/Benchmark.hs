@@ -3,7 +3,7 @@
 -- | Benchmark for binary classification.
 --
 --   1. Trains via BinaryTrainLib (epsilon level) -> theta*
---   2. Evaluates via classifierA @MeasU (gamma level) + BenchmarkFun (zeta level)
+--   2. Evaluates via classifierA @MeasU (gamma level) + BenchmarkSignature (zeta level)
 --
 --   Training modes:
 --     cabal run binary-benchmark                 -- fixed beta (default)
@@ -27,8 +27,8 @@ import C_Domain.Examples.Binary.Interpretation ()
 import A_Categorical.Category.Monads.DistExpect (distPTrue)
 
 -- Benchmark theory (zeta level) -- accuracy, f1Score, etc.
-import F_Statistical.B_Theory.BenchmarkTheory (BenchmarkFun (..))
-import F_Statistical.BA_Interpretation.BenchmarkIntpData ()
+import F_Statistical.BenchmarkSignature (BenchmarkSignature (..))
+import F_Statistical.BenchmarkInterpretation ()
 
 import System.Environment (getArgs)
 import Text.Printf (printf)
@@ -61,7 +61,7 @@ main = do
         | pt <- pts
         ]
 
-  -- Apply BenchmarkFun metrics (from the theory)
+  -- Apply BenchmarkSignature metrics (from the theory)
   let trainPairs = evalPairs trainPts
       testPairs  = evalPairs testPts
       accTrain   = accuracy trainPairs
