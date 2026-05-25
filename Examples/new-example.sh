@@ -23,4 +23,4 @@ find "$DEST" -name '*.hs' -print0 |
 
 echo "Created Examples/$NAME/ (full A-G stack)."
 echo "Build + run it:   ./nesycat $NAME 1     (auto-registered by folder name; no manual step)"
-echo "Then fill in:     Examples/$NAME/{C_Domain,D_Grammatical}/*, G_Data/Loader.hs, E_Inferential.hs, F_Statistical.hs"
+echo "Then fill in:     Examples/$NAME/{C_Domain,D_Grammatical}/*, E_Data/Loader.hs, F_Inferential.hs, G_Statistical.hs"

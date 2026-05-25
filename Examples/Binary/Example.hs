@@ -1,34 +1,27 @@
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
--- | The Binary classification example: the full A–G stack assembled into one
---   'Example' instance. Each layer is either REUSED from the library (A category,
---   B logic, E inference) or DEFINED in this folder (C domain, D grammatical,
---   F statistics, G data). 'runExample' trains and benchmarks it.
+-- | Binary example — the A–G manifest. Each layer module provides its piece; this
+--   file only points the 'Example' contract at them. The example's name is the
+--   folder name (supplied by the dispatcher), so it isn't specified here.
 module Binary.Example (Binary) where
 
-import Binary.A_Categorical ()
-import Binary.B_Logical ()
-import Binary.C_Domain.Interpretation ()
-import Binary.D_Grammatical.InterpretationTens (binaryAxiomTens)
-import Binary.E_Inferential (lossKnow)
-import Binary.F_Statistical (binaryReport)
-import Binary.G_Data.Loader (BinaryDataset (..), generateBinaryDataset)
+import Binary.A_Categorical ()                        -- A: category (universes)
+import Binary.B_Logical ()                            -- B: logic
+import qualified Binary.C_Domain.Interpretation as C  -- C: domain + model (Params/Spec/spec)
+import Binary.D_Grammatical.InterpretationTens ()     -- D: the axiom (consumed by F.objective)
+import qualified Binary.E_Data.Loader as E            -- E: data (Dataset/loadData)
+import qualified Binary.F_Inferential as F            -- F: objective + trainConfig
+import qualified Binary.G_Statistical as G            -- G: report
 import Example (Example (..))
-import C_Domain.Models.MLP (ParamsMLP, ParamsMLPSpec (..), binarySpecReal)
-import qualified Torch
 
 data Binary
 
 instance Example Binary where
-  type Params Binary = ParamsMLP
-  type Spec Binary = ParamsMLPSpec
-  type Data Binary = BinaryDataset
-
-  name = "Binary Classification"
-  spec = binarySpecReal
-  trainConfig = (1000, 0.001)
-  loadData = generateBinaryDataset
-  -- E (inference) penalty of the D (grammatical) axiom on the data; A/B/C reused/defined.
-  objective ds theta = lossKnow (binaryAxiomTens (Torch.asTensor (1.75 :: Float)) (trainData ds) theta)
-  report theta ds = return (binaryReport theta ds)
+  type Params Binary = C.Params
+  type Spec Binary = C.Spec
+  type Data Binary = E.Dataset
+  spec = C.spec
+  loadData = E.loadData
+  trainConfig = F.trainConfig
+  objective = F.objective
+  report = G.report

@@ -16,6 +16,9 @@
 module MnistAddition.C_Domain.Interpretation
   ( module MnistAddition.C_Domain.Signature,
     module C_Domain.Models.MnistCNN,
+    Params,
+    Spec,
+    spec,
   )
 where
 
@@ -24,11 +27,19 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import qualified B_Logical.Interpretations.Tensor as TensLogic
 import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistSorts (..))
-import C_Domain.Models.MnistCNN (ParamsCNN, cnnLogits)
+import C_Domain.Models.MnistCNN (ParamsCNN, ParamsCNNSpec (..), cnnLogits)
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional as F
 import qualified Torch.Functional.Internal as FI
+
+-- | C-layer manifest pieces for the Example: the model this domain uses.
+type Params = ParamsCNN
+
+type Spec = ParamsCNNSpec
+
+spec :: Spec
+spec = ParamsCNNSpec
 
 -- ============================================================
 --  Sort assignments: I(Image), I(Digit)

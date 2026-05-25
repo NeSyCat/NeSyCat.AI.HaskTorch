@@ -29,22 +29,22 @@ library
       B_Logical.LogicalSignature
       C_Domain.Models.MLP
       C_Domain.Models.MnistCNN
-      E_Inferential.InferenceInterpretation
-      E_Inferential.InferenceSignature
-      E_Inferential.Library.Convex
-      E_Inferential.Library.CrossEntropy
-      E_Inferential.Library.NegLog
-      E_Inferential.Library.OneMinus
-      E_Inferential.Library.Softplus
-      E_Inferential.Train
       Example
-      F_Statistical.BenchmarkInterpretation
-      F_Statistical.BenchmarkSignature
-      F_Statistical.Library.FractionTrue
-      F_Statistical.Library.HarmonicMean
-      F_Statistical.Library.MeanWhere
-      F_Statistical.Library.Threshold
-      F_Statistical.Report
+      F_Inferential.InferenceInterpretation
+      F_Inferential.InferenceSignature
+      F_Inferential.Library.Convex
+      F_Inferential.Library.CrossEntropy
+      F_Inferential.Library.NegLog
+      F_Inferential.Library.OneMinus
+      F_Inferential.Library.Softplus
+      F_Inferential.Train
+      G_Statistical.BenchmarkInterpretation
+      G_Statistical.BenchmarkSignature
+      G_Statistical.Library.FractionTrue
+      G_Statistical.Library.HarmonicMean
+      G_Statistical.Library.MeanWhere
+      G_Statistical.Library.Threshold
+      G_Statistical.Report
       Run
       Binary.A_Categorical
       Binary.B_Logical
@@ -53,10 +53,10 @@ library
       Binary.D_Grammatical.Formulas
       Binary.D_Grammatical.InterpretationData
       Binary.D_Grammatical.InterpretationTens
-      Binary.E_Inferential
+      Binary.E_Data.Loader
       Binary.Example
-      Binary.F_Statistical
-      Binary.G_Data.Loader
+      Binary.F_Inferential
+      Binary.G_Statistical
       MnistAddition.A_Categorical
       MnistAddition.B_Logical
       MnistAddition.C_Domain.Interpretation
@@ -64,10 +64,10 @@ library
       MnistAddition.D_Grammatical.Formulas
       MnistAddition.D_Grammatical.InterpretationData
       MnistAddition.D_Grammatical.InterpretationTens
-      MnistAddition.E_Inferential
+      MnistAddition.E_Data.Loader
       MnistAddition.Example
-      MnistAddition.F_Statistical
-      MnistAddition.G_Data.Loader
+      MnistAddition.F_Inferential
+      MnistAddition.G_Statistical
   other-modules:
       Paths_nesycat_hasktorch
   hs-source-dirs:

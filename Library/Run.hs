@@ -21,6 +21,6 @@ runNeSyCat [] = die "usage: nesycat <ExampleName> [n]   (e.g. nesycat MnistAddit
 
 registry :: [(String, Int -> IO ())]
 registry =
-  [ ("Binary", runExample @Binary)
-  , ("MnistAddition", runExample @MnistAddition)
+  [ ("Binary", runExample @Binary "Binary")
+  , ("MnistAddition", runExample @MnistAddition "MnistAddition")
   ]

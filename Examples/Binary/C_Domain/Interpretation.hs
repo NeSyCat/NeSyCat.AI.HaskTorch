@@ -17,6 +17,9 @@
 module Binary.C_Domain.Interpretation
   ( module Binary.C_Domain.Signature,
     module C_Domain.Models.MLP,
+    Params,
+    Spec,
+    spec,
   )
 where
 
@@ -25,11 +28,18 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import B_Logical.Interpretations.Tensor hiding (Omega)
 import qualified B_Logical.Interpretations.Tensor as TensLogic
-import C_Domain.Models.MLP (ParamsMLP, binarySpecReal, hThetaReal)
+import C_Domain.Models.MLP (ParamsMLP, ParamsMLPSpec, binarySpecReal, hThetaReal)
 import Binary.C_Domain.Signature (BinaryBridge (..), BinaryKlRel (..), BinaryRel (..), BinarySorts (..))
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional.Internal as F
+
+-- | C-layer manifest pieces for the Example: the model this domain uses.
+type Params = ParamsMLP
+type Spec = ParamsMLPSpec
+
+spec :: Spec
+spec = binarySpecReal
 
 -- ============================================================
 --  Sort assignments: I(Point), I(Omega)

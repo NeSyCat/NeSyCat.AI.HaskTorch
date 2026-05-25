@@ -45,7 +45,7 @@ registry :: [(String, Int -> IO ())]
 registry =
 HS_MID
   local sep='['
-  for n in $names; do echo "  $sep (\"$n\", runExample @$n)"; sep=','; done
+  for n in $names; do echo "  $sep (\"$n\", runExample @$n \"$n\")"; sep=','; done
   echo '  ]'
 }
 
