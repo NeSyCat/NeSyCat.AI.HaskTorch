@@ -21,7 +21,7 @@ cabal build all                       # build the library + the single `nesycat`
 
 # Run an example:  nesycat <name> [n]   (n = runs to average; n=1 prints the loss curve)
 cabal run nesycat -- binary 1
-cabal run nesycat -- mnist-add 1      # MNIST data ships in the example; scripts/get-mnist.sh refetches it
+cabal run nesycat -- mnist-add 1      # data ships in the example; src/Examples/MnistAddition/G_Data/get-mnist.sh refetches it
 cabal run nesycat -- binary +RTS -s   # RTS stats (exe built with -rtsopts)
 ```
 
@@ -59,7 +59,7 @@ The repo is organized **by example**, not by layer. Everything is under `src/`:
 ## Adding a new example (the scaffolding "button")
 
 ```bash
-scripts/new-example.sh SudokuSolver       # UpperCamelCase
+src/Examples/new-example.sh SudokuSolver  # UpperCamelCase
 cabal run nesycat -- sudoku-solver 1      # builds + runs the stub immediately
 ```
 

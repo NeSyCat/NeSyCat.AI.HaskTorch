@@ -2,16 +2,17 @@
 # Scaffold a new NeSyCat example: copies the full A–G template into
 # src/Examples/<Name>/, renames the placeholder, and registers it in the
 # dispatcher. After this, `hpack` (run automatically) picks up the new modules
-# with no manual cabal edit. Usage:  scripts/new-example.sh <Name>   (UpperCamelCase)
+# with no manual cabal edit. Usage:  src/Examples/new-example.sh <Name>   (UpperCamelCase)
 set -euo pipefail
 
 NAME="${1:-}"
 if ! [[ "$NAME" =~ ^[A-Z][A-Za-z0-9]*$ ]]; then
-  echo "usage: scripts/new-example.sh <Name>   (UpperCamelCase, e.g. SudokuSolver)" >&2
+  echo "usage: src/Examples/new-example.sh <Name>   (UpperCamelCase, e.g. SudokuSolver)" >&2
   exit 1
 fi
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# The script lives in src/Examples/; the repo root is two levels up.
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 DEST="$ROOT/src/Examples/$NAME"
 [ -e "$DEST" ] && { echo "error: $DEST already exists" >&2; exit 1; }
 
@@ -35,4 +36,4 @@ NAME="$NAME" KEBAB="$KEBAB" perl -i -pe '
 
 echo "Created src/Examples/$NAME/ (full A-G stack) and registered '$KEBAB'."
 echo "Build + run the stub:   cabal run nesycat -- $KEBAB 1"
-echo "Then fill in:           src/Examples/$NAME/{C_Domain,D_Grammatical}/*, G_Data.hs, E_Inferential.hs, F_Statistical.hs"
+echo "Then fill in:           src/Examples/$NAME/{C_Domain,D_Grammatical}/*, G_Data/Loader.hs, E_Inferential.hs, F_Statistical.hs"

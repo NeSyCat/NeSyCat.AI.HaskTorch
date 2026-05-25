@@ -2,7 +2,7 @@
 
 -- | Data for the MNIST single-digit-addition example, prepared independently of
 --   any training or loss. The raw IDX files already sit in @data/mnist/@ (see
---   @scripts/get-mnist.sh@); this module only reads them and forms the fixed
+--   @src/Examples/MnistAddition/G_Data/get-mnist.sh@); this module only reads them and forms the fixed
 --   tensor format: image pairs (x, y), the one-hot observed sums [B,19] used by
 --   the axiom, and the per-pair sums/labels used to score accuracy. Only sums are
 --   "observed"; digit labels are used to build sums and to score afterwards.
@@ -19,7 +19,7 @@ import qualified Torch
 import qualified Torch.Typed.Vision as V
 import qualified Torch.Vision as TV
 
--- | Directory holding the four gzipped IDX files (see @scripts/get-mnist.sh@).
+-- | Directory holding the four gzipped IDX files (see @src/Examples/MnistAddition/G_Data/get-mnist.sh@).
 mnistDir :: String
 mnistDir = "src/Examples/MnistAddition/G_Data"
 
@@ -51,7 +51,7 @@ loadMnistDataset = do
         ]
   present <- mapM (\f -> doesFileExist (mnistDir ++ "/" ++ f)) files
   unless (and present) $
-    die ("MNIST data not found in " ++ mnistDir ++ "/. Run:  scripts/get-mnist.sh")
+    die ("MNIST data not found in " ++ mnistDir ++ "/. Run:  src/Examples/MnistAddition/G_Data/get-mnist.sh")
   (trainMD, testMD) <- V.initMnist mnistDir
   let nTr = 1000
       nTe = 500

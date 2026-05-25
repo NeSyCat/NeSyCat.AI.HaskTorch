@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Download the MNIST IDX files (gzipped) into the example G layer folder
 # (src/Examples/MnistAddition/G_Data/) — loader + data live together.
-# Usage:  scripts/get-mnist.sh
+# Usage:  bash src/Examples/MnistAddition/G_Data/get-mnist.sh
 set -euo pipefail
 
-DIR="$(cd "$(dirname "$0")/.." && pwd)/src/Examples/MnistAddition/G_Data"
+# The script lives in the folder it populates (this example's G layer).
+DIR="$(cd "$(dirname "$0")" && pwd)"
 mkdir -p "$DIR"
 
 # PyTorch's S3 mirror (the canonical yann.lecun.com host is frequently down).
