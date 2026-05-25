@@ -25,7 +25,7 @@ cabal run nesycat -- mnist-add 1      # data ships in the example; Examples/Mnis
 cabal run nesycat -- binary +RTS -s   # RTS stats (exe built with -rtsopts)
 ```
 
-Requires `hasktorch` + libtorch. HLS via `hie.yaml` (cabal cradle, reads the generated `.cabal`). `hpack` lives at `~/.cabal/bin/hpack`.
+Requires `hasktorch` + libtorch. HLS auto-detects the cabal cradle (reads the generated `.cabal`). `hpack` lives at `~/.cabal/bin/hpack`.
 
 ## Architecture: by-example over a shared library
 
