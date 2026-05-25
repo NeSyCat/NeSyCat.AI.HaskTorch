@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications #-}
 
 -- | Grammatical interpretation of BinaryFormulas in GeomU (TENS + Identity).
-module Examples.Binary.D_Grammatical.IntpTens
+module Examples.Binary.D_Grammatical.InterpretationTens
   ( binaryAxiomTens,
   )
 where

@@ -5,7 +5,7 @@
 --   bind /is/ the law of total probability, so @P(sum = n)@ and the product over
 --   pairs (the @forall@, via the reused 'bigWedge') both fall out. This is the
 --   probability reading (not differentiable); training uses the GeomU side.
-module Examples.MnistAddition.D_Grammatical.IntpData
+module Examples.MnistAddition.D_Grammatical.InterpretationData
   ( mnistProb,
     mnistAxiomData,
   )

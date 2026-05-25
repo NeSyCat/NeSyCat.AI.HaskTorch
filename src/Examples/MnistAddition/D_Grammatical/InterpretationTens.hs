@@ -9,7 +9,7 @@
 --   MeasU @eqNat@/@(=)@ gives @P(sum=n)@ (via the bridge's softmax); in GeomU the
 --   @= add(x,y)@ and the @forall@ over pairs are realized by MNIST's /inference/
 --   interpretation (categorical NLL), keeping the softmax out of GeomU entirely.
-module Examples.MnistAddition.D_Grammatical.IntpTens
+module Examples.MnistAddition.D_Grammatical.InterpretationTens
   ( mnistSumLogits,
   )
 where

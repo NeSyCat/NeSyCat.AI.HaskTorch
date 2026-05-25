@@ -20,8 +20,8 @@ library
       Examples.Binary.C_Domain.Interpretation
       Examples.Binary.C_Domain.Signature
       Examples.Binary.D_Grammatical.Formulas
-      Examples.Binary.D_Grammatical.IntpData
-      Examples.Binary.D_Grammatical.IntpTens
+      Examples.Binary.D_Grammatical.InterpretationData
+      Examples.Binary.D_Grammatical.InterpretationTens
       Examples.Binary.E_Inferential
       Examples.Binary.Example
       Examples.Binary.F_Statistical
@@ -31,8 +31,8 @@ library
       Examples.MnistAddition.C_Domain.Interpretation
       Examples.MnistAddition.C_Domain.Signature
       Examples.MnistAddition.D_Grammatical.Formulas
-      Examples.MnistAddition.D_Grammatical.IntpData
-      Examples.MnistAddition.D_Grammatical.IntpTens
+      Examples.MnistAddition.D_Grammatical.InterpretationData
+      Examples.MnistAddition.D_Grammatical.InterpretationTens
       Examples.MnistAddition.E_Inferential
       Examples.MnistAddition.Example
       Examples.MnistAddition.F_Statistical

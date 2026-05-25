@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
 
 -- | Grammatical interpretation of BinaryFormulas in MeasU (DATA + Dist).
-module Examples.Binary.D_Grammatical.IntpData
+module Examples.Binary.D_Grammatical.InterpretationData
   ( binaryAxiomData,
   )
 where

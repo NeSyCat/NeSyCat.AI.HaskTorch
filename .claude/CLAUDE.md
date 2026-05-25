@@ -46,7 +46,7 @@ The repo is organized **by example**, not by layer. Everything is under `src/`:
   | `A_Categorical.hs` | α | which universe(s) — usually re-exports `Lib.A_Categorical` |
   | `B_Logical.hs` | β | which logic — usually re-exports `Lib.B_Logical` |
   | `C_Domain/{Signature,Interpretation}.hs` | γ | domain sorts + symbols, interpreted per universe |
-  | `D_Grammatical/{Formulas,IntpData,IntpTens}.hs` | δ | the axiom (one abstract formula) + its MeasU(`Dist`) and GeomU(tensor) interpretations |
+  | `D_Grammatical/{Formulas,InterpretationData,InterpretationTens}.hs` | δ | the axiom (one abstract formula) + its MeasU(`Dist`) and GeomU(tensor) interpretations |
   | `E_Inferential.hs` | ε | the inference interpretation (the penalty) |
   | `F_Statistical.hs` | ζ | this example's metrics, as a labeled `Report` |
   | `G_Data/` | — | the loader (`Loader.hs`) **and** this example's data files, together (committed), e.g. `src/Examples/MnistAddition/G_Data/` |

@@ -9,7 +9,7 @@ module Examples.MnistAddition.Example (MnistAdd) where
 import Examples.MnistAddition.A_Categorical ()
 import Examples.MnistAddition.B_Logical ()
 import Examples.MnistAddition.C_Domain.Interpretation ()
-import Examples.MnistAddition.D_Grammatical.IntpTens (mnistSumLogits)
+import Examples.MnistAddition.D_Grammatical.InterpretationTens (mnistSumLogits)
 import Examples.MnistAddition.E_Inferential (mnistKnowLoss)
 import Examples.MnistAddition.F_Statistical (mnistReport)
 import Examples.MnistAddition.G_Data.Loader (MnistDataset (..), loadMnistDataset)

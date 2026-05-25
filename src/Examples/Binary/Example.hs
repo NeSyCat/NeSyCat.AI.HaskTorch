@@ -10,7 +10,7 @@ module Examples.Binary.Example (Binary) where
 import Examples.Binary.A_Categorical ()
 import Examples.Binary.B_Logical ()
 import Examples.Binary.C_Domain.Interpretation ()
-import Examples.Binary.D_Grammatical.IntpTens (binaryAxiomTens)
+import Examples.Binary.D_Grammatical.InterpretationTens (binaryAxiomTens)
 import Examples.Binary.E_Inferential (lossKnow)
 import Examples.Binary.F_Statistical (binaryReport)
 import Examples.Binary.G_Data.Loader (BinaryDataset (..), generateBinaryDataset)
