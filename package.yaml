@@ -10,10 +10,13 @@ language: Haskell2010
 dependencies:
   - base >=4.16
 
-# Library auto-discovers every module under src/ (Lib.* shared + Examples.* per
+# Library auto-discovers every module under Library/ (shared) and Examples/ (per
 # example). Adding a new example folder needs no edit here — just re-run hpack.
+# (Examples/_template is skipped: a leading-underscore dir is not a module path.)
 library:
-  source-dirs: src
+  source-dirs:
+    - Library
+    - Examples
   dependencies:
     - bytestring
     - containers
