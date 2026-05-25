@@ -20,7 +20,7 @@ DEST="$ROOT/src/Examples/$NAME"
 LOWER="$(awk '{print tolower(substr($0,1,1)) substr($0,2)}' <<<"$NAME")"
 KEBAB="$(sed -E 's/([a-z0-9])([A-Z])/\1-\2/g' <<<"$NAME" | tr '[:upper:]' '[:lower:]')"
 
-cp -R "$ROOT/templates/Example" "$DEST"
+cp -R "$ROOT/src/Examples/_template" "$DEST"
 find "$DEST" -name '*.hs' -print0 |
   NAME="$NAME" LOWER="$LOWER" xargs -0 perl -i -pe 's/Template/$ENV{NAME}/g; s/template/$ENV{LOWER}/g;'
 
