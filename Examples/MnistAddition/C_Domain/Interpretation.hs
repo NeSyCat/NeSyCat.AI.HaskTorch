@@ -15,7 +15,6 @@
 --     bridge: encImage / decDigit between MeasU and GeomU
 module MnistAddition.C_Domain.Interpretation
   ( module MnistAddition.C_Domain.Signature,
-    module C_Domain.Models.MnistCNN,
     Params,
     initParams,
   )
@@ -26,7 +25,8 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import qualified B_Logical.Interpretations.Tensor as TensLogic
 import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
-import C_Domain.Models.MnistCNN (ParamsCNN, ParamsCNNSpec (..), cnnLogits)
+import C_Domain.Models.Interpretations.MnistCNN (CNNSpace, newCNN)
+import C_Domain.Models.Signature (forward)
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional as F
@@ -53,25 +53,25 @@ instance MnistSorts GeomU where
 -- ============================================================
 
 -- | The (chosen) horizontal sort: the CNN weight space (an actor object).
-type Params = ParamsCNN
+type Params = CNNSpace
 
-instance MnistParams MeasU where type ThetaCNN MeasU = ParamsCNN
+instance MnistParams MeasU where type ThetaCNN MeasU = CNNSpace
 
-instance MnistParams GeomU where type ThetaCNN GeomU = ParamsCNN
+instance MnistParams GeomU where type ThetaCNN GeomU = CNNSpace
 
--- | Draw the initial theta_0 (hides HaskTorch's Randomizable / 'sample').
+-- | Draw the initial theta_0 (the CNN's initializer; HaskTorch's @sample@ is hidden in the model).
 initParams :: IO Params
-initParams = Torch.sample ParamsCNNSpec
+initParams = newCNN
 
 -- ============================================================
 --  MeasU: relation & function symbols (digit, +, =)
 -- ============================================================
 
 instance MnistKlRel MeasU where
-  digit :: ParamsCNN -> Image MeasU -> Dist (Digit MeasU)
+  digit :: CNNSpace -> Image MeasU -> Dist (Digit MeasU)
   digit theta img =
     let imgT = encImage @MeasU @GeomU img -- encode the image into a GeomU batch tensor
-        logits = cnnLogits theta imgT      -- run the net (logits)
+        logits = forward theta imgT        -- run the net (logits)
      in decDigit @MeasU @GeomU logits      -- decode logits -> Dist over 0..9
 
 instance MnistArith MeasU where
@@ -89,8 +89,8 @@ instance MnistArith MeasU where
 -- ============================================================
 
 instance MnistKlRel GeomU where
-  digit :: ParamsCNN -> Image GeomU -> Identity (Digit GeomU)
-  digit theta img = Identity (cnnLogits theta img) -- raw logits, like classifierA @GeomU
+  digit :: CNNSpace -> Image GeomU -> Identity (Digit GeomU)
+  digit theta img = Identity (forward theta img) -- raw logits, like classifierA @GeomU
 
 instance MnistArith GeomU where
   -- (+) : lifted addition of two digit-logit vectors [B,10] into a logit vector

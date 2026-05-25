@@ -17,14 +17,14 @@ where
 import A_Categorical.CategoricalInterpretation (GeomU)
 import MnistAddition.C_Domain.Interpretation ()
 import MnistAddition.C_Domain.Signature (MnistArith (..), MnistKlRel (..))
-import C_Domain.Models.MnistCNN (ParamsCNN)
+import C_Domain.Models.Interpretations.MnistCNN (CNNSpace)
 import Data.Functor.Identity (runIdentity)
 import qualified Torch
 
 -- | @digit(x) + digit(y)@ in GeomU: a logit vector over the 19 possible sums,
 --   @[B,1,28,28] x [B,1,28,28] -> [B,19]@, built from @digit \@GeomU@ (logits)
 --   and @plus \@GeomU@ (log-space convolution). No softmax, no normalization.
-mnistSumLogits :: ParamsCNN -> (Torch.Tensor, Torch.Tensor) -> Torch.Tensor
+mnistSumLogits :: CNNSpace -> (Torch.Tensor, Torch.Tensor) -> Torch.Tensor
 mnistSumLogits theta (xB, yB) =
   plus @GeomU
     (runIdentity (digit @GeomU theta xB))

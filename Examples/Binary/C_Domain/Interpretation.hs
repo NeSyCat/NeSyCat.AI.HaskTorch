@@ -10,13 +10,12 @@
 --   signature symbols to objects/morphisms of the domain category.
 --
 --     Sorts       : I(Point), I(Omega)        per universe (MeasU, GeomU)
---     Theta       : I(Theta) = ParamsMLP      (the MLP weight space, an actor object)
+--     Theta       : I(Theta) = MLPSpace       (the MLP weight space, an actor object)
 --     labelA      : the circle-in-square ground truth
---     classifierA : the MLP morphism hThetaReal -- the network *is* this semantics
+--     classifierA : the MLP morphism forward -- the network *is* this semantics
 --     bridge      : encPoint / decOmega between MeasU and GeomU
 module Binary.C_Domain.Interpretation
   ( module Binary.C_Domain.Signature,
-    module C_Domain.Models.MLP,
     Params,
     initParams,
   )
@@ -27,7 +26,8 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import B_Logical.Interpretations.Tensor hiding (Omega)
 import qualified B_Logical.Interpretations.Tensor as TensLogic
-import C_Domain.Models.MLP (ParamsMLP, ParamsMLPSpec, binarySpecReal, hThetaReal)
+import C_Domain.Models.Interpretations.MLP (MLPSpace, newMLP)
+import C_Domain.Models.Signature (forward)
 import Binary.C_Domain.Signature (BinaryBridge (..), BinaryKlRel (..), BinaryParams (..), BinaryRel (..), BinarySorts (..))
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
@@ -50,15 +50,15 @@ instance BinarySorts GeomU where
 -- ============================================================
 
 -- | The (chosen) horizontal sort: the MLP weight space (an actor object).
-type Params = ParamsMLP
+type Params = MLPSpace
 
-instance BinaryParams MeasU where type Theta MeasU = ParamsMLP
+instance BinaryParams MeasU where type Theta MeasU = MLPSpace
 
-instance BinaryParams GeomU where type Theta GeomU = ParamsMLP
+instance BinaryParams GeomU where type Theta GeomU = MLPSpace
 
--- | Draw the initial theta_0 (hides HaskTorch's Randomizable / 'sample').
+-- | Draw the initial theta_0 (the MLP's initializer; HaskTorch's @sample@ is hidden in the model).
 initParams :: IO Params
-initParams = Torch.sample binarySpecReal
+initParams = newMLP 2 16 1
 
 -- ============================================================
 --  MeasU: plain relation symbols (BinaryRel)
@@ -76,10 +76,10 @@ instance BinaryRel MeasU where
 -- ============================================================
 
 instance BinaryKlRel MeasU where
-  classifierA :: ParamsMLP -> Point MeasU -> Dist (Omega MeasU)
+  classifierA :: MLPSpace -> Point MeasU -> Dist (Omega MeasU)
   classifierA paramMLP pt =
     let ptTens = encPoint @MeasU @GeomU pt
-        logits = hThetaReal paramMLP (Torch.reshape [1, 2] ptTens)
+        logits = forward paramMLP (Torch.reshape [1, 2] ptTens)
      in decOmega @MeasU @GeomU logits
 
 -- ============================================================
@@ -107,9 +107,9 @@ logitScale = 10.0
 -- ============================================================
 
 instance BinaryKlRel GeomU where
-  classifierA :: ParamsMLP -> Point GeomU -> Identity (Omega GeomU)
+  classifierA :: MLPSpace -> Point GeomU -> Identity (Omega GeomU)
   classifierA paramMLP ptTensor =
-    Identity (hThetaReal paramMLP ptTensor)
+    Identity (forward paramMLP ptTensor)
 
 -- ============================================================
 --  BRIDGE: MeasU <-> GeomU (with Dist monad for decoding)

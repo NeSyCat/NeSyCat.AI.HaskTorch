@@ -12,10 +12,10 @@ import Binary.C_Domain.Signature (BinaryKlRel (..), BinaryRel (..), BinarySorts 
 import Binary.E_Data.Signature (BinaryDataset (..))
 import A_Categorical.Category.Monads.DistExpect (distPTrue)
 import G_Statistical.Report (Report, evaluate, runMetrics)
-import C_Domain.Models.MLP (ParamsMLP)
+import C_Domain.Models.Interpretations.MLP (MLPSpace)
 import qualified Torch
 
-binaryReport :: ParamsMLP -> BinaryDataset -> Report
+binaryReport :: MLPSpace -> BinaryDataset -> Report
 binaryReport theta ds =
   let toPoints t = map (\[x1, x2] -> (x1, x2)) (Torch.asValue t :: [[Float]]) :: [Point MeasU]
       predict pt = distPTrue (classifierA @MeasU theta pt)
@@ -25,5 +25,5 @@ binaryReport theta ds =
    in runMetrics trainPairs testPairs
 
 -- | G-layer manifest piece for the Example.
-report :: ParamsMLP -> BinaryDataset -> IO Report
+report :: MLPSpace -> BinaryDataset -> IO Report
 report theta ds = return (binaryReport theta ds)

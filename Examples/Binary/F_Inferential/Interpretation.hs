@@ -7,7 +7,7 @@ module Binary.F_Inferential.Interpretation (objective, trainConfig) where
 
 import Binary.D_Grammatical.InterpretationTens (binaryAxiomTens)
 import Binary.E_Data.Signature (BinaryDataset (..))
-import C_Domain.Models.MLP (ParamsMLP)
+import C_Domain.Models.Interpretations.MLP (MLPSpace)
 import F_Inferential.InferenceInterpretation ()
 import F_Inferential.InferenceSignature (InferenceSignature (..))
 import qualified Torch
@@ -18,5 +18,5 @@ trainConfig = (1000, 0.001)
 
 -- | The loss the trainer minimizes: lossKnow (softplus) of the GeomU axiom over
 --   the training points (beta = 1.75).
-objective :: BinaryDataset -> ParamsMLP -> Torch.Tensor
+objective :: BinaryDataset -> MLPSpace -> Torch.Tensor
 objective ds theta = lossKnow (binaryAxiomTens (Torch.asTensor (1.75 :: Float)) (trainData ds) theta)

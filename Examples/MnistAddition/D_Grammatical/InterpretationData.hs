@@ -17,16 +17,16 @@ import A_Categorical.CategoricalInterpretation (MeasU)
 import B_Logical.Interpretations.Boolean () -- LogicalQuantSignature _ MeasU Bool (bigWedge)
 import B_Logical.LogicalQuantSignature (LogicalQuantSignature (..))
 import MnistAddition.C_Domain.Interpretation ()
-import C_Domain.Models.MnistCNN (ParamsCNN)
+import C_Domain.Models.Interpretations.MnistCNN (CNNSpace)
 import MnistAddition.D_Grammatical.Signature (mnistFormula)
 import qualified Torch
 
 -- | @P(add(x,y) = digit(x)+digit(y))@ for one pair: the per-pair satisfaction,
 --   read off the @Dist Bool@ via the canonical @Dist(Bool) -> [0,1]@.
-mnistProb :: ParamsCNN -> (Torch.Tensor, Torch.Tensor, Int) -> Double
+mnistProb :: CNNSpace -> (Torch.Tensor, Torch.Tensor, Int) -> Double
 mnistProb theta triple = distPTrue (mnistFormula @MeasU theta triple)
 
 -- | The whole axiom in MeasU: @forall@ over the dataset = 'bigWedge' (= product
 --   in @Dist@ over @Bool@), reusing the domain-independent quantifier as-is.
-mnistAxiomData :: ParamsCNN -> [(Torch.Tensor, Torch.Tensor, Int)] -> Dist Bool
+mnistAxiomData :: CNNSpace -> [(Torch.Tensor, Torch.Tensor, Int)] -> Dist Bool
 mnistAxiomData theta dataset = bigWedge () dataset (mnistFormula @MeasU theta)

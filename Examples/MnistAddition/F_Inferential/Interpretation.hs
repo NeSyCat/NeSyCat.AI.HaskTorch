@@ -17,7 +17,7 @@ module MnistAddition.F_Inferential.Interpretation (objective, trainConfig, mnist
 import MnistAddition.D_Grammatical.InterpretationTens (mnistSumLogits)
 import MnistAddition.E_Data.Signature (MnistDataset (..))
 import F_Inferential.Library.NegLog (negLog)
-import C_Domain.Models.MnistCNN (ParamsCNN)
+import C_Domain.Models.Interpretations.MnistCNN (CNNSpace)
 import qualified Torch
 import qualified Torch.Functional as F
 
@@ -28,7 +28,7 @@ trainConfig = (200, 0.001)
 -- | The loss the trainer minimizes: the inference penalty (categorical NLL) of the
 --   GeomU sum-logits term over the observed sums. Reaches the net only through the
 --   grammatical term @digit(x)+digit(y)@ ('mnistSumLogits').
-objective :: MnistDataset -> ParamsCNN -> Torch.Tensor
+objective :: MnistDataset -> CNNSpace -> Torch.Tensor
 objective ds theta =
   let (xB, yB, oneHotObserved) = trainBatch ds
    in mnistKnowLoss (mnistSumLogits theta (xB, yB)) oneHotObserved
