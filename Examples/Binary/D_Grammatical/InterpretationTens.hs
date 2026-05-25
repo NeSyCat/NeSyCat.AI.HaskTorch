@@ -12,7 +12,7 @@ import Binary.C_Domain.Signature (BinarySorts (..))
 import Binary.C_Domain.Interpretation ()
 import C_Domain.Models.MLP (ParamsMLP)
 import B_Logical.LogicalSignature (LogicalSignature (..))
-import Binary.D_Grammatical.Formulas (binarySentence)
+import Binary.D_Grammatical.Signature (binarySentence)
 import Data.Functor.Identity (runIdentity)
 import qualified Torch
 

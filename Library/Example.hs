@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeFamilies #-}
 
 -- | The contract a runnable example satisfies. Each member is contributed by one
---   of the example's A–G layers, so the per-example @Example.hs@ is a pure
+--   of the example's A–G layers, so the per-example @Definition.hs@ is a pure
 --   manifest that just points each member at its layer (C: model/'spec'; E: data;
 --   F: 'objective'/'trainConfig'; G: 'report'; D's axiom feeds F's objective). The
 --   example's name is its folder name, passed to 'runExample' by the dispatcher.

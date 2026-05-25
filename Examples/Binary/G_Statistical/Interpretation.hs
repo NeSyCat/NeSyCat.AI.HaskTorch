@@ -1,15 +1,15 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
--- | Statistics layer for the Binary example: the standard classification metrics
---   (accuracy / F1 / precision / confidence) as a labeled 'Report', predicting
---   with @classifierA \@MeasU@ and scoring against @labelA \@MeasU@.
-module Binary.G_Statistical (report, binaryReport) where
+-- | Statistics layer (G) — INTERPRETATION for the Binary example: the standard
+--   classification metrics (accuracy / F1 / precision / confidence) as a labeled
+--   'Report', predicting with @classifierA \@MeasU@ and scoring against @labelA \@MeasU@.
+module Binary.G_Statistical.Interpretation (report, binaryReport) where
 
-import Binary.A_Categorical (MeasU)
+import A_Categorical.CategoricalInterpretation (MeasU)
 import Binary.C_Domain.Interpretation ()
 import Binary.C_Domain.Signature (BinaryKlRel (..), BinaryRel (..), BinarySorts (..))
-import Binary.E_Data.Loader (BinaryDataset (..))
+import Binary.E_Data.Signature (BinaryDataset (..))
 import A_Categorical.Category.Monads.DistExpect (distPTrue)
 import G_Statistical.Report (Report, evaluate, runMetrics)
 import C_Domain.Models.MLP (ParamsMLP)

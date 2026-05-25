@@ -46,28 +46,26 @@ library
       G_Statistical.Library.Threshold
       G_Statistical.Report
       Run
-      Binary.A_Categorical
-      Binary.B_Logical
       Binary.C_Domain.Interpretation
       Binary.C_Domain.Signature
-      Binary.D_Grammatical.Formulas
       Binary.D_Grammatical.InterpretationData
       Binary.D_Grammatical.InterpretationTens
+      Binary.D_Grammatical.Signature
+      Binary.Definition
       Binary.E_Data.Loader
-      Binary.Example
-      Binary.F_Inferential
-      Binary.G_Statistical
-      MnistAddition.A_Categorical
-      MnistAddition.B_Logical
+      Binary.E_Data.Signature
+      Binary.F_Inferential.Interpretation
+      Binary.G_Statistical.Interpretation
       MnistAddition.C_Domain.Interpretation
       MnistAddition.C_Domain.Signature
-      MnistAddition.D_Grammatical.Formulas
       MnistAddition.D_Grammatical.InterpretationData
       MnistAddition.D_Grammatical.InterpretationTens
+      MnistAddition.D_Grammatical.Signature
+      MnistAddition.Definition
       MnistAddition.E_Data.Loader
-      MnistAddition.Example
-      MnistAddition.F_Inferential
-      MnistAddition.G_Statistical
+      MnistAddition.E_Data.Signature
+      MnistAddition.F_Inferential.Interpretation
+      MnistAddition.G_Statistical.Interpretation
   other-modules:
       Paths_nesycat_hasktorch
   hs-source-dirs:

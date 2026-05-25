@@ -1,14 +1,11 @@
 {-# LANGUAGE TypeApplications #-}
 
--- | Data for the Binary classification example, prepared independently of any
---   training or loss. A dataset is just tensors in the fixed format (points and
---   their ground-truth labels); the inferential layer consumes it without knowing
---   how it was produced. Here the points are sampled and labelled by the domain's
---   own @labelA@ (the circle-in-square concept) -- data preparation, not training.
+-- | Data layer (E) — the LOADER for the Binary example: produces a 'BinaryDataset'
+--   (the format from "Binary.E_Data.Signature"), prepared independently of any
+--   training or loss. Points are sampled and labelled by the domain's own
+--   @labelA \@GeomU@ (the circle-in-square concept) -- data preparation, not training.
 module Binary.E_Data.Loader
-  ( BinaryDataset (..),
-    Dataset,
-    generateBinaryDataset,
+  ( generateBinaryDataset,
     loadData,
   )
 where
@@ -16,16 +13,9 @@ where
 import A_Categorical.CategoricalInterpretation (GeomU)
 import Binary.C_Domain.Interpretation ()
 import Binary.C_Domain.Signature (BinaryRel (..))
+import Binary.E_Data.Signature (BinaryDataset (..), Dataset)
 import qualified Torch
 import Torch.Device (Device (..), DeviceType (..))
-
--- | A binary classification dataset (circle-in-square). 50 train / 50 test.
-data BinaryDataset = BinaryDataset
-  { trainData :: Torch.Tensor,
-    trainLabels :: Torch.Tensor,
-    testData :: Torch.Tensor,
-    testLabels :: Torch.Tensor
-  }
 
 -- | Sample 100 random points in [0,1]^2; labels come from @labelA \@GeomU@
 --   (batched), so the ground-truth concept lives only in the domain interpretation.
@@ -42,8 +32,6 @@ generateBinaryDataset = do
         testLabels = Torch.reshape [50, 1] (Torch.sliceDim 0 0 50 1 (Torch.sliceDim 0 50 100 1 labels))
       }
 
--- | E-layer manifest pieces for the Example (canonical names).
-type Dataset = BinaryDataset
-
+-- | E-layer manifest piece for the Example: how to obtain the data.
 loadData :: IO Dataset
 loadData = generateBinaryDataset

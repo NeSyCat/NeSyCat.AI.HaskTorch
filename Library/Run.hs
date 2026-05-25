@@ -7,8 +7,8 @@ module Run (runNeSyCat) where
 
 import Example (runExample)
 import System.Exit (die)
-import Binary.Example (Binary)
-import MnistAddition.Example (MnistAddition)
+import Binary.Definition (Binary)
+import MnistAddition.Definition (MnistAddition)
 
 runNeSyCat :: [String] -> IO ()
 runNeSyCat (name : rest) = case lookup name registry of

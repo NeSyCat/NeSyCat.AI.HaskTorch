@@ -40,20 +40,20 @@ The repo is organized **by example**, not by layer. Two folders at the repo root
   - `Example` — the `Example` typeclass + `runExample` (train + benchmark). `Run` — the `nesycat` dispatcher.
   - (There is no shared `E_Data`: data is inherently per-example, so the E layer lives only inside each example.)
 
-- **`Examples/<Name>/`** — one self-contained example = the full A–G stack. Data (E) comes **before** the inferential layer (F): the objective needs both the axiom (D) and the data, so both precede F.
+- **`Examples/<Name>/`** — one self-contained example = the full A–G stack, where **every layer A–G is a folder** (always present, even when empty), mirroring the Library's `Signature` / `Interpretation` split. Data (E) comes **before** the inferential layer (F): the objective needs both the axiom (D) and the data, so both precede F.
 
-  | module | role (what it must provide) |
+  | layer folder | role (what it must provide) |
   |---|---|
-  | `A_Categorical.hs` | A — which universe(s); usually re-exports `A_Categorical` |
-  | `B_Logical.hs` | B — which logic; usually re-exports `B_Logical` |
+  | `A_Categorical/` | A — which universe(s); usually reused → **empty folder** (`.gitkeep`) |
+  | `B_Logical/` | B — which logic; usually reused → **empty folder** |
   | `C_Domain/{Signature,Interpretation}.hs` | C — domain sorts + symbols (per universe) **and** the model it uses, exposed as `Params`/`Spec`/`spec` |
-  | `D_Grammatical/{Formulas,InterpretationData,InterpretationTens}.hs` | D — the axiom (one abstract formula) + its MeasU(`Dist`) and GeomU(tensor) interpretations |
-  | `E_Data/Loader.hs` | E — the dataset (`Dataset`/`loadData`), in the fixed tensor format, prepared independently of training; data files are committed beside it (e.g. `Examples/MnistAddition/E_Data/`) |
-  | `F_Inferential.hs` | F — `objective` (the inference penalty of D's axiom over the E data) + `trainConfig` |
-  | `G_Statistical.hs` | G — this example's metrics, as a labeled `Report` |
-  | `Example.hs` | the A–G **manifest**: an empty `data <Name>` + `instance Example` that only points each member at its layer (`spec`←C, `loadData`←E, `objective`/`trainConfig`←F, `report`←G). The name is the folder name (supplied by the dispatcher), so it isn't written here. |
+  | `D_Grammatical/{Signature,InterpretationData,InterpretationTens}.hs` | D — the axiom (one abstract formula, in `Signature`) + its MeasU(`Dist`) and GeomU(tensor) interpretations |
+  | `E_Data/{Signature,Loader}.hs` | E — the data **format** (`Signature`: the `Dataset` record) + the **loader** (`Loader`: `loadData`); data files committed beside it (e.g. `Examples/MnistAddition/E_Data/`) |
+  | `F_Inferential/Interpretation.hs` | F — `objective` (the inference penalty of D's axiom over the E data) + `trainConfig`; signature reused |
+  | `G_Statistical/Interpretation.hs` | G — this example's metrics as a labeled `Report`; signature reused |
+  | `Definition.hs` | the A–G **manifest** (see below) |
 
-  Each layer slot can **reuse** the library (re-export), **modify** it, or be filled from the template. Example-specific data lives in that example's own `E_Data/` folder, beside its `Loader.hs`. Existing examples: `Binary` (circle-in-square classification) and `MnistAddition` (single-digit addition; digits learned from observed sums alone).
+  **`Definition.hs`** is the manifest: an empty `data <Name>` + `instance Example` wiring each member to its layer (`spec`←C, `loadData`←E, `objective`/`trainConfig`←F, `report`←G; the name is the folder name, from the dispatcher). For **each layer slot it is exactly one of two things** — a **reuse** of an already-made template (a shared module, imported directly; that layer's folder then stays **empty** as a ready-to-fill placeholder), or this example's **own standalone file** (in the layer folder). No forwarding wrappers. `Signature` and `Interpretation` are independent slots, so e.g. F/G reuse the shared `InferenceSignature`/`BenchmarkSignature` but supply their own interpretation. Named `Definition` (not `Example`) to avoid colliding with the Library's `Example` class. Both `Binary` and `MnistAddition` reuse A/B + the F/G signatures (empty A/B folders); everything else is standalone.
 
 - The single executable's `Main.hs` is a 3-line shim at the repo root (dispatch logic is in `Run`); there is no `app/` directory.
 
@@ -64,7 +64,7 @@ Examples/new-example.sh SudokuSolver   # UpperCamelCase (just scaffolds the fold
 ./nesycat SudokuSolver 1               # auto-registered by folder name; builds + runs the stub
 ```
 
-`new-example.sh` copies `Examples/_template/` (a full A–G stack of compilable stubs) and renames the `Template` placeholder — that's all. There is **no registration step**: `./nesycat` discovers the new `Examples/SudokuSolver/` folder, regenerates `Library/Run.hs`, re-globs via hpack, and runs it. Then fill in the `C_Domain`, `D_Grammatical`, `E_Data/Loader.hs` slots (and tweak `F_Inferential`/`G_Statistical`).
+`new-example.sh` copies `Examples/_template/` (a full A–G stack of compilable stubs — all seven layer folders, A/B empty) and renames the `Template` placeholder — that's all. There is **no registration step**: `./nesycat` discovers the new `Examples/SudokuSolver/` folder, regenerates `Library/Run.hs`, re-globs via hpack, and runs it. Then fill in the standalone slots: `C_Domain/*`, `D_Grammatical/*`, `E_Data/*`, `F_Inferential/Interpretation.hs`, `G_Statistical/Interpretation.hs` (A/B are template references in `Definition.hs` — their folders are empty, ready to fill).
 
 ## Key patterns
 

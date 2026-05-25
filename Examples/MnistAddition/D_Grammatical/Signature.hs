@@ -4,7 +4,8 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
--- | The single abstract MNIST-addition formula, interpreted in any universe.
+-- | Grammatical layer (D) — SIGNATURE for the MNIST example: the single abstract
+--   MNIST-addition formula, interpreted in any universe.
 --
 --   One syntax:   forall x y.  add(x,y) = digit(x) + digit(y)
 --
@@ -14,7 +15,7 @@
 --   @plus@'s interpretation -- the @Dist@ bind in MeasU, a LogSumExp on logits in
 --   GeomU. The universal quantifier is the logic's domain-independent @bigWedge@,
 --   applied per universe in the two interpretation modules (reused, not redefined).
-module MnistAddition.D_Grammatical.Formulas
+module MnistAddition.D_Grammatical.Signature
   ( mnistFormula,
   )
 where

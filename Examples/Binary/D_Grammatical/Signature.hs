@@ -6,10 +6,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 
--- | Abstract binary classification formula.
---   Uses bigWedge from LogicalQuantSignature for quantification.
---   Works for any universe (GeomU, MeasU, etc.).
-module Binary.D_Grammatical.Formulas
+-- | Grammatical layer (D) — SIGNATURE for the Binary example: the abstract binary
+--   classification formula (the axiom), universe-polymorphic over @u@. Uses
+--   bigWedge from LogicalQuantSignature for quantification; this single formula is
+--   interpreted per universe in InterpretationData (MeasU) / InterpretationTens (GeomU).
+module Binary.D_Grammatical.Signature
   ( binaryPredicate,
     binarySentence,
   )

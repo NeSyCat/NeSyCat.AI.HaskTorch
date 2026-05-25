@@ -1,10 +1,10 @@
--- | F (statistics) layer for the Template example: build a labeled 'Report' of
---   whatever metrics make sense (any labels you like; printing/averaging are
---   generic). This stub reports a single placeholder metric.
-module Template.G_Statistical (report, templateReport) where
+-- | Statistics layer (G) — INTERPRETATION for the Template example: build a labeled
+--   'Report' of whatever metrics make sense (any labels you like; printing/averaging
+--   are generic). This stub reports a single placeholder metric.
+module Template.G_Statistical.Interpretation (report, templateReport) where
 
 import Template.C_Domain.Model (ParamsTemplate)
-import Template.E_Data.Loader (TemplateDataset)
+import Template.E_Data.Signature (TemplateDataset)
 import G_Statistical.Report (Report (..))
 
 templateReport :: ParamsTemplate -> TemplateDataset -> Report

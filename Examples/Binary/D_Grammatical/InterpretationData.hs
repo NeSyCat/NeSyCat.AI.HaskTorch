@@ -12,7 +12,7 @@ import B_Logical.Interpretations.Boolean ()
 import Binary.C_Domain.Signature (BinarySorts (..))
 import C_Domain.Models.MLP (ParamsMLP)
 import Binary.C_Domain.Interpretation ()
-import Binary.D_Grammatical.Formulas (binarySentence)
+import Binary.D_Grammatical.Signature (binarySentence)
 
 -- | Binary axiom in MeasU (DATA + Dist).
 --   Evaluates the formula probabilistically (Mon = Dist).

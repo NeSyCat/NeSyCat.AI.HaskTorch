@@ -18,7 +18,7 @@ import B_Logical.Interpretations.Boolean () -- LogicalQuantSignature _ MeasU Boo
 import B_Logical.LogicalQuantSignature (LogicalQuantSignature (..))
 import MnistAddition.C_Domain.Interpretation ()
 import C_Domain.Models.MnistCNN (ParamsCNN)
-import MnistAddition.D_Grammatical.Formulas (mnistFormula)
+import MnistAddition.D_Grammatical.Signature (mnistFormula)
 import qualified Torch
 
 -- | @P(add(x,y) = digit(x)+digit(y))@ for one pair: the per-pair satisfaction,

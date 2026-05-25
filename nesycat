@@ -29,7 +29,7 @@ module Run (runNeSyCat) where
 import Example (runExample)
 import System.Exit (die)
 HS_HEAD
-  for n in $names; do echo "import $n.Example ($n)"; done
+  for n in $names; do echo "import $n.Definition ($n)"; done
   cat <<'HS_MID'
 
 runNeSyCat :: [String] -> IO ()

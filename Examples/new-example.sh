@@ -21,6 +21,7 @@ cp -R "$ROOT/Examples/_template" "$DEST"
 find "$DEST" -name '*.hs' -print0 |
   NAME="$NAME" LOWER="$LOWER" xargs -0 perl -i -pe 's/Template/$ENV{NAME}/g; s/template/$ENV{LOWER}/g;'
 
-echo "Created Examples/$NAME/ (full A-G stack)."
+echo "Created Examples/$NAME/ (full A-G stack; every layer is a folder, A/B empty = reused from the library)."
 echo "Build + run it:   ./nesycat $NAME 1     (auto-registered by folder name; no manual step)"
-echo "Then fill in:     Examples/$NAME/{C_Domain,D_Grammatical}/*, E_Data/Loader.hs, F_Inferential.hs, G_Statistical.hs"
+echo "Then fill in the STANDALONE slots:  C_Domain/*  D_Grammatical/*  E_Data/*  F_Inferential/Interpretation.hs  G_Statistical/Interpretation.hs"
+echo "(A/B are template references in Definition.hs; to customize one, drop files in its empty folder and re-point the import.)"

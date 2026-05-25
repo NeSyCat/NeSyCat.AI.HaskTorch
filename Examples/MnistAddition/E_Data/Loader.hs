@@ -1,20 +1,20 @@
 {-# LANGUAGE TypeApplications #-}
 
--- | Data for the MNIST single-digit-addition example, prepared independently of
---   any training or loss. The raw IDX files already sit in @data/mnist/@ (see
---   @Examples/MnistAddition/E_Data/get-mnist.sh@); this module only reads them and forms the fixed
---   tensor format: image pairs (x, y), the one-hot observed sums [B,19] used by
---   the axiom, and the per-pair sums/labels used to score accuracy. Only sums are
---   "observed"; digit labels are used to build sums and to score afterwards.
+-- | Data layer (E) — the LOADER for the MNIST example: reads the IDX files and
+--   forms the 'MnistDataset' format (from "MnistAddition.E_Data.Signature"),
+--   prepared independently of any training or loss. Image pairs (x, y), the
+--   one-hot observed sums [B,19] used by the axiom, and the per-pair sums/labels
+--   used to score accuracy. Only sums are "observed"; digit labels build the sums
+--   and score afterwards. The raw IDX files sit beside this module in @E_Data/@
+--   (see @Examples/MnistAddition/E_Data/get-mnist.sh@).
 module MnistAddition.E_Data.Loader
-  ( MnistDataset (..),
-    Dataset,
-    loadMnistDataset,
+  ( loadMnistDataset,
     loadData,
   )
 where
 
 import Control.Monad (unless)
+import MnistAddition.E_Data.Signature (Dataset, MnistDataset (..))
 import System.Directory (doesFileExist)
 import System.Exit (die)
 import qualified Torch
@@ -24,21 +24,6 @@ import qualified Torch.Vision as TV
 -- | Directory holding the four gzipped IDX files (see @Examples/MnistAddition/E_Data/get-mnist.sh@).
 mnistDir :: String
 mnistDir = "Examples/MnistAddition/E_Data"
-
--- | A dataset of image pairs. @trainBatch@ is the differentiable training input
---   (images x, images y, one-hot observed sums [B,19]); the @*Img@/@*Lab@/@*Sums@
---   fields back the (argmax) accuracy report.
-data MnistDataset = MnistDataset
-  { trainBatch :: (Torch.Tensor, Torch.Tensor, Torch.Tensor),
-    trainXImg :: Torch.Tensor,
-    trainYImg :: Torch.Tensor,
-    trainSums :: [Int],
-    testXImg :: Torch.Tensor,
-    testYImg :: Torch.Tensor,
-    testSums :: [Int],
-    testXLab :: [Int],
-    testYLab :: [Int]
-  }
 
 -- | Read MNIST, form @nTr@/@nTe@ disjoint image pairs (x = even index, y = odd),
 --   normalize to [0,1], and record the observed sums. Errors with guidance if the
@@ -83,8 +68,6 @@ loadMnistDataset = do
         testYLab = teYL
       }
 
--- | E-layer manifest pieces for the Example (canonical names).
-type Dataset = MnistDataset
-
+-- | E-layer manifest piece for the Example: how to obtain the data.
 loadData :: IO Dataset
 loadData = loadMnistDataset

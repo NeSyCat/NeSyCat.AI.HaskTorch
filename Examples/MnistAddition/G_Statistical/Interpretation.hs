@@ -1,18 +1,18 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
--- | Statistics layer for the MNIST example: honest labeled metrics — sum-accuracy
---   (train/test), digit accuracy (the latent digits, scored against true labels),
---   and the mean MeasU probability @P(sum=n)@. Predictions are the argmax of the
---   GeomU logits (no softmax).
-module MnistAddition.G_Statistical (report, mnistReport) where
+-- | Statistics layer (G) — INTERPRETATION for the MNIST example: honest labeled
+--   metrics — sum-accuracy (train/test), digit accuracy (the latent digits, scored
+--   against true labels), and the mean MeasU probability @P(sum=n)@. Predictions are
+--   the argmax of the GeomU logits (no softmax).
+module MnistAddition.G_Statistical.Interpretation (report, mnistReport) where
 
 import Data.Functor.Identity (runIdentity)
-import MnistAddition.A_Categorical (GeomU)
+import A_Categorical.CategoricalInterpretation (GeomU)
 import MnistAddition.C_Domain.Interpretation ()
 import MnistAddition.C_Domain.Signature (MnistKlRel (..))
 import MnistAddition.D_Grammatical.InterpretationData (mnistProb)
-import MnistAddition.E_Data.Loader (MnistDataset (..))
+import MnistAddition.E_Data.Signature (MnistDataset (..))
 import G_Statistical.Report (Report (..))
 import C_Domain.Models.MnistCNN (ParamsCNN)
 import qualified Torch
