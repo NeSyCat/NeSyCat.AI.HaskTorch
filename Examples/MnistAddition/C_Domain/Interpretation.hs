@@ -17,8 +17,7 @@ module MnistAddition.C_Domain.Interpretation
   ( module MnistAddition.C_Domain.Signature,
     module C_Domain.Models.MnistCNN,
     Params,
-    Spec,
-    spec,
+    initParams,
   )
 where
 
@@ -26,20 +25,12 @@ import A_Categorical.CategoricalInterpretation (GeomU, MeasU)
 import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import qualified B_Logical.Interpretations.Tensor as TensLogic
-import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistSorts (..))
+import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
 import C_Domain.Models.MnistCNN (ParamsCNN, ParamsCNNSpec (..), cnnLogits)
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional as F
 import qualified Torch.Functional.Internal as FI
-
--- | C-layer manifest pieces for the Example: the model this domain uses.
-type Params = ParamsCNN
-
-type Spec = ParamsCNNSpec
-
-spec :: Spec
-spec = ParamsCNNSpec
 
 -- ============================================================
 --  Sort assignments: I(Image), I(Digit)
@@ -58,11 +49,25 @@ instance MnistSorts GeomU where
   type Omega GeomU = TensLogic.Omega   -- = Torch.Tensor (the logic's GeomU truth object)
 
 -- ============================================================
+--  Parameter spaces (horizontal sorts): I(ThetaCNN) = the CNN weight space
+-- ============================================================
+
+-- | The (chosen) horizontal sort: the CNN weight space (an actor object).
+type Params = ParamsCNN
+
+instance MnistParams MeasU where type ThetaCNN MeasU = ParamsCNN
+
+instance MnistParams GeomU where type ThetaCNN GeomU = ParamsCNN
+
+-- | Draw the initial theta_0 (hides HaskTorch's Randomizable / 'sample').
+initParams :: IO Params
+initParams = Torch.sample ParamsCNNSpec
+
+-- ============================================================
 --  MeasU: relation & function symbols (digit, +, =)
 -- ============================================================
 
 instance MnistKlRel MeasU where
-  type ThetaCNN MeasU = ParamsCNN
   digit :: ParamsCNN -> Image MeasU -> Dist (Digit MeasU)
   digit theta img =
     let imgT = encImage @MeasU @GeomU img -- encode the image into a GeomU batch tensor
@@ -84,7 +89,6 @@ instance MnistArith MeasU where
 -- ============================================================
 
 instance MnistKlRel GeomU where
-  type ThetaCNN GeomU = ParamsCNN
   digit :: ParamsCNN -> Image GeomU -> Identity (Digit GeomU)
   digit theta img = Identity (cnnLogits theta img) -- raw logits, like classifierA @GeomU
 

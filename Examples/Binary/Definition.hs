@@ -13,7 +13,7 @@ import A_Categorical.CategoricalInterpretation ()
 -- B (logic) — REUSE template: the library Boolean (MeasU) + Tensor (GeomU).
 import B_Logical.Interpretations.Boolean ()
 import B_Logical.Interpretations.Tensor ()
--- C (domain) — STANDALONE: Binary's own sorts/symbols + model (Params/Spec/spec).
+-- C (domain) — STANDALONE: Binary's own sorts/symbols + parameter space (Params/initParams).
 import qualified Binary.C_Domain.Interpretation as C
 -- D (grammatical) — STANDALONE: Binary's own axiom (consumed by F.objective).
 import Binary.D_Grammatical.InterpretationTens ()
@@ -32,9 +32,8 @@ data Binary
 
 instance Example Binary where
   type Params Binary = C.Params
-  type Spec Binary = C.Spec
   type Data Binary = E.Dataset
-  spec = C.spec
+  initParams = C.initParams
   loadData = EL.loadData
   trainConfig = F.trainConfig
   objective = F.objective

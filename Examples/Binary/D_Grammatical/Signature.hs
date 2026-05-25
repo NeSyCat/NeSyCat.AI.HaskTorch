@@ -19,7 +19,7 @@ where
 import A_Categorical.CategoricalSignature (Universe (..))
 import B_Logical.LogicalQuantSignature (LogicalQuantSignature (..), Guard)
 import B_Logical.LogicalSignature (LogicalSignature (..))
-import Binary.C_Domain.Signature (BinaryRel (..), BinaryKlRel (..), BinarySorts (..))
+import Binary.C_Domain.Signature (BinaryRel (..), BinaryKlRel (..), BinaryParams (..), BinarySorts (..))
 
 -- | Abstract pointwise predicate for binary classification.
 binaryPredicate ::

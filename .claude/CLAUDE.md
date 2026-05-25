@@ -46,14 +46,14 @@ The repo is organized **by example**, not by layer. Two folders at the repo root
   |---|---|
   | `A_Categorical/` | A — which universe(s); usually reused → **empty folder** (`.gitkeep`) |
   | `B_Logical/` | B — which logic; usually reused → **empty folder** |
-  | `C_Domain/{Signature,Interpretation}.hs` | C — domain sorts + symbols (per universe) **and** the model it uses, exposed as `Params`/`Spec`/`spec` |
+  | `C_Domain/{Signature,Interpretation}.hs` | C — the domain's **vertical sorts** (data: `Point`/`Omega`, …) + **horizontal sorts** (parameter spaces, e.g. `Theta`) + relation symbols, interpreted per universe; the parameter space is exposed as `Params` + `initParams` (draw θ₀) |
   | `D_Grammatical/{Signature,InterpretationData,InterpretationTens}.hs` | D — the axiom (one abstract formula, in `Signature`) + its MeasU(`Dist`) and GeomU(tensor) interpretations |
   | `E_Data/{Signature,Loader}.hs` | E — the data **format** (`Signature`: the `Dataset` record) + the **loader** (`Loader`: `loadData`); data files committed beside it (e.g. `Examples/MnistAddition/E_Data/`) |
   | `F_Inferential/Interpretation.hs` | F — `objective` (the inference penalty of D's axiom over the E data) + `trainConfig`; signature reused |
   | `G_Statistical/Interpretation.hs` | G — this example's metrics as a labeled `Report`; signature reused |
   | `Definition.hs` | the A–G **manifest** (see below) |
 
-  **`Definition.hs`** is the manifest: an empty `data <Name>` + `instance Example` wiring each member to its layer (`spec`←C, `loadData`←E, `objective`/`trainConfig`←F, `report`←G; the name is the folder name, from the dispatcher). For **each layer slot it is exactly one of two things** — a **reuse** of an already-made template (a shared module, imported directly; that layer's folder then stays **empty** as a ready-to-fill placeholder), or this example's **own standalone file** (in the layer folder). No forwarding wrappers. `Signature` and `Interpretation` are independent slots, so e.g. F/G reuse the shared `InferenceSignature`/`BenchmarkSignature` but supply their own interpretation. Named `Definition` (not `Example`) to avoid colliding with the Library's `Example` class. Both `Binary` and `MnistAddition` reuse A/B + the F/G signatures (empty A/B folders); everything else is standalone.
+  **`Definition.hs`** is the manifest: an empty `data <Name>` + `instance Example` wiring each member to its layer (`initParams`←C, `loadData`←E, `objective`/`trainConfig`←F, `report`←G; the name is the folder name, from the dispatcher). For **each layer slot it is exactly one of two things** — a **reuse** of an already-made template (a shared module, imported directly; that layer's folder then stays **empty** as a ready-to-fill placeholder), or this example's **own standalone file** (in the layer folder). No forwarding wrappers. `Signature` and `Interpretation` are independent slots, so e.g. F/G reuse the shared `InferenceSignature`/`BenchmarkSignature` but supply their own interpretation. Named `Definition` (not `Example`) to avoid colliding with the Library's `Example` class. Both `Binary` and `MnistAddition` reuse A/B + the F/G signatures (empty A/B folders); everything else is standalone.
 
 - The single executable's `Main.hs` is a 3-line shim at the repo root (dispatch logic is in `Run`); there is no `app/` directory.
 
@@ -72,6 +72,7 @@ Examples/new-example.sh SudokuSolver   # UpperCamelCase (just scaffolds the fold
 - **The objective only touches the grammatical axiom over data** — never the model directly. It reaches the net only through the interpretation (`classifierA @GeomU`, `digit @GeomU`): `objective = <inference penalty> (axiom β data θ)`.
 - **GeomU stays in logit space**; softmax/sigmoid → probabilities happens only at the MeasU bridge (`decOmega`/`decDigit`) or in the inference penalty (e.g. MNIST's categorical NLL `mnistKnowLoss`).
 - **The report is one flexible labeled-metrics type** (`G_Statistical.Report`); each example reports its own honestly-named metrics (no field-cramming).
+- **Two kinds of sorts (per domain `Signature`).** *Vertical sorts* = the data the formulas quantify over (`Point`/`Omega`; `Image`/`Digit`/`Natural`). *Horizontal sorts* = parameter spaces — the `Theta` where the learnable weights live (the "actor object"), in their own section/class (`BinaryParams`/`MnistParams`). The horizontal sort is realized by a model (`C_Domain.Models.*` or a bespoke `C_Domain/Model.hs`) and exposed as `Params`; `initParams :: IO Params` draws θ₀ — HaskTorch's `Randomizable`/`sample` stays hidden inside the model, so there is **no `Spec` in the contract**.
 - Untyped `Torch.*` tensors throughout (`Torch.Tensor`), with `@GeomU`/`@MeasU` type applications selecting the universe; type families + type classes give the signature/interpretation separation at every layer.
 
 ## Conventions

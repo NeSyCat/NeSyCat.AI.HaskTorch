@@ -32,9 +32,8 @@ data MnistAddition
 
 instance Example MnistAddition where
   type Params MnistAddition = C.Params
-  type Spec MnistAddition = C.Spec
   type Data MnistAddition = E.Dataset
-  spec = C.spec
+  initParams = C.initParams
   loadData = EL.loadData
   trainConfig = F.trainConfig
   objective = F.objective

@@ -1,22 +1,25 @@
 -- | C (domain) interpretation for the Template example: assign the signature's
 --   sorts/symbols to concrete objects/morphisms per universe (MeasU, GeomU), and
---   expose the model this domain uses as the canonical 'Params'/'Spec'/'spec'
---   (re-exported from "Template.C_Domain.Model"). See
+--   expose the parameter space (horizontal sort) as the canonical 'Params' +
+--   'initParams' (using the model from "Template.C_Domain.Model"). See
 --   "Binary.C_Domain.Interpretation" for a worked example.
 module Template.C_Domain.Interpretation
   ( module Template.C_Domain.Model,
     Params,
-    Spec,
-    spec,
+    initParams,
   )
 where
 
 import Template.C_Domain.Model
+import qualified Torch
 
--- | C-layer manifest pieces for the Example: the model this domain uses.
+-- ============================================================
+--  Parameter spaces (horizontal sorts): Theta = this example's model weights
+-- ============================================================
+
+-- | The (chosen) horizontal sort: the parameter space this domain learns over.
 type Params = ParamsTemplate
 
-type Spec = ParamsTemplateSpec
-
-spec :: Spec
-spec = ParamsTemplateSpec
+-- | Draw the initial theta_0 (hides HaskTorch's Randomizable / 'sample').
+initParams :: IO Params
+initParams = Torch.sample ParamsTemplateSpec

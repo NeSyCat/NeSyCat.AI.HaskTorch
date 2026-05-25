@@ -23,14 +23,24 @@ class (Universe u) => BinarySorts u where
   type Point u :: Type
   type Omega u :: Type
 
+-- ============================================================
+--  Parameter spaces (horizontal sorts): the actor objects Theta where the
+--  learnable parameters live. The vertical sorts above hold the variables (x, y);
+--  these hold the parameters theta. One symbol per network -- here a single Theta.
+-- ============================================================
+
+-- | Parameter-space symbols (horizontal sorts), each assigned a concrete space
+--   (e.g. an MLP weight space) by an interpretation.
+class (Universe u) => BinaryParams u where
+  type Theta u :: Type
+
 -- | Tarski relation symbol.
 class (BinarySorts u) => BinaryRel u where
   labelA :: Point u -> Omega u
 
 -- | Parametrized Kleisli relation symbol. @Theta u@ is the parameter-space
 --   symbol (a horizontal point); its semantics is fixed by the interpretation.
-class (BinaryRel u, Monad (M u)) => BinaryKlRel u where
-  type Theta u :: Type
+class (BinaryRel u, BinaryParams u, Monad (M u)) => BinaryKlRel u where
   classifierA :: Theta u -> Point u -> M u (Omega u)
 
 -- | Bridge for encoding/decoding between two universe interpretations.

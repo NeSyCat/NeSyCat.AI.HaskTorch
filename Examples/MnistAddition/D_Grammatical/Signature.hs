@@ -21,7 +21,7 @@ module MnistAddition.D_Grammatical.Signature
 where
 
 import A_Categorical.CategoricalSignature (Universe (..))
-import MnistAddition.C_Domain.Signature (MnistArith (..), MnistKlRel (..), MnistSorts (..))
+import MnistAddition.C_Domain.Signature (MnistArith (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
 
 -- | The atom  @add(x,y) = digit(x) + digit(y)@  at the observed sum @n@,
 --   polymorphic over the universe @u@. The @do@-block never changes; only the

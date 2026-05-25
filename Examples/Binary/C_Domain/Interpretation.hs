@@ -18,8 +18,7 @@ module Binary.C_Domain.Interpretation
   ( module Binary.C_Domain.Signature,
     module C_Domain.Models.MLP,
     Params,
-    Spec,
-    spec,
+    initParams,
   )
 where
 
@@ -29,17 +28,10 @@ import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import B_Logical.Interpretations.Tensor hiding (Omega)
 import qualified B_Logical.Interpretations.Tensor as TensLogic
 import C_Domain.Models.MLP (ParamsMLP, ParamsMLPSpec, binarySpecReal, hThetaReal)
-import Binary.C_Domain.Signature (BinaryBridge (..), BinaryKlRel (..), BinaryRel (..), BinarySorts (..))
+import Binary.C_Domain.Signature (BinaryBridge (..), BinaryKlRel (..), BinaryParams (..), BinaryRel (..), BinarySorts (..))
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional.Internal as F
-
--- | C-layer manifest pieces for the Example: the model this domain uses.
-type Params = ParamsMLP
-type Spec = ParamsMLPSpec
-
-spec :: Spec
-spec = binarySpecReal
 
 -- ============================================================
 --  Sort assignments: I(Point), I(Omega)
@@ -52,6 +44,21 @@ instance BinarySorts MeasU where
 instance BinarySorts GeomU where
   type Point GeomU = Torch.Tensor     -- shape: [2], dtype: Float
   type Omega GeomU = TensLogic.Omega  -- = Torch.Tensor
+
+-- ============================================================
+--  Parameter spaces (horizontal sorts): I(Theta) = the MLP weight space
+-- ============================================================
+
+-- | The (chosen) horizontal sort: the MLP weight space (an actor object).
+type Params = ParamsMLP
+
+instance BinaryParams MeasU where type Theta MeasU = ParamsMLP
+
+instance BinaryParams GeomU where type Theta GeomU = ParamsMLP
+
+-- | Draw the initial theta_0 (hides HaskTorch's Randomizable / 'sample').
+initParams :: IO Params
+initParams = Torch.sample binarySpecReal
 
 -- ============================================================
 --  MeasU: plain relation symbols (BinaryRel)
@@ -69,7 +76,6 @@ instance BinaryRel MeasU where
 -- ============================================================
 
 instance BinaryKlRel MeasU where
-  type Theta MeasU = ParamsMLP
   classifierA :: ParamsMLP -> Point MeasU -> Dist (Omega MeasU)
   classifierA paramMLP pt =
     let ptTens = encPoint @MeasU @GeomU pt
@@ -101,7 +107,6 @@ logitScale = 10.0
 -- ============================================================
 
 instance BinaryKlRel GeomU where
-  type Theta GeomU = ParamsMLP
   classifierA :: ParamsMLP -> Point GeomU -> Identity (Omega GeomU)
   classifierA paramMLP ptTensor =
     Identity (hThetaReal paramMLP ptTensor)

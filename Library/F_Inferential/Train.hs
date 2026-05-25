@@ -5,8 +5,8 @@
 --
 --   A domain supplies only an objective @params -> Tensor@ (a scalar loss,
 --   closing over its own data, axiom and model forward); the Adam loop here is
---   completely domain-agnostic. This is the "train button": give it a parameter
---   spec and an objective, get back the optimized parameters theta*.
+--   completely domain-agnostic. This is the "train button": give it an
+--   initializer (draw theta_0) and an objective, get back the optimized theta*.
 module F_Inferential.Train
   ( train,
     foldLoop,
@@ -15,26 +15,27 @@ where
 
 import Data.Time.Clock (diffUTCTime, getCurrentTime)
 import Text.Printf (printf)
-import Torch (Parameterized (..), Randomizable (..))
+import Torch (Parameterized (..))
 import qualified Torch
 import Torch.Device (Device (..), DeviceType (..))
 import Torch.NN ()
 import Torch.Optim (mkAdam, runStep)
 
--- | Minimize @objective@ over the parameter space described by @spec@ using Adam
---   for @numEpochs@ steps. Works for any @Randomizable@/@Parameterized@ model
---   (MLP, CNN, ...). @verbose@ prints the loss curve.
+-- | Minimize @objective@ over the parameters drawn by @mkInit@ using Adam for
+--   @numEpochs@ steps. Works for any @Parameterized@ model (MLP, CNN, ...);
+--   @mkInit@ draws the initial theta_0 (the parameter space's initializer).
+--   @verbose@ prints the loss curve.
 train ::
-  forall spec params.
-  (Randomizable spec params, Parameterized params) =>
+  forall params.
+  (Parameterized params) =>
   Bool ->                       -- verbose (print the loss curve)
-  spec ->                       -- parameter spec (e.g. binarySpecReal, ParamsCNNSpec)
+  IO params ->                  -- initializer: draw the initial theta_0
   (params -> Torch.Tensor) ->   -- objective: theta -> scalar loss
   Int ->                        -- epochs
   Float ->                      -- learning rate
   IO params
-train verbose spec objective numEpochs learningRate = do
-  initModel <- sample spec
+train verbose mkInit objective numEpochs learningRate = do
+  initModel <- mkInit
   let initOpt = mkAdam 0 0.9 0.999 (flattenParameters initModel)
       lrTens = Torch.toDevice (Device CPU 0) (Torch.asTensor learningRate)
   startTime <- getCurrentTime

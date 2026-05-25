@@ -13,7 +13,7 @@ import A_Categorical.CategoricalInterpretation ()
 -- B (logic) — REUSE shared: the library Boolean (MeasU) + Tensor (GeomU).
 import B_Logical.Interpretations.Boolean ()
 import B_Logical.Interpretations.Tensor ()
--- C (domain) — STANDALONE: this example's own sorts/symbols + model (Params/Spec/spec).
+-- C (domain) — STANDALONE: this example's own sorts/symbols + parameter space (Params/initParams).
 import qualified Template.C_Domain.Interpretation as C
 -- D (grammatical) — STANDALONE: this example's own axiom.
 import Template.D_Grammatical.InterpretationTens ()
@@ -32,9 +32,8 @@ data Template
 
 instance Example Template where
   type Params Template = C.Params
-  type Spec Template = C.Spec
   type Data Template = E.Dataset
-  spec = C.spec
+  initParams = C.initParams
   loadData = EL.loadData
   trainConfig = F.trainConfig
   objective = F.objective

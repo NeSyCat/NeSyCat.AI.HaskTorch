@@ -17,6 +17,7 @@
 --   assembled compositionally, never declared.
 module MnistAddition.C_Domain.Signature
   ( MnistSorts (..),
+    MnistParams (..),
     MnistKlRel (..),
     MnistArith (..),
     MnistBridge (..),
@@ -33,11 +34,20 @@ class (Universe u) => MnistSorts u where
   type Natural u :: Type
   type Omega u :: Type
 
+-- ============================================================
+--  Parameter spaces (horizontal sorts): the actor object ThetaCNN where the CNN's
+--  learnable parameters live (the vertical sorts above hold the variables).
+-- ============================================================
+
+-- | Parameter-space symbol (horizontal sort), assigned a concrete space (the CNN
+--   weight space) by an interpretation.
+class (Universe u) => MnistParams u where
+  type ThetaCNN u :: Type
+
 -- | The neural digit classifier as a parametrized Kleisli relation
 --   @digit : Theta . Image -> M Digit@. Its semantics is the CNN (logits) bridged
 --   into a distribution over digits by the interpretation.
-class (MnistSorts u, Monad (M u)) => MnistKlRel u where
-  type ThetaCNN u :: Type
+class (MnistSorts u, MnistParams u, Monad (M u)) => MnistKlRel u where
   digit :: ThetaCNN u -> Image u -> M u (Digit u)
 
 -- | Domain arithmetic/relation symbols of the MNIST vocabulary:
