@@ -10,7 +10,7 @@ import Examples.Template.B_Logical ()
 import Examples.Template.C_Domain.Model (ParamsTemplate, ParamsTemplateSpec (..), forwardTemplate)
 import Examples.Template.E_Inferential (templateLoss)
 import Examples.Template.F_Statistical (templateReport)
-import Examples.Template.G_Data (TemplateDataset (..), loadTemplateDataset)
+import Examples.Template.G_Data.Loader (TemplateDataset (..), loadTemplateDataset)
 import Lib.Example (Example (..))
 
 data Template

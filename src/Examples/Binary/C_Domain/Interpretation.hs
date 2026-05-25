@@ -16,7 +16,7 @@
 --     bridge      : encPoint / decOmega between MeasU and GeomU
 module Examples.Binary.C_Domain.Interpretation
   ( module Examples.Binary.C_Domain.Signature,
-    module Lib.Models.MLP,
+    module Lib.C_Domain.Models.MLP,
   )
 where
 
@@ -25,7 +25,7 @@ import Lib.A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified Lib.B_Logical.Interpretations.Boolean as BoolLogic
 import Lib.B_Logical.Interpretations.Tensor hiding (Omega)
 import qualified Lib.B_Logical.Interpretations.Tensor as TensLogic
-import Lib.Models.MLP (ParamsMLP, binarySpecReal, hThetaReal)
+import Lib.C_Domain.Models.MLP (ParamsMLP, binarySpecReal, hThetaReal)
 import Examples.Binary.C_Domain.Signature (BinaryBridge (..), BinaryKlRel (..), BinaryRel (..), BinarySorts (..))
 import Data.Functor.Identity (Identity (..))
 import qualified Torch

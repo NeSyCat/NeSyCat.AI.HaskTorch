@@ -12,9 +12,9 @@ import Examples.MnistAddition.C_Domain.Interpretation ()
 import Examples.MnistAddition.D_Grammatical.IntpTens (mnistSumLogits)
 import Examples.MnistAddition.E_Inferential (mnistKnowLoss)
 import Examples.MnistAddition.F_Statistical (mnistReport)
-import Examples.MnistAddition.G_Data (MnistDataset (..), loadMnistDataset)
+import Examples.MnistAddition.G_Data.Loader (MnistDataset (..), loadMnistDataset)
 import Lib.Example (Example (..))
-import Lib.Models.MnistCNN (ParamsCNN, ParamsCNNSpec (..))
+import Lib.C_Domain.Models.MnistCNN (ParamsCNN, ParamsCNNSpec (..))
 
 data MnistAdd
 

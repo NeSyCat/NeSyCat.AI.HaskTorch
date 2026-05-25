@@ -6,7 +6,7 @@
 --   tensor format: image pairs (x, y), the one-hot observed sums [B,19] used by
 --   the axiom, and the per-pair sums/labels used to score accuracy. Only sums are
 --   "observed"; digit labels are used to build sums and to score afterwards.
-module Examples.MnistAddition.G_Data
+module Examples.MnistAddition.G_Data.Loader
   ( MnistDataset (..),
     loadMnistDataset,
   )
@@ -21,7 +21,7 @@ import qualified Torch.Vision as TV
 
 -- | Directory holding the four gzipped IDX files (see @scripts/get-mnist.sh@).
 mnistDir :: String
-mnistDir = "src/Examples/MnistAddition/data"
+mnistDir = "src/Examples/MnistAddition/G_Data"
 
 -- | A dataset of image pairs. @trainBatch@ is the differentiable training input
 --   (images x, images y, one-hot observed sums [B,19]); the @*Img@/@*Lab@/@*Sums@

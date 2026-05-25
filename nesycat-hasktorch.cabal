@@ -25,7 +25,7 @@ library
       Examples.Binary.E_Inferential
       Examples.Binary.Example
       Examples.Binary.F_Statistical
-      Examples.Binary.G_Data
+      Examples.Binary.G_Data.Loader
       Examples.MnistAddition.A_Categorical
       Examples.MnistAddition.B_Logical
       Examples.MnistAddition.C_Domain.Interpretation
@@ -36,7 +36,7 @@ library
       Examples.MnistAddition.E_Inferential
       Examples.MnistAddition.Example
       Examples.MnistAddition.F_Statistical
-      Examples.MnistAddition.G_Data
+      Examples.MnistAddition.G_Data.Loader
       Lib.A_Categorical.CategoricalInterpretation
       Lib.A_Categorical.CategoricalSignature
       Lib.A_Categorical.Category.Categories.Data
@@ -49,6 +49,8 @@ library
       Lib.B_Logical.Interpretations.Tensor
       Lib.B_Logical.LogicalQuantSignature
       Lib.B_Logical.LogicalSignature
+      Lib.C_Domain.Models.MLP
+      Lib.C_Domain.Models.MnistCNN
       Lib.E_Inferential.InferenceInterpretation
       Lib.E_Inferential.InferenceSignature
       Lib.E_Inferential.Library.Convex
@@ -65,8 +67,6 @@ library
       Lib.F_Statistical.Library.MeanWhere
       Lib.F_Statistical.Library.Threshold
       Lib.F_Statistical.Report
-      Lib.Models.MLP
-      Lib.Models.MnistCNN
       Lib.Run
   other-modules:
       Paths_nesycat_hasktorch

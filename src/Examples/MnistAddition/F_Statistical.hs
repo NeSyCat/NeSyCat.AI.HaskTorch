@@ -12,9 +12,9 @@ import Examples.MnistAddition.A_Categorical (GeomU)
 import Examples.MnistAddition.C_Domain.Interpretation ()
 import Examples.MnistAddition.C_Domain.Signature (MnistKlRel (..))
 import Examples.MnistAddition.D_Grammatical.IntpData (mnistProb)
-import Examples.MnistAddition.G_Data (MnistDataset (..))
+import Examples.MnistAddition.G_Data.Loader (MnistDataset (..))
 import Lib.F_Statistical.Report (Report (..))
-import Lib.Models.MnistCNN (ParamsCNN)
+import Lib.C_Domain.Models.MnistCNN (ParamsCNN)
 import qualified Torch
 
 predDigits :: ParamsCNN -> Torch.Tensor -> [Int]

@@ -5,7 +5,7 @@
 --   their ground-truth labels); the inferential layer consumes it without knowing
 --   how it was produced. Here the points are sampled and labelled by the domain's
 --   own @labelA@ (the circle-in-square concept) -- data preparation, not training.
-module Examples.Binary.G_Data
+module Examples.Binary.G_Data.Loader
   ( BinaryDataset (..),
     generateBinaryDataset,
   )

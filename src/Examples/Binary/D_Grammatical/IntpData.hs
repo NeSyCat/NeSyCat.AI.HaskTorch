@@ -10,7 +10,7 @@ import Lib.A_Categorical.CategoricalSignature (Universe (..))
 import Lib.A_Categorical.CategoricalInterpretation (MeasU)
 import Lib.B_Logical.Interpretations.Boolean ()
 import Examples.Binary.C_Domain.Signature (BinarySorts (..))
-import Lib.Models.MLP (ParamsMLP)
+import Lib.C_Domain.Models.MLP (ParamsMLP)
 import Examples.Binary.C_Domain.Interpretation ()
 import Examples.Binary.D_Grammatical.Formulas (binarySentence)
 

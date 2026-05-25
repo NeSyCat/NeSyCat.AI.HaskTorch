@@ -9,10 +9,10 @@ module Examples.Binary.F_Statistical (binaryReport) where
 import Examples.Binary.A_Categorical (MeasU)
 import Examples.Binary.C_Domain.Interpretation ()
 import Examples.Binary.C_Domain.Signature (BinaryKlRel (..), BinaryRel (..), BinarySorts (..))
-import Examples.Binary.G_Data (BinaryDataset (..))
+import Examples.Binary.G_Data.Loader (BinaryDataset (..))
 import Lib.A_Categorical.Category.Monads.DistExpect (distPTrue)
 import Lib.F_Statistical.Report (Report, evaluate, runMetrics)
-import Lib.Models.MLP (ParamsMLP)
+import Lib.C_Domain.Models.MLP (ParamsMLP)
 import qualified Torch
 
 binaryReport :: ParamsMLP -> BinaryDataset -> Report

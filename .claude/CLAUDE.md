@@ -36,7 +36,7 @@ The repo is organized **by example**, not by layer. Everything is under `src/`:
   - `Lib.B_Logical.*` — `LogicalSignature` / `LogicalQuantSignature` (∨,∧,⊕,⊗,∀,∃) and the interpretations `Boolean` (MeasU) and `Tensor`/TensReal (GeomU; LogSumExp on logits).
   - `Lib.E_Inferential.*` — the generic `train` (Adam loop), `InferenceSignature` + interpretation, the loss `Library` (`Softplus`, `NegLog`, `CrossEntropy`, `OneMinus`, `Convex`).
   - `Lib.F_Statistical.*` — the flexible `Report` (labeled metrics) + `printReport`/`averageReports`/`runAverage`, `BenchmarkSignature` + interpretation, the metric `Library`.
-  - `Lib.Models.*` — reusable architectures (`MLP`, `MnistCNN`).
+  - `Lib.C_Domain.Models.*` — reusable domain models (`MLP`, `MnistCNN`): the C-layer neural functions an example plugs into its domain interpretation.
   - `Lib.Example` — the `Example` typeclass + `runExample` (train + benchmark). `Lib.Run` — the `nesycat` dispatcher.
 
 - **`src/Examples/<Name>/`** — one self-contained example = the full A–G stack:
@@ -49,11 +49,10 @@ The repo is organized **by example**, not by layer. Everything is under `src/`:
   | `D_Grammatical/{Formulas,IntpData,IntpTens}.hs` | δ | the axiom (one abstract formula) + its MeasU(`Dist`) and GeomU(tensor) interpretations |
   | `E_Inferential.hs` | ε | the inference interpretation (the penalty) |
   | `F_Statistical.hs` | ζ | this example's metrics, as a labeled `Report` |
-  | `G_Data.hs` | — | the dataset/loader |
-  | `data/` | — | this example's data files, committed with it, e.g. `src/Examples/MnistAddition/data/` |
+  | `G_Data/` | — | the loader (`Loader.hs`) **and** this example's data files, together (committed), e.g. `src/Examples/MnistAddition/G_Data/` |
   | `Example.hs` | — | the `Example` instance wiring A–G together |
 
-  Each layer slot can **reuse** the library (re-export), **modify** it, or be filled from the template. Example-specific data lives in that example's own `data/` folder. Existing examples: `Binary` (circle-in-square classification) and `MnistAddition` (single-digit addition; digits learned from observed sums alone).
+  Each layer slot can **reuse** the library (re-export), **modify** it, or be filled from the template. Example-specific data lives in that example's own `G_Data/` folder, beside its `Loader.hs`. Existing examples: `Binary` (circle-in-square classification) and `MnistAddition` (single-digit addition; digits learned from observed sums alone).
 
 - The single executable's `Main.hs` is a 3-line shim at the repo root (dispatch logic is in `Lib.Run`); there is no `app/` directory.
 

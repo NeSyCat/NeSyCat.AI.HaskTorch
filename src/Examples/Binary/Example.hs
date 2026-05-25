@@ -13,9 +13,9 @@ import Examples.Binary.C_Domain.Interpretation ()
 import Examples.Binary.D_Grammatical.IntpTens (binaryAxiomTens)
 import Examples.Binary.E_Inferential (lossKnow)
 import Examples.Binary.F_Statistical (binaryReport)
-import Examples.Binary.G_Data (BinaryDataset (..), generateBinaryDataset)
+import Examples.Binary.G_Data.Loader (BinaryDataset (..), generateBinaryDataset)
 import Lib.Example (Example (..))
-import Lib.Models.MLP (ParamsMLP, ParamsMLPSpec (..), binarySpecReal)
+import Lib.C_Domain.Models.MLP (ParamsMLP, ParamsMLPSpec (..), binarySpecReal)
 import qualified Torch
 
 data Binary

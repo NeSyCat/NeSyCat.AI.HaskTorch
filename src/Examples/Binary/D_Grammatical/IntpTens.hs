@@ -10,7 +10,7 @@ where
 import Lib.A_Categorical.CategoricalInterpretation (GeomU)
 import Examples.Binary.C_Domain.Signature (BinarySorts (..))
 import Examples.Binary.C_Domain.Interpretation ()
-import Lib.Models.MLP (ParamsMLP)
+import Lib.C_Domain.Models.MLP (ParamsMLP)
 import Lib.B_Logical.LogicalSignature (LogicalSignature (..))
 import Examples.Binary.D_Grammatical.Formulas (binarySentence)
 import Data.Functor.Identity (runIdentity)

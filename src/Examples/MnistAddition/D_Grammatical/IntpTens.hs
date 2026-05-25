@@ -17,7 +17,7 @@ where
 import Lib.A_Categorical.CategoricalInterpretation (GeomU)
 import Examples.MnistAddition.C_Domain.Interpretation ()
 import Examples.MnistAddition.C_Domain.Signature (MnistArith (..), MnistKlRel (..))
-import Lib.Models.MnistCNN (ParamsCNN)
+import Lib.C_Domain.Models.MnistCNN (ParamsCNN)
 import Data.Functor.Identity (runIdentity)
 import qualified Torch
 

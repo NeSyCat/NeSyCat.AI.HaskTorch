@@ -15,7 +15,7 @@
 --     bridge: encImage / decDigit between MeasU and GeomU
 module Examples.MnistAddition.C_Domain.Interpretation
   ( module Examples.MnistAddition.C_Domain.Signature,
-    module Lib.Models.MnistCNN,
+    module Lib.C_Domain.Models.MnistCNN,
   )
 where
 
@@ -24,7 +24,7 @@ import Lib.A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified Lib.B_Logical.Interpretations.Boolean as BoolLogic
 import qualified Lib.B_Logical.Interpretations.Tensor as TensLogic
 import Examples.MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistSorts (..))
-import Lib.Models.MnistCNN (ParamsCNN, cnnLogits)
+import Lib.C_Domain.Models.MnistCNN (ParamsCNN, cnnLogits)
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional as F

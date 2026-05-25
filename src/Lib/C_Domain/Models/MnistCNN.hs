@@ -3,12 +3,12 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RecordWildCards #-}
 
--- | A LeNet-style MNIST CNN, mirroring the untyped 'Lib.Models.MLP' pattern.
+-- | A LeNet-style MNIST CNN, mirroring the untyped 'Lib.C_Domain.Models.MLP' pattern.
 --   Forward: [B,1,28,28] -> [B,10] raw logits. Like @hThetaReal@ for the MLP, the
 --   model is logits-only; turning logits into a digit *distribution* (softmax) is
 --   the bridge, and lives in the interpretation (cf. the binary @decOmega@).
 --   Shapes: 28 -conv5-> 24 -pool2-> 12 -conv5-> 8 -pool2-> 4, so flatten = 16*4*4 = 256.
-module Lib.Models.MnistCNN
+module Lib.C_Domain.Models.MnistCNN
   ( ParamsCNN (..),
     ParamsCNNSpec (..),
     cnnLogits,

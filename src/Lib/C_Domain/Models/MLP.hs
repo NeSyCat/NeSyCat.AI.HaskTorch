@@ -5,7 +5,7 @@
 {-# LANGUAGE RecordWildCards #-}
 
 -- | Binary Classification MLP: A simple architecture h_theta : R^2 -> R^1
-module Lib.Models.MLP
+module Lib.C_Domain.Models.MLP
   ( ParamsMLP (..),
     ParamsMLPSpec (..),
     hThetaReal,

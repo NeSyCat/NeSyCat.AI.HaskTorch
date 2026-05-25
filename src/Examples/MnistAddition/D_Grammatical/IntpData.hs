@@ -17,7 +17,7 @@ import Lib.A_Categorical.CategoricalInterpretation (MeasU)
 import Lib.B_Logical.Interpretations.Boolean () -- LogicalQuantSignature _ MeasU Bool (bigWedge)
 import Lib.B_Logical.LogicalQuantSignature (LogicalQuantSignature (..))
 import Examples.MnistAddition.C_Domain.Interpretation ()
-import Lib.Models.MnistCNN (ParamsCNN)
+import Lib.C_Domain.Models.MnistCNN (ParamsCNN)
 import Examples.MnistAddition.D_Grammatical.Formulas (mnistFormula)
 import qualified Torch
 
