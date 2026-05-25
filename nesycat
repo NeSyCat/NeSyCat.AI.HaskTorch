@@ -6,7 +6,12 @@
 # is registered automatically by regenerating the dispatcher Library/Run.hs from
 # the folder list. Add a folder and it just works — no manual registration.
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")" && pwd)"
+# Resolve symlinks so this works when invoked via a PATH symlink (e.g. ~/.local/bin/nesycat).
+src="${BASH_SOURCE[0]}"
+while [ -L "$src" ]; do
+  dir="$(cd -P "$(dirname "$src")" && pwd)"; src="$(readlink "$src")"; [[ $src != /* ]] && src="$dir/$src"
+done
+ROOT="$(cd -P "$(dirname "$src")" && pwd)"
 cd "$ROOT"
 
 # example folder names (skip the _template stamp and dotfiles)
