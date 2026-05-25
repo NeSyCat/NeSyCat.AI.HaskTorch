@@ -21,8 +21,7 @@ cabal build all                       # build the library + the single `nesycat`
 
 # Run an example:  nesycat <name> [n]   (n = runs to average; n=1 prints the loss curve)
 cabal run nesycat -- binary 1
-scripts/get-mnist.sh                  # fetch MNIST into the example folder (once), then:
-cabal run nesycat -- mnist-add 1
+cabal run nesycat -- mnist-add 1      # MNIST data ships in the example; scripts/get-mnist.sh refetches it
 cabal run nesycat -- binary +RTS -s   # RTS stats (exe built with -rtsopts)
 ```
 
@@ -51,7 +50,7 @@ The repo is organized **by example**, not by layer. Everything is under `src/`:
   | `E_Inferential.hs` | ε | the inference interpretation (the penalty) |
   | `F_Statistical.hs` | ζ | this example's metrics, as a labeled `Report` |
   | `G_Data.hs` | — | the dataset/loader |
-  | `data/` | — | this example's data files (gitignored), e.g. `src/Examples/MnistAddition/data/` |
+  | `data/` | — | this example's data files, committed with it, e.g. `src/Examples/MnistAddition/data/` |
   | `Example.hs` | — | the `Example` instance wiring A–G together |
 
   Each layer slot can **reuse** the library (re-export), **modify** it, or be filled from the template. Example-specific data lives in that example's own `data/` folder. Existing examples: `Binary` (circle-in-square classification) and `MnistAddition` (single-digit addition; digits learned from observed sums alone).

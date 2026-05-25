@@ -1,6 +1,5 @@
 dist-newstyle/
 others/
-src/Examples/*/data/
 .ghc.environment.*
 *.hi
 *.o
