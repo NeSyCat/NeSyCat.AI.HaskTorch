@@ -9,61 +9,73 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Haskell implementation of the **NeSyCat** neurosymbolic framework using HaskTorch (Haskell bindings to libtorch). The code is a typed tensor-category realization of the theory described in the companion paper repo (`../NeSyCat Papers/`).
+Haskell implementation of the **NeSyCat** neurosymbolic framework using HaskTorch (untyped `Torch.*` bindings to libtorch). The code is a typed tensor-category realization of the theory in the companion paper repo (`../NeSyCat Papers/`).
 
 ## Build & Run Commands
 
+The build is driven by **hpack**: `package.yaml` is the source of truth and generates `nesycat-hasktorch.cabal` (committed). Re-run hpack after adding/removing/renaming modules.
+
 ```bash
-# Build the library and all executables
-cabal build all
+~/.cabal/bin/hpack --force            # regenerate the .cabal from package.yaml (after module changes)
+cabal build all                       # build the library + the single `nesycat` executable
 
-# Run the executables
-cabal run binary-benchmark        # Binary classification with benchmarks (accuracy, F1)
-cabal run binary-test-real        # Binary classification with TensReal logic
-cabal run binary-test-real-beta   # Beta-distribution variant
-
-# Run with RTS options (executables with -rtsopts)
-cabal run binary-test-real -- +RTS -s
+# Run an example:  nesycat <name> [n]   (n = runs to average; n=1 prints the loss curve)
+cabal run nesycat -- binary 1
+scripts/get-mnist.sh                  # fetch MNIST into the example folder (once), then:
+cabal run nesycat -- mnist-add 1
+cabal run nesycat -- binary +RTS -s   # RTS stats (exe built with -rtsopts)
 ```
 
-Requires `hasktorch` and its libtorch dependency to be available. HLS is configured via `hie.yaml` (cabal cradle).
+Requires `hasktorch` + libtorch. HLS via `hie.yaml` (cabal cradle, reads the generated `.cabal`). `hpack` lives at `~/.cabal/bin/hpack`.
 
-## Architecture: The ABCDEFG Pipeline
+## Architecture: by-example over a shared library
 
-The codebase mirrors the paper's layered categorical structure. Each top-level directory is a **layer** of the framework, and within each layer modules follow the same **A→B→C→D→E→F→G sub-pipeline**:
+The repo is organized **by example**, not by layer. Everything is under `src/`:
 
-| Sub-step | Role | What it defines |
-|----------|------|----------------|
-| **A_Category** | Category GADTs | GADT witnesses for the interpreting category (DATA, TENS) |
-| **B_Theory** | Abstract theory | Type classes declaring sort/function/relation symbols |
-| **BA_Interpretation** | Semantics | Concrete functions implementing the abstract operations |
-| **BC_Extension** | Theory → Vocab | Type family instances mapping abstract names → Haskell types |
-| **C_TypeSystem** | Type universe | Which Haskell types/functors are valid at this layer |
-| **D_Vocabulary** | Vocabulary | Vocabulary types for the layer |
-| **DA_Realization** | Realization | Connects vocabulary to concrete implementations |
+- **`src/Lib/`** — the shared, reusable framework, keeping the A–G layer names:
+  - `Lib.A_Categorical.*` — universes `GeomU`/`MeasU`, monads (`Ident`/`Dist`/`Giry`) + `eta`/`mu`, the `Universe` class.
+  - `Lib.B_Logical.*` — `LogicalSignature` / `LogicalQuantSignature` (∨,∧,⊕,⊗,∀,∃) and the interpretations `Boolean` (MeasU) and `Tensor`/TensReal (GeomU; LogSumExp on logits).
+  - `Lib.E_Inferential.*` — the generic `train` (Adam loop), `InferenceSignature` + interpretation, the loss `Library` (`Softplus`, `NegLog`, `CrossEntropy`, `OneMinus`, `Convex`).
+  - `Lib.F_Statistical.*` — the flexible `Report` (labeled metrics) + `printReport`/`averageReports`/`runAverage`, `BenchmarkSignature` + interpretation, the metric `Library`.
+  - `Lib.Models.*` — reusable architectures (`MLP`, `MnistCNN`).
+  - `Lib.Example` — the `Example` typeclass + `runExample` (train + benchmark). `Lib.Run` — the `nesycat` dispatcher.
 
-### Layers (top-level directories)
+- **`src/Examples/<Name>/`** — one self-contained example = the full A–G stack:
 
-- **`A_Categorical/`** — Alpha-level: the ambient 2-category (Hask). Defines monad theories (`Ident`, `Dist`, `Giry`) and their natural transformations (`eta`/`mu`). This is the categorical foundation that all other layers build on.
+  | module | layer | role |
+  |---|---|---|
+  | `A_Categorical.hs` | α | which universe(s) — usually re-exports `Lib.A_Categorical` |
+  | `B_Logical.hs` | β | which logic — usually re-exports `Lib.B_Logical` |
+  | `C_Domain/{Signature,Interpretation}.hs` | γ | domain sorts + symbols, interpreted per universe |
+  | `D_Grammatical/{Formulas,IntpData,IntpTens}.hs` | δ | the axiom (one abstract formula) + its MeasU(`Dist`) and GeomU(tensor) interpretations |
+  | `E_Inferential.hs` | ε | the inference interpretation (the penalty) |
+  | `F_Statistical.hs` | ζ | this example's metrics, as a labeled `Report` |
+  | `G_Data.hs` | — | the dataset/loader |
+  | `data/` | — | this example's data files (gitignored), e.g. `src/Examples/MnistAddition/data/` |
+  | `Example.hs` | — | the `Example` instance wiring A–G together |
 
-- **`B_Logical/`** — Beta-level: logical connectives. The `LogicalSignature` class defines a double-monoid bounded lattice (∨, ∧, ⊕, ⊗ with bounds). Interpretations: `Boolean`, `Real` (LogSumExp/TensReal). The `TENS` and `FDATA` modules are the two main tensor-based interpretations.
+  Each layer slot can **reuse** the library (re-export), **modify** it, or be filled from the template. Example-specific data lives in that example's own `data/` folder. Existing examples: `Binary` (circle-in-square classification) and `MnistAddition` (single-digit addition; digits learned from observed sums alone).
 
-- **`C_Domain/`** — Gamma-level: domain-specific theories. Currently only the Binary domain exists, with its own theory declaring domain sorts and relation symbols (Tarski and Kleisli), plus extensions and interpretations using HaskTorch tensors.
+- The single executable's `Main.hs` is a 3-line shim at the repo root (dispatch logic is in `Lib.Run`); there is no `app/` directory.
 
-- **`D_Grammatical/`** — Delta-level: formulas/axioms. Combines logical connectives with domain interpretations to express axioms (e.g., `axiomReal` builds ∀-quantified classification constraints). Executables live here.
+## Adding a new example (the scaffolding "button")
 
-- **`E_Inferential/`** — Objective functions: `Softplus` (pen(sat) = -log(σ(sat))), `CrossEntropy`, `NegLog`, `OneMinus`, `Combined` (λ·J_data + (1-λ)·J_know).
+```bash
+scripts/new-example.sh SudokuSolver       # UpperCamelCase
+cabal run nesycat -- sudoku-solver 1      # builds + runs the stub immediately
+```
 
-- **`F_Statistical/`** — Evaluation metrics (accuracy, F1, confidence).
+`new-example.sh` copies `templates/Example/` (a full A–G stack of compilable stubs), renames the `Template` placeholder, registers the example in `src/Lib/Run.hs` (between its `NEW-EXAMPLE-*` markers), and re-runs hpack — so the new modules build with **no manual cabal edit**. Then fill in the `C_Domain`, `D_Grammatical`, `G_Data` slots (and tweak `E_Inferential`/`F_Statistical`).
 
-### Data flow
+## Key patterns
 
-Theory (D) → Extension (E) → Vocabulary (B) → Category (A) → Interpretation (F) → Training (G)
+- **One formula, two interpretations.** A formula is written once (abstract over the universe `u`) and interpreted in **GeomU** (`Identity` monad, tensors/logits, TensReal/LogSumExp — used for differentiable *training*) and **MeasU** (`Dist` monad, probabilities — the law of total probability via the Kleisli bind, used for the *probability reading*). Only the symbol interpretations change, never the formula.
+- **The objective only touches the grammatical axiom over data** — never the model directly. It reaches the net only through the interpretation (`classifierA @GeomU`, `digit @GeomU`): `objective = <inference penalty> (axiom β data θ)`.
+- **GeomU stays in logit space**; softmax/sigmoid → probabilities happens only at the MeasU bridge (`decOmega`/`decDigit`) or in the inference penalty (e.g. MNIST's categorical NLL `mnistKnowLoss`).
+- **The report is one flexible labeled-metrics type** (`Lib.F_Statistical.Report`); each example reports its own honestly-named metrics (no field-cramming).
+- Untyped `Torch.*` tensors throughout (`Torch.Tensor`), with `@GeomU`/`@MeasU` type applications selecting the universe; type families + type classes give the signature/interpretation separation at every layer.
 
-A domain problem is defined by choosing: a gamma-level theory (e.g., `BinaryTheory`), a logical interpretation (e.g., `TensReal`), an axiom formula (e.g., `axiomReal`), an objective function (e.g., `combinedObjective`), and a training loop.
+## Conventions
 
-## Key Patterns
-
-- **Type families + type classes** are used throughout to achieve the theory/extension separation. `@TENS` type applications select the tensor interpretation.
-- The training objective `J(θ) = λ·J_data(θ) + (1-λ)·J_know(θ)` blends data-driven (cross-entropy) and knowledge-driven (axiom satisfaction) losses. `λ=0` is pure axiom-driven; `λ=1` is pure data-driven.
-- `Torch.Typed.Tensor` is used for typed tensors; `toDynamic` bridges to untyped `Torch.Tensor` when needed.
+- Keep the by-example structure: a new example is a self-contained `src/Examples/<Name>/` folder (full A–G stack + its own `data/`); shared/reusable code goes in `src/Lib/`.
+- After changing the module set, run `hpack --force` and commit the regenerated `.cabal`.

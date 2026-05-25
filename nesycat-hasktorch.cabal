@@ -1,87 +1,96 @@
-cabal-version: 2.4
-name: nesycat-hasktorch
-version: 0.1.0.0
-synopsis: NeSyCat Framework with HaskTorch
-description: Typed tensor category for the NeSyCat neurosymbolic framework
-license: MIT
-author: User
-maintainer: user@example.com
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.39.5.
+--
+-- see: https://github.com/sol/hpack
+
+name:           nesycat-hasktorch
+version:        0.1.0.0
+synopsis:       NeSyCat Framework with HaskTorch
+description:    Typed tensor category for the NeSyCat neurosymbolic framework
+author:         User
+maintainer:     user@example.com
+license:        MIT
+build-type:     Simple
 
 library
   exposed-modules:
-    -- Alpha: Categorical
-    A_Categorical.CategoricalSignature,
-    A_Categorical.CategoricalInterpretation,
-    A_Categorical.Category.Categories.Data,
-    A_Categorical.Category.Categories.Tens,
-    A_Categorical.Category.Monads.Dist,
-    A_Categorical.Category.Monads.Giry,
-    A_Categorical.Category.Monads.DistExpect,
-    A_Categorical.Category.Monads.GiryExpect,
-    -- Beta: Logical
-    B_Logical.LogicalSignature,
-    B_Logical.LogicalQuantSignature,
-    B_Logical.Interpretations.Boolean,
-    B_Logical.Interpretations.Tensor,
-    -- Gamma: Domain
-    C_Domain.Examples.Binary.Signature,
-    C_Domain.Examples.Binary.Interpretation,
-    C_Domain.Models.MLP,
-    C_Domain.Models.MnistCNN,
-    C_Domain.Examples.MnistAddition.Signature,
-    C_Domain.Examples.MnistAddition.Interpretation,
-    -- Delta: Grammatical
-    D_Grammatical.Examples.Binary.Formulas,
-    D_Grammatical.Examples.Binary.IntpTens,
-    D_Grammatical.Examples.Binary.IntpData,
-    D_Grammatical.Examples.MnistAddition.Formulas,
-    D_Grammatical.Examples.MnistAddition.IntpData,
-    D_Grammatical.Examples.MnistAddition.IntpTens,
-    -- Epsilon: Inferential
-    E_Inferential.Train,
-    E_Inferential.InferenceSignature,
-    E_Inferential.InferenceInterpretation,
-    E_Inferential.Library.Softplus,
-    E_Inferential.Library.OneMinus,
-    E_Inferential.Library.NegLog,
-    E_Inferential.Library.CrossEntropy,
-    E_Inferential.Library.Convex,
-    E_Inferential.Examples.MnistAddition.Interpretation,
-    -- Zeta: Statistical
-    F_Statistical.BenchmarkSignature,
-    F_Statistical.BenchmarkInterpretation,
-    F_Statistical.Report,
-    F_Statistical.Library.Threshold,
-    F_Statistical.Library.FractionTrue,
-    F_Statistical.Library.HarmonicMean,
-    F_Statistical.Library.MeanWhere,
-    -- Datasets: prepared data, separate from training/loss
-    Datasets.Binary,
-    Datasets.MnistAddition,
-    -- Examples: generic runner + per-example registrations
-    Example,
-    Examples.Binary,
-    Examples.MnistAddition
-  hs-source-dirs: .
+      Examples.Binary.A_Categorical
+      Examples.Binary.B_Logical
+      Examples.Binary.C_Domain.Interpretation
+      Examples.Binary.C_Domain.Signature
+      Examples.Binary.D_Grammatical.Formulas
+      Examples.Binary.D_Grammatical.IntpData
+      Examples.Binary.D_Grammatical.IntpTens
+      Examples.Binary.E_Inferential
+      Examples.Binary.Example
+      Examples.Binary.F_Statistical
+      Examples.Binary.G_Data
+      Examples.MnistAddition.A_Categorical
+      Examples.MnistAddition.B_Logical
+      Examples.MnistAddition.C_Domain.Interpretation
+      Examples.MnistAddition.C_Domain.Signature
+      Examples.MnistAddition.D_Grammatical.Formulas
+      Examples.MnistAddition.D_Grammatical.IntpData
+      Examples.MnistAddition.D_Grammatical.IntpTens
+      Examples.MnistAddition.E_Inferential
+      Examples.MnistAddition.Example
+      Examples.MnistAddition.F_Statistical
+      Examples.MnistAddition.G_Data
+      Lib.A_Categorical.CategoricalInterpretation
+      Lib.A_Categorical.CategoricalSignature
+      Lib.A_Categorical.Category.Categories.Data
+      Lib.A_Categorical.Category.Categories.Tens
+      Lib.A_Categorical.Category.Monads.Dist
+      Lib.A_Categorical.Category.Monads.DistExpect
+      Lib.A_Categorical.Category.Monads.Giry
+      Lib.A_Categorical.Category.Monads.GiryExpect
+      Lib.B_Logical.Interpretations.Boolean
+      Lib.B_Logical.Interpretations.Tensor
+      Lib.B_Logical.LogicalQuantSignature
+      Lib.B_Logical.LogicalSignature
+      Lib.E_Inferential.InferenceInterpretation
+      Lib.E_Inferential.InferenceSignature
+      Lib.E_Inferential.Library.Convex
+      Lib.E_Inferential.Library.CrossEntropy
+      Lib.E_Inferential.Library.NegLog
+      Lib.E_Inferential.Library.OneMinus
+      Lib.E_Inferential.Library.Softplus
+      Lib.E_Inferential.Train
+      Lib.Example
+      Lib.F_Statistical.BenchmarkInterpretation
+      Lib.F_Statistical.BenchmarkSignature
+      Lib.F_Statistical.Library.FractionTrue
+      Lib.F_Statistical.Library.HarmonicMean
+      Lib.F_Statistical.Library.MeanWhere
+      Lib.F_Statistical.Library.Threshold
+      Lib.F_Statistical.Report
+      Lib.Models.MLP
+      Lib.Models.MnistCNN
+      Lib.Run
+  other-modules:
+      Paths_nesycat_hasktorch
+  hs-source-dirs:
+      src
   build-depends:
-    base >=4.16,
-    bytestring,
-    containers,
-    directory,
-    mtl,
-    numeric-tools,
-    hasktorch,
-    statistics,
-    time
+      base >=4.16
+    , bytestring
+    , containers
+    , directory
+    , hasktorch
+    , mtl
+    , numeric-tools
+    , statistics
+    , time
   default-language: Haskell2010
 
 executable nesycat
   main-is: Main.hs
-  hs-source-dirs: app
+  hs-source-dirs:
+      ./
   ghc-options: -rtsopts
   build-depends:
-    base,
-    nesycat-hasktorch,
-    hasktorch
+      base >=4.16
+    , hasktorch
+    , nesycat-hasktorch
   default-language: Haskell2010
-

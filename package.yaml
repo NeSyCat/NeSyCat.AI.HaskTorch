@@ -1,0 +1,37 @@
+name: nesycat-hasktorch
+version: 0.1.0.0
+synopsis: NeSyCat Framework with HaskTorch
+description: Typed tensor category for the NeSyCat neurosymbolic framework
+license: MIT
+author: User
+maintainer: user@example.com
+language: Haskell2010
+
+dependencies:
+  - base >=4.16
+
+# Library auto-discovers every module under src/ (Lib.* shared + Examples.* per
+# example). Adding a new example folder needs no edit here — just re-run hpack.
+library:
+  source-dirs: src
+  dependencies:
+    - bytestring
+    - containers
+    - directory
+    - mtl
+    - numeric-tools
+    - hasktorch
+    - statistics
+    - time
+
+executables:
+  nesycat:
+    main: Main.hs
+    source-dirs: .
+    # Pin to just Main.hs so hpack doesn't glob src/ into the executable; the
+    # dispatch logic lives in the library (Lib.Run). No dedicated app/ dir needed.
+    other-modules: []
+    ghc-options: -rtsopts
+    dependencies:
+      - nesycat-hasktorch
+      - hasktorch
