@@ -13,17 +13,17 @@ Haskell implementation of the **NeSyCat** neurosymbolic framework using HaskTorc
 
 ## Build & Run Commands
 
-The build is driven by **hpack**: `package.yaml` is the source of truth and generates `nesycat-hasktorch.cabal` (committed). Re-run hpack after adding/removing/renaming modules.
+Run an example by its **exact folder name** with the `./nesycat` wrapper — it regenerates the dispatcher from the `Examples/` folders (auto-discovery), runs hpack, builds, and runs:
 
 ```bash
-~/.cabal/bin/hpack --force            # regenerate the .cabal from package.yaml (after module changes)
-cabal build all                       # build the library + the single `nesycat` executable
+./nesycat MnistAddition 1   # ./nesycat <ExampleName> [n]   (n = runs to average; n=1 prints the loss curve)
+./nesycat Binary 10         # data ships in the example; Examples/MnistAddition/G_Data/get-mnist.sh refetches MNIST
+./nesycat Binary 1 +RTS -s  # RTS stats (exe built with -rtsopts)
 
-# Run an example:  nesycat <name> [n]   (n = runs to average; n=1 prints the loss curve)
-cabal run nesycat -- binary 1
-cabal run nesycat -- mnist-add 1      # data ships in the example; Examples/MnistAddition/G_Data/get-mnist.sh refetches it
-cabal run nesycat -- binary +RTS -s   # RTS stats (exe built with -rtsopts)
+cabal build all             # plain build; the cabal is hpack-generated (~/.cabal/bin/hpack --force regenerates it)
 ```
+
+Adding an `Examples/<Name>/` folder is **auto-registered** on the next `./nesycat` run — no manual step. The dispatcher `Library/Run.hs` is generated from the folder list (don't hand-edit it). `package.yaml` (hpack) generates `nesycat-hasktorch.cabal` (committed).
 
 Requires `hasktorch` + libtorch. HLS auto-detects the cabal cradle (reads the generated `.cabal`). `hpack` lives at `~/.cabal/bin/hpack`.
 
@@ -59,11 +59,11 @@ The repo is organized **by example**, not by layer. Two folders at the repo root
 ## Adding a new example (the scaffolding "button")
 
 ```bash
-Examples/new-example.sh SudokuSolver  # UpperCamelCase
-cabal run nesycat -- sudoku-solver 1      # builds + runs the stub immediately
+Examples/new-example.sh SudokuSolver   # UpperCamelCase (just scaffolds the folder)
+./nesycat SudokuSolver 1               # auto-registered by folder name; builds + runs the stub
 ```
 
-`new-example.sh` copies `Examples/_template/` (a full A–G stack of compilable stubs), renames the `Template` placeholder, registers the example in `Library/Run.hs` (between its `NEW-EXAMPLE-*` markers), and re-runs hpack — so the new modules build with **no manual cabal edit**. Then fill in the `C_Domain`, `D_Grammatical`, `G_Data` slots (and tweak `E_Inferential`/`F_Statistical`).
+`new-example.sh` copies `Examples/_template/` (a full A–G stack of compilable stubs) and renames the `Template` placeholder — that's all. There is **no registration step**: `./nesycat` discovers the new `Examples/SudokuSolver/` folder, regenerates `Library/Run.hs`, re-globs via hpack, and runs it. Then fill in the `C_Domain`, `D_Grammatical`, `G_Data` slots (and tweak `E_Inferential`/`F_Statistical`).
 
 ## Key patterns
 

@@ -4,7 +4,7 @@
 -- | The MNIST single-digit-addition example: the full A–G stack assembled. A/B
 --   reuse the library; C domain, D grammatical, E inference (categorical NLL),
 --   F statistics and G data are defined in this folder. 'runExample' does the rest.
-module MnistAddition.Example (MnistAdd) where
+module MnistAddition.Example (MnistAddition) where
 
 import MnistAddition.A_Categorical ()
 import MnistAddition.B_Logical ()
@@ -16,12 +16,12 @@ import MnistAddition.G_Data.Loader (MnistDataset (..), loadMnistDataset)
 import Example (Example (..))
 import C_Domain.Models.MnistCNN (ParamsCNN, ParamsCNNSpec (..))
 
-data MnistAdd
+data MnistAddition
 
-instance Example MnistAdd where
-  type Params MnistAdd = ParamsCNN
-  type Spec MnistAdd = ParamsCNNSpec
-  type Data MnistAdd = MnistDataset
+instance Example MnistAddition where
+  type Params MnistAddition = ParamsCNN
+  type Spec MnistAddition = ParamsCNNSpec
+  type Data MnistAddition = MnistDataset
 
   name = "MNIST single-digit addition (axiom-only; digits learned from sums)"
   spec = ParamsCNNSpec
