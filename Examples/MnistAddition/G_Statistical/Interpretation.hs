@@ -14,7 +14,7 @@ import MnistAddition.C_Domain.Signature (MnistKlRel (..))
 import MnistAddition.D_Grammatical.InterpretationData (mnistProb)
 import MnistAddition.E_Data.Signature (MnistDataset (..))
 import G_Statistical.Report (Report (..))
-import C_Domain.Models.Sequential.Interpretation (Weights)
+import C_Domain.Interpretation (Weights)
 import qualified Torch
 
 predDigits :: Weights -> Torch.Tensor -> [Int]

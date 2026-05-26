@@ -25,8 +25,8 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import qualified B_Logical.Interpretations.Tensor as TensLogic
 import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
-import C_Domain.Models.Interpretations.MnistCNN (cnn, cnnArch)
-import C_Domain.Models.Sequential.Interpretation (Weights, sampleWeights)
+import C_Domain.Architecture.MnistCNN (cnn, cnnArch)
+import C_Domain.Interpretation (Weights, sampleWeights)
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional as F

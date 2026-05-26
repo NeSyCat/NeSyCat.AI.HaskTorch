@@ -10,7 +10,7 @@ import A_Categorical.CategoricalSignature (Universe (..))
 import A_Categorical.CategoricalInterpretation (MeasU)
 import B_Logical.Interpretations.Boolean ()
 import Binary.C_Domain.Signature (BinarySorts (..))
-import C_Domain.Models.Sequential.Interpretation (Weights)
+import C_Domain.Interpretation (Weights)
 import Binary.C_Domain.Interpretation ()
 import Binary.D_Grammatical.Signature (binarySentence)
 

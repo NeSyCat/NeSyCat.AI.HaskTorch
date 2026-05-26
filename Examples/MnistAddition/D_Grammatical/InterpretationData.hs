@@ -17,7 +17,7 @@ import A_Categorical.CategoricalInterpretation (MeasU)
 import B_Logical.Interpretations.Boolean () -- LogicalQuantSignature _ MeasU Bool (bigWedge)
 import B_Logical.LogicalQuantSignature (LogicalQuantSignature (..))
 import MnistAddition.C_Domain.Interpretation ()
-import C_Domain.Models.Sequential.Interpretation (Weights)
+import C_Domain.Interpretation (Weights)
 import MnistAddition.D_Grammatical.Signature (mnistFormula)
 import qualified Torch
 

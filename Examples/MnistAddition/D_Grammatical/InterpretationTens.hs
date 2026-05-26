@@ -17,7 +17,7 @@ where
 import A_Categorical.CategoricalInterpretation (GeomU)
 import MnistAddition.C_Domain.Interpretation ()
 import MnistAddition.C_Domain.Signature (MnistArith (..), MnistKlRel (..))
-import C_Domain.Models.Sequential.Interpretation (Weights)
+import C_Domain.Interpretation (Weights)
 import Data.Functor.Identity (runIdentity)
 import qualified Torch
 

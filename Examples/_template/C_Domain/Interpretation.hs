@@ -3,9 +3,9 @@
 --   expose the parameter space (horizontal sort) as the canonical 'Params' +
 --   'initParams'. See "Binary.C_Domain.Interpretation" for a worked example.
 --
---   The MODEL is just an 'Arch' (a Sequential architecture); θ is its PURE 'Weights'.
+--   The MODEL is just an 'Arch' (a sequence of layers); θ is its PURE 'Weights'.
 --   This stub picks a trivial 1->1 architecture so the scaffold builds and runs —
---   reuse a shared one from "C_Domain.Models.Interpretations.*" (e.g. @mlpArch@) or
+--   reuse a shared one from "C_Domain.Architecture.*" (e.g. @mlpArch@) or
 --   build your own with @linearL@/@conv2dL@/@reluL@/@(>>>)@.
 module Template.C_Domain.Interpretation
   ( Params,
@@ -14,8 +14,8 @@ module Template.C_Domain.Interpretation
   )
 where
 
-import C_Domain.Models.Sequential.Interpretation (Weights, runArch, sampleWeights)
-import C_Domain.Models.Sequential.Signature (Arch, linearL)
+import C_Domain.Interpretation (Weights, runArch, sampleWeights)
+import C_Domain.Signature (Arch, linearL)
 import qualified Torch
 
 -- ============================================================

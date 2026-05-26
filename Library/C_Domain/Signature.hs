@@ -1,5 +1,6 @@
--- | The Sequential combinator — SIGNATURE: the ABSTRACT layer vocabulary (symbols
---   only, NO computation), the pure 'Arch' (a list of symbols), and composition.
+-- | The architecture DSL — SIGNATURE: the ABSTRACT layer vocabulary (symbols
+--   only, NO computation), the pure 'Arch' (a list of symbols composed in sequence),
+--   and composition.
 --
 --   Because the symbols carry no functions, an 'Arch' is fully analyzable DATA — you
 --   can 'show' it, count it, walk it — and it admits MANY interpretations (run it as a
@@ -7,7 +8,7 @@
 --   signature's symbols admit Boolean / Tensor interpretations. The concrete meaning
 --   of each symbol (what @ELU@ computes, how @Linear@ samples) lives in an
 --   interpretation, never here.
-module C_Domain.Models.Sequential.Signature
+module C_Domain.Signature
   ( Layer (..),
     Arch,
     (>>>),

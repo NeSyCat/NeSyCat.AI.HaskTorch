@@ -1,11 +1,11 @@
--- | A model INTERPRETATION: the Binary MLP, as a Sequential ARCHITECTURE plus its
---   forward. 'mlpArch' is the pure 'Arch' (the single source of truth); 'mlp' is its
+-- | The Binary MLP ARCHITECTURE, plus its forward. 'mlpArch' is the pure 'Arch'
+--   (the single source of truth); 'mlp' is its
 --   forward at θ — @mlp = runArch mlpArch@, so a call site writes @mlp θ x@ instead of
 --   @runArch mlpArch θ x@. Draw θ with @sampleWeights mlpArch@.
-module C_Domain.Models.Interpretations.MLP (mlpArch, mlp) where
+module C_Domain.Architecture.MLP (mlpArch, mlp) where
 
-import C_Domain.Models.Sequential.Interpretation (Weights, runArch)
-import C_Domain.Models.Sequential.Signature (Arch, eluL, linearL, (>>>))
+import C_Domain.Interpretation (Weights, runArch)
+import C_Domain.Signature (Arch, eluL, linearL, (>>>))
 import Torch (Tensor)
 
 -- | The Binary MLP: 2 -> 16 -> 16 -> 1, ELU between the linear layers.

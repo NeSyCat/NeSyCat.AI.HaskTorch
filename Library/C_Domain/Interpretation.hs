@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 
--- | The Sequential combinator — INTERPRETATIONS of the abstract 'Layer' vocabulary.
+-- | The architecture DSL — INTERPRETATIONS of the abstract 'Layer' vocabulary.
 --   Crucially, the ARCHITECTURE and the PARAMETERS are kept separate:
 --
 --     * 'Weights' is θ — the PURE parameters (just the sampled weights, no forwards,
@@ -9,19 +9,18 @@
 --     * 'sampleWeights' draws fresh θ for an architecture; 'runArch' applies a FIXED
 --       architecture to θ. So the axiom sees only θ ('Weights'), and the architecture
 --       is supplied separately (by whoever holds it — the example's C interpretation).
---     * 'countParams' is a second, pure interpretation (no tensors, no IO).
 --
+--   'sampleWeights' and 'runArch' are two interpretations of the same pure 'Arch'.
 --   To add a learnable layer: add its 'Layer' symbol + a 'LayerWeight' constructor
 --   here + a case in 'sampleWeights' and 'runArch'.
-module C_Domain.Models.Sequential.Interpretation
+module C_Domain.Interpretation
   ( Weights,
     sampleWeights,
     runArch,
-    countParams,
   )
 where
 
-import C_Domain.Models.Sequential.Signature (Arch, Layer (..))
+import C_Domain.Signature (Arch, Layer (..))
 import Data.Maybe (catMaybes)
 import GHC.Generics (Generic)
 import Torch (Conv2d, Conv2dSpec (..), Linear, LinearSpec (..), Parameterized (..), Randomizable (..), Tensor, conv2dForward, linear)
@@ -61,11 +60,3 @@ runArch arch (Weights ws0) = go arch ws0
     go (MaxPool : ls) ws x = go ls ws (F.maxPool2d (2, 2) (2, 2) (0, 0) (1, 1) F.Floor x)
     go (Flatten : ls) ws x = go ls ws (Torch.reshape [head (Torch.shape x), product (tail (Torch.shape x))] x)
     go _ _ x = x -- empty arch, or a weights/arch mismatch (untyped: no compile-time guard)
-
--- | A second, PURE interpretation — count the learnable parameters (no tensors, no IO).
-countParams :: Arch -> Int
-countParams = sum . map count
-  where
-    count (Linear i o) = i * o + o
-    count (Conv2d i o k) = i * o * k * k + o
-    count _ = 0

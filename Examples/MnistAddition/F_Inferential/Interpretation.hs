@@ -17,7 +17,7 @@ module MnistAddition.F_Inferential.Interpretation (objective, trainConfig, mnist
 import MnistAddition.D_Grammatical.InterpretationTens (mnistSumLogits)
 import MnistAddition.E_Data.Signature (MnistDataset (..))
 import F_Inferential.Library.NegLog (negLog)
-import C_Domain.Models.Sequential.Interpretation (Weights)
+import C_Domain.Interpretation (Weights)
 import qualified Torch
 import qualified Torch.Functional as F
 
