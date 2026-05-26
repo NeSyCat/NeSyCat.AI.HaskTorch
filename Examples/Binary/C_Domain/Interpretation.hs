@@ -26,8 +26,8 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import B_Logical.Interpretations.Tensor hiding (Omega)
 import qualified B_Logical.Interpretations.Tensor as TensLogic
-import C_Domain.Models.Interpretations.MLP (MLPSpace, newMLP)
-import C_Domain.Models.Signature (forward)
+import C_Domain.Models.Interpretations.MLP (MLPSpace)
+import C_Domain.Models.Signature (forward, fresh)
 import Binary.C_Domain.Signature (BinaryBridge (..), BinaryKlRel (..), BinaryParams (..), BinaryRel (..), BinarySorts (..))
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
@@ -56,9 +56,9 @@ instance BinaryParams MeasU where type Theta MeasU = MLPSpace
 
 instance BinaryParams GeomU where type Theta GeomU = MLPSpace
 
--- | Draw the initial theta_0 (the MLP's initializer; HaskTorch's @sample@ is hidden in the model).
+-- | Draw the initial theta_0 — the MLP's 'fresh' at (inDim=2, hidden=16, outDim=1).
 initParams :: IO Params
-initParams = newMLP 2 16 1
+initParams = fresh (2, 16, 1)
 
 -- ============================================================
 --  MeasU: plain relation symbols (BinaryRel)

@@ -1,12 +1,14 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE InstanceSigs #-}
 
 -- | A model INTERPRETATION: a LeNet-style MNIST CNN as an instance of the 'Model'
---   signature. [B,1,28,28] -> [B,10] raw logits. Carries its own parameter space
---   ('CNNSpace'), the forward body, and the initializer ('newCNN').
+--   signature. Everything in the instance — the param space ('CNNSpace'), 'forward'
+--   ([B,1,28,28] -> [B,10] logits), and 'fresh' (fixed architecture, so @Init = ()@).
 --   Shapes: 28 -conv5-> 24 -pool2-> 12 -conv5-> 8 -pool2-> 4, so flatten = 16*4*4 = 256.
-module C_Domain.Models.Interpretations.MnistCNN (CNNSpace (..), newCNN) where
+module C_Domain.Models.Interpretations.MnistCNN (CNNSpace (..)) where
 
 import C_Domain.Models.Signature (Model (..))
 import GHC.Generics (Generic)
@@ -23,6 +25,9 @@ data CNNSpace = CNNSpace
   deriving (Generic, Show, Parameterized)
 
 instance Model CNNSpace where
+  type Init CNNSpace = ()
+
+  forward :: CNNSpace -> Torch.Tensor -> Torch.Tensor
   forward CNNSpace {..} x =
     let pool t = F.maxPool2d (2, 2) (2, 2) (0, 0) (1, 1) F.Floor t
         h1 = pool (F.relu (conv2dForward conv1 (1, 1) (0, 0) x)) -- [B,6,12,12]
@@ -31,11 +36,10 @@ instance Model CNNSpace where
         d1 = F.elu (1.0 :: Float) (linear fc1 flat)
      in linear fc2 d1 -- [B,10] raw logits
 
--- | Draw fresh random weights (fixed LeNet architecture for 28x28 -> 10).
-newCNN :: IO CNNSpace
-newCNN =
-  CNNSpace
-    <$> sample (Conv2dSpec 1 6 5 5)
-    <*> sample (Conv2dSpec 6 16 5 5)
-    <*> sample (LinearSpec 256 100)
-    <*> sample (LinearSpec 100 10)
+  fresh :: Init CNNSpace -> IO CNNSpace
+  fresh () =
+    CNNSpace
+      <$> sample (Conv2dSpec 1 6 5 5)
+      <*> sample (Conv2dSpec 6 16 5 5)
+      <*> sample (LinearSpec 256 100)
+      <*> sample (LinearSpec 100 10)

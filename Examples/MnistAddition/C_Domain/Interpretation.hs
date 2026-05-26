@@ -25,8 +25,8 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import qualified B_Logical.Interpretations.Tensor as TensLogic
 import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
-import C_Domain.Models.Interpretations.MnistCNN (CNNSpace, newCNN)
-import C_Domain.Models.Signature (forward)
+import C_Domain.Models.Interpretations.MnistCNN (CNNSpace)
+import C_Domain.Models.Signature (forward, fresh)
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional as F
@@ -59,9 +59,9 @@ instance MnistParams MeasU where type ThetaCNN MeasU = CNNSpace
 
 instance MnistParams GeomU where type ThetaCNN GeomU = CNNSpace
 
--- | Draw the initial theta_0 (the CNN's initializer; HaskTorch's @sample@ is hidden in the model).
+-- | Draw the initial theta_0 — the CNN's 'fresh' (fixed architecture, so @()@).
 initParams :: IO Params
-initParams = newCNN
+initParams = fresh ()
 
 -- ============================================================
 --  MeasU: relation & function symbols (digit, +, =)
