@@ -10,8 +10,7 @@ where
 import A_Categorical.CategoricalInterpretation (GeomU)
 import Binary.C_Domain.Signature (BinarySorts (..))
 import Binary.C_Domain.Interpretation ()
-import C_Domain.Interpretation (Weights)
-import B_Logical.LogicalSignature (LogicalSignature (..))
+import C_Domain.NeuralNets.DSL.Semantics (Weights)
 import Binary.D_Grammatical.Signature (binarySentence)
 import Data.Functor.Identity (runIdentity)
 import qualified Torch

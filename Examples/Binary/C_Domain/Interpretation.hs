@@ -25,8 +25,8 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import B_Logical.Interpretations.Tensor hiding (Omega)
 import qualified B_Logical.Interpretations.Tensor as TensLogic
-import C_Domain.Architecture.MLP (mlp, mlpArch)
-import C_Domain.Interpretation (Weights, sampleWeights)
+import C_Domain.NeuralNets.MLP (mlp, mlpArch)
+import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
 import Binary.C_Domain.Signature (BinaryBridge (..), BinaryKlRel (..), BinaryParams (..), BinaryRel (..), BinarySorts (..))
 import Data.Functor.Identity (Identity (..))
 import qualified Torch

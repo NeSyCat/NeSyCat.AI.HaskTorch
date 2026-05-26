@@ -12,7 +12,7 @@ import Binary.C_Domain.Signature (BinaryKlRel (..), BinaryRel (..), BinarySorts 
 import Binary.E_Data.Signature (BinaryDataset (..))
 import A_Categorical.Category.Monads.DistExpect (distPTrue)
 import G_Statistical.Report (Report, evaluate, runMetrics)
-import C_Domain.Interpretation (Weights)
+import C_Domain.NeuralNets.DSL.Semantics (Weights)
 import qualified Torch
 
 binaryReport :: Weights -> BinaryDataset -> Report

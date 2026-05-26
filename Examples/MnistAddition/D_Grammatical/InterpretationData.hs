@@ -14,10 +14,10 @@ where
 import A_Categorical.Category.Monads.Dist (Dist)
 import A_Categorical.Category.Monads.DistExpect (distPTrue)
 import A_Categorical.CategoricalInterpretation (MeasU)
-import B_Logical.Interpretations.Boolean () -- LogicalQuantSignature _ MeasU Bool (bigWedge)
-import B_Logical.LogicalQuantSignature (LogicalQuantSignature (..))
+import B_Logical.Interpretations.Boolean () -- A2MonBLat _ MeasU Bool (bigWedge)
+import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import MnistAddition.C_Domain.Interpretation ()
-import C_Domain.Interpretation (Weights)
+import C_Domain.NeuralNets.DSL.Semantics (Weights)
 import MnistAddition.D_Grammatical.Signature (mnistFormula)
 import qualified Torch
 

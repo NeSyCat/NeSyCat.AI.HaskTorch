@@ -8,7 +8,7 @@
 
 -- | Grammatical layer (D) — SIGNATURE for the Binary example: the abstract binary
 --   classification formula (the axiom), universe-polymorphic over @u@. Uses
---   bigWedge from LogicalQuantSignature for quantification; this single formula is
+--   bigWedge from A2MonBLat for quantification; this single formula is
 --   interpreted per universe in InterpretationData (MeasU) / InterpretationTens (GeomU).
 module Binary.D_Grammatical.Signature
   ( binaryPredicate,
@@ -17,15 +17,16 @@ module Binary.D_Grammatical.Signature
 where
 
 import A_Categorical.CategoricalSignature (Universe (..))
-import B_Logical.LogicalQuantSignature (LogicalQuantSignature (..), Guard)
-import B_Logical.LogicalSignature (LogicalSignature (..))
+import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
+import B_Logical.Signature.Guard (Guard)
+import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
 import Binary.C_Domain.Signature (BinaryRel (..), BinaryKlRel (..), BinaryParams (..), BinarySorts (..))
 
 -- | Abstract pointwise predicate for binary classification.
 binaryPredicate ::
   forall u.
   ( BinaryKlRel u,
-    LogicalSignature u (Omega u),
+    TwoMonBLat u (Omega u),
     Monad (M u)
   ) =>
   ParamsLogic (Omega u) ->
@@ -45,8 +46,8 @@ binaryPredicate lp paramMLP pt = do
 binarySentence ::
   forall u a.
   ( BinaryKlRel u,
-    LogicalSignature u (Omega u),
-    LogicalQuantSignature a u (Omega u),
+    TwoMonBLat u (Omega u),
+    A2MonBLat a u (Omega u),
     Monad (M u),
     a ~ Point u
   ) =>

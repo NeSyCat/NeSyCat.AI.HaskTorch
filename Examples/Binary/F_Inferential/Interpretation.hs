@@ -7,7 +7,7 @@ module Binary.F_Inferential.Interpretation (objective, trainConfig) where
 
 import Binary.D_Grammatical.InterpretationTens (binaryAxiomTens)
 import Binary.E_Data.Signature (BinaryDataset (..))
-import C_Domain.Interpretation (Weights)
+import C_Domain.NeuralNets.DSL.Semantics (Weights)
 import F_Inferential.InferenceInterpretation ()
 import F_Inferential.InferenceSignature (InferenceSignature (..))
 import qualified Torch

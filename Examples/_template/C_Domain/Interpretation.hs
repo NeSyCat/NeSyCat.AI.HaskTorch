@@ -5,7 +5,7 @@
 --
 --   The MODEL is just an 'Arch' (a sequence of layers); θ is its PURE 'Weights'.
 --   This stub picks a trivial 1->1 architecture so the scaffold builds and runs —
---   reuse a shared one from "C_Domain.Architecture.*" (e.g. @mlpArch@) or
+--   reuse a shared one from "C_Domain.NeuralNets.*" (e.g. @mlpArch@) or
 --   build your own from 'Layer' symbols, e.g. @[Linear 1 16, ReLU, Linear 16 1]@.
 module Template.C_Domain.Interpretation
   ( Params,
@@ -14,8 +14,8 @@ module Template.C_Domain.Interpretation
   )
 where
 
-import C_Domain.Interpretation (Weights, runArch, sampleWeights)
-import C_Domain.Signature (Arch, Layer (..))
+import C_Domain.NeuralNets.DSL.Semantics (Weights, runArch, sampleWeights)
+import C_Domain.NeuralNets.DSL.Syntax (Arch, Layer (..))
 import qualified Torch
 
 -- ============================================================
