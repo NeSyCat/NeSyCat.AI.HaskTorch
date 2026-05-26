@@ -11,7 +11,7 @@
 --   GeomU assignments of the symbols, then the bridge.
 --
 --     Sorts : I(Image), I(Digit)        per universe (MeasU, GeomU)
---     digit : the CNN; GeomU = raw logits, MeasU = softmax -> Dist over 0..9 (via the bridge)
+--     digit : cnn -- the chosen CNN architecture (= runArch cnnArch) at θ (pure weights)
 --     bridge: encImage / decDigit between MeasU and GeomU
 module MnistAddition.C_Domain.Interpretation
   ( module MnistAddition.C_Domain.Signature,
@@ -25,8 +25,8 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import qualified B_Logical.Interpretations.Tensor as TensLogic
 import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
-import C_Domain.Models.Interpretations.MnistCNN (CNNSpace)
-import C_Domain.Models.Signature (forward, fresh)
+import C_Domain.Models.Interpretations.MnistCNN (cnn, cnnArch)
+import C_Domain.Models.Sequential.Interpretation (Weights, sampleWeights)
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional as F
@@ -49,29 +49,29 @@ instance MnistSorts GeomU where
   type Omega GeomU = TensLogic.Omega   -- = Torch.Tensor (the logic's GeomU truth object)
 
 -- ============================================================
---  Parameter spaces (horizontal sorts): I(ThetaCNN) = the CNN weight space
+--  Parameter spaces (horizontal sorts): I(ThetaCNN) = the pure weights of 'arch'
 -- ============================================================
 
--- | The (chosen) horizontal sort: the CNN weight space (an actor object).
-type Params = CNNSpace
+-- | The horizontal sort: the PURE parameters (weights) of 'cnnArch'.
+type Params = Weights
 
-instance MnistParams MeasU where type ThetaCNN MeasU = CNNSpace
+instance MnistParams MeasU where type ThetaCNN MeasU = Weights
 
-instance MnistParams GeomU where type ThetaCNN GeomU = CNNSpace
+instance MnistParams GeomU where type ThetaCNN GeomU = Weights
 
--- | Draw the initial theta_0 — the CNN's 'fresh' (fixed architecture, so @()@).
+-- | Draw the initial theta_0 — fresh weights for 'cnnArch'.
 initParams :: IO Params
-initParams = fresh ()
+initParams = sampleWeights cnnArch
 
 -- ============================================================
 --  MeasU: relation & function symbols (digit, +, =)
 -- ============================================================
 
 instance MnistKlRel MeasU where
-  digit :: CNNSpace -> Image MeasU -> Dist (Digit MeasU)
+  digit :: Weights -> Image MeasU -> Dist (Digit MeasU)
   digit theta img =
     let imgT = encImage @MeasU @GeomU img -- encode the image into a GeomU batch tensor
-        logits = forward theta imgT        -- run the net (logits)
+        logits = cnn theta imgT            -- run the chosen architecture at θ (logits)
      in decDigit @MeasU @GeomU logits      -- decode logits -> Dist over 0..9
 
 instance MnistArith MeasU where
@@ -89,8 +89,8 @@ instance MnistArith MeasU where
 -- ============================================================
 
 instance MnistKlRel GeomU where
-  digit :: CNNSpace -> Image GeomU -> Identity (Digit GeomU)
-  digit theta img = Identity (forward theta img) -- raw logits, like classifierA @GeomU
+  digit :: Weights -> Image GeomU -> Identity (Digit GeomU)
+  digit theta img = Identity (cnn theta img) -- raw logits, like classifierA @GeomU
 
 instance MnistArith GeomU where
   -- (+) : lifted addition of two digit-logit vectors [B,10] into a logit vector

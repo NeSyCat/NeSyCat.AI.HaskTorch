@@ -14,17 +14,17 @@ import MnistAddition.C_Domain.Signature (MnistKlRel (..))
 import MnistAddition.D_Grammatical.InterpretationData (mnistProb)
 import MnistAddition.E_Data.Signature (MnistDataset (..))
 import G_Statistical.Report (Report (..))
-import C_Domain.Models.Interpretations.MnistCNN (CNNSpace)
+import C_Domain.Models.Sequential.Interpretation (Weights)
 import qualified Torch
 
-predDigits :: CNNSpace -> Torch.Tensor -> [Int]
+predDigits :: Weights -> Torch.Tensor -> [Int]
 predDigits theta imgs =
   Torch.asValue (Torch.argmax (Torch.Dim 1) Torch.RemoveDim (runIdentity (digit @GeomU theta imgs)))
 
 fracEq :: [Int] -> [Int] -> Double
 fracEq a b = fromIntegral (length (filter id (zipWith (==) a b))) / fromIntegral (max 1 (length a))
 
-mnistReport :: CNNSpace -> MnistDataset -> Report
+mnistReport :: Weights -> MnistDataset -> Report
 mnistReport theta ds =
   Report
     [ ("Sum-acc(train)", fracEq (predSum (trainXImg ds) (trainYImg ds)) (trainSums ds)),
@@ -36,7 +36,7 @@ mnistReport theta ds =
     predSum xs ys = zipWith (+) (predDigits theta xs) (predDigits theta ys)
 
 -- | Mean @P(add(x,y) = digit(x)+digit(y))@ over a capped test subset (the MeasU/Dist reading).
-meanConfidence :: CNNSpace -> MnistDataset -> Int -> Double
+meanConfidence :: Weights -> MnistDataset -> Int -> Double
 meanConfidence theta ds cap =
   let n = min cap (length (testSums ds))
       slice img i = Torch.sliceDim 0 i (i + 1) 1 img
@@ -44,5 +44,5 @@ meanConfidence theta ds cap =
    in if null ps then 0 else sum ps / fromIntegral (length ps)
 
 -- | G-layer manifest piece for the Example.
-report :: CNNSpace -> MnistDataset -> IO Report
+report :: Weights -> MnistDataset -> IO Report
 report theta ds = return (mnistReport theta ds)

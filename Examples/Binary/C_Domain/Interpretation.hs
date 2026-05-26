@@ -10,9 +10,8 @@
 --   signature symbols to objects/morphisms of the domain category.
 --
 --     Sorts       : I(Point), I(Omega)        per universe (MeasU, GeomU)
---     Theta       : I(Theta) = MLPSpace       (the MLP weight space, an actor object)
---     labelA      : the circle-in-square ground truth
---     classifierA : the MLP morphism forward -- the network *is* this semantics
+--     Theta       : I(Theta) = Weights        (the PURE parameters of 'arch')
+--     classifierA : mlp -- the chosen architecture (= runArch mlpArch) at θ
 --     bridge      : encPoint / decOmega between MeasU and GeomU
 module Binary.C_Domain.Interpretation
   ( module Binary.C_Domain.Signature,
@@ -26,8 +25,8 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import B_Logical.Interpretations.Tensor hiding (Omega)
 import qualified B_Logical.Interpretations.Tensor as TensLogic
-import C_Domain.Models.Interpretations.MLP (MLPSpace)
-import C_Domain.Models.Signature (forward, fresh)
+import C_Domain.Models.Interpretations.MLP (mlp, mlpArch)
+import C_Domain.Models.Sequential.Interpretation (Weights, sampleWeights)
 import Binary.C_Domain.Signature (BinaryBridge (..), BinaryKlRel (..), BinaryParams (..), BinaryRel (..), BinarySorts (..))
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
@@ -46,19 +45,21 @@ instance BinarySorts GeomU where
   type Omega GeomU = TensLogic.Omega  -- = Torch.Tensor
 
 -- ============================================================
---  Parameter spaces (horizontal sorts): I(Theta) = the MLP weight space
+--  Parameter spaces (horizontal sorts): I(Theta) = the pure weights of the MLP
 -- ============================================================
 
--- | The (chosen) horizontal sort: the MLP weight space (an actor object).
-type Params = MLPSpace
+-- | The horizontal sort: the PURE parameters (weights). Binary's architecture is the
+--   imported 'mlpArch' (chosen here, in this interpretation); only θ varies, and the
+--   forward is 'mlp' (= @runArch mlpArch@).
+type Params = Weights
 
-instance BinaryParams MeasU where type Theta MeasU = MLPSpace
+instance BinaryParams MeasU where type Theta MeasU = Weights
 
-instance BinaryParams GeomU where type Theta GeomU = MLPSpace
+instance BinaryParams GeomU where type Theta GeomU = Weights
 
--- | Draw the initial theta_0 — the MLP's 'fresh' at (inDim=2, hidden=16, outDim=1).
+-- | Draw the initial theta_0 — fresh weights for the MLP.
 initParams :: IO Params
-initParams = fresh (2, 16, 1)
+initParams = sampleWeights mlpArch
 
 -- ============================================================
 --  MeasU: plain relation symbols (BinaryRel)
@@ -76,10 +77,10 @@ instance BinaryRel MeasU where
 -- ============================================================
 
 instance BinaryKlRel MeasU where
-  classifierA :: MLPSpace -> Point MeasU -> Dist (Omega MeasU)
-  classifierA paramMLP pt =
+  classifierA :: Weights -> Point MeasU -> Dist (Omega MeasU)
+  classifierA theta pt =
     let ptTens = encPoint @MeasU @GeomU pt
-        logits = forward paramMLP (Torch.reshape [1, 2] ptTens)
+        logits = mlp theta (Torch.reshape [1, 2] ptTens)
      in decOmega @MeasU @GeomU logits
 
 -- ============================================================
@@ -107,9 +108,9 @@ logitScale = 10.0
 -- ============================================================
 
 instance BinaryKlRel GeomU where
-  classifierA :: MLPSpace -> Point GeomU -> Identity (Omega GeomU)
-  classifierA paramMLP ptTensor =
-    Identity (forward paramMLP ptTensor)
+  classifierA :: Weights -> Point GeomU -> Identity (Omega GeomU)
+  classifierA theta ptTensor =
+    Identity (mlp theta ptTensor)
 
 -- ============================================================
 --  BRIDGE: MeasU <-> GeomU (with Dist monad for decoding)

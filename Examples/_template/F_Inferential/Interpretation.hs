@@ -5,7 +5,7 @@
 --   "Binary.F_Inferential.Interpretation" / "MnistAddition.F_Inferential.Interpretation").
 module Template.F_Inferential.Interpretation (objective, trainConfig, templateLoss) where
 
-import Template.C_Domain.Model (ParamsTemplate, forwardTemplate)
+import Template.C_Domain.Interpretation (Params, forwardTemplate)
 import Template.E_Data.Signature (TemplateDataset (..))
 import F_Inferential.Library.Softplus (softplus)
 import qualified Torch
@@ -15,7 +15,7 @@ trainConfig :: (Int, Float)
 trainConfig = (10, 0.01)
 
 -- | The loss the trainer minimizes.
-objective :: TemplateDataset -> ParamsTemplate -> Torch.Tensor
+objective :: TemplateDataset -> Params -> Torch.Tensor
 objective ds theta = templateLoss (forwardTemplate theta (inputs ds))
 
 -- | Map the grammatical axiom's value to a scalar loss.

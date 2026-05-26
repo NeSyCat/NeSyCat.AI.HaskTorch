@@ -29,7 +29,8 @@ library
       B_Logical.LogicalSignature
       C_Domain.Models.Interpretations.MLP
       C_Domain.Models.Interpretations.MnistCNN
-      C_Domain.Models.Signature
+      C_Domain.Models.Sequential.Interpretation
+      C_Domain.Models.Sequential.Signature
       Example
       F_Inferential.InferenceInterpretation
       F_Inferential.InferenceSignature
