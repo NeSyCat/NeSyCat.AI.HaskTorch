@@ -5,12 +5,12 @@
 module C_Domain.Architecture.MLP (mlpArch, mlp) where
 
 import C_Domain.Interpretation (Weights, runArch)
-import C_Domain.Signature (Arch, eluL, linearL, (>>>))
+import C_Domain.Signature (Arch, Layer (..))
 import Torch (Tensor)
 
 -- | The Binary MLP: 2 -> 16 -> 16 -> 1, ELU between the linear layers.
 mlpArch :: Arch
-mlpArch = linearL 2 16 >>> eluL >>> linearL 16 16 >>> eluL >>> linearL 16 1
+mlpArch = [Linear 2 16, ELU, Linear 16 16, ELU, Linear 16 1]
 
 -- | The MLP forward at θ: @mlp θ x = runArch mlpArch θ x@.
 mlp :: Weights -> Tensor -> Tensor

@@ -23,13 +23,68 @@ library
       A_Categorical.Category.Monads.DistExpect
       A_Categorical.Category.Monads.Giry
       A_Categorical.Category.Monads.GiryExpect
+      B_Logical.Comparator.Eq.Boolean
+      B_Logical.Comparator.Eq.Tensor
+      B_Logical.Comparator.Geq.Boolean
+      B_Logical.Comparator.Geq.Tensor
+      B_Logical.Comparator.Gt.Boolean
+      B_Logical.Comparator.Gt.Tensor
+      B_Logical.Comparator.Leq.Boolean
+      B_Logical.Comparator.Leq.Tensor
+      B_Logical.Comparator.Lt.Boolean
+      B_Logical.Comparator.Lt.Tensor
+      B_Logical.Comparator.Neq.Boolean
+      B_Logical.Comparator.Neq.Tensor
+      B_Logical.Comparator.Vdash.Boolean
+      B_Logical.Comparator.Vdash.Tensor
+      B_Logical.Connector.Bot.Boolean
+      B_Logical.Connector.Bot.Tensor
+      B_Logical.Connector.Implies.Boolean
+      B_Logical.Connector.Implies.Tensor
+      B_Logical.Connector.Neg.Boolean
+      B_Logical.Connector.Neg.Tensor
+      B_Logical.Connector.Oplus.Boolean
+      B_Logical.Connector.Oplus.Tensor
+      B_Logical.Connector.Otimes.Boolean
+      B_Logical.Connector.Otimes.Tensor
+      B_Logical.Connector.Top.Boolean
+      B_Logical.Connector.Top.Tensor
+      B_Logical.Connector.V0.Boolean
+      B_Logical.Connector.V0.Tensor
+      B_Logical.Connector.V1.Boolean
+      B_Logical.Connector.V1.Tensor
+      B_Logical.Connector.Vee.Boolean
+      B_Logical.Connector.Vee.Tensor
+      B_Logical.Connector.Wedge.Boolean
+      B_Logical.Connector.Wedge.Tensor
       B_Logical.Interpretations.Boolean
       B_Logical.Interpretations.Tensor
       B_Logical.LogicalQuantSignature
       B_Logical.LogicalSignature
+      B_Logical.Quantor.BigOplus.Boolean
+      B_Logical.Quantor.BigOplus.Tensor
+      B_Logical.Quantor.BigOtimes.Boolean
+      B_Logical.Quantor.BigOtimes.Tensor
+      B_Logical.Quantor.BigVee.Boolean
+      B_Logical.Quantor.BigVee.Tensor
+      B_Logical.Quantor.BigWedge.Boolean
+      B_Logical.Quantor.BigWedge.Tensor
+      B_Logical.Quantor.Guard.Boolean
+      B_Logical.Quantor.Guard.Tensor
+      B_Logical.Truth.Conversions.Boolean
+      B_Logical.Truth.Conversions.Tensor
+      B_Logical.Truth.Omega.Boolean
+      B_Logical.Truth.Omega.Tensor
       C_Domain.Architecture.MLP
       C_Domain.Architecture.MnistCNN
       C_Domain.Interpretation
+      C_Domain.Library.Activation.ELU
+      C_Domain.Library.Activation.ReLU
+      C_Domain.Library.Activation.Sigmoid
+      C_Domain.Library.Parameterized.Conv2d
+      C_Domain.Library.Parameterized.Linear
+      C_Domain.Library.Shape.Flatten
+      C_Domain.Library.Shape.MaxPool
       C_Domain.Signature
       Example
       F_Inferential.InferenceInterpretation

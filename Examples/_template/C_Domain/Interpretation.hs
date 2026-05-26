@@ -6,7 +6,7 @@
 --   The MODEL is just an 'Arch' (a sequence of layers); θ is its PURE 'Weights'.
 --   This stub picks a trivial 1->1 architecture so the scaffold builds and runs —
 --   reuse a shared one from "C_Domain.Architecture.*" (e.g. @mlpArch@) or
---   build your own with @linearL@/@conv2dL@/@reluL@/@(>>>)@.
+--   build your own from 'Layer' symbols, e.g. @[Linear 1 16, ReLU, Linear 16 1]@.
 module Template.C_Domain.Interpretation
   ( Params,
     initParams,
@@ -15,7 +15,7 @@ module Template.C_Domain.Interpretation
 where
 
 import C_Domain.Interpretation (Weights, runArch, sampleWeights)
-import C_Domain.Signature (Arch, linearL)
+import C_Domain.Signature (Arch, Layer (..))
 import qualified Torch
 
 -- ============================================================
@@ -24,7 +24,7 @@ import qualified Torch
 
 -- | This example's architecture — choose it here (trivial 1->1 stub).
 arch :: Arch
-arch = linearL 1 1
+arch = [Linear 1 1]
 
 -- | The (chosen) horizontal sort: the PURE parameters (weights) of 'arch'.
 type Params = Weights

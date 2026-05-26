@@ -6,17 +6,15 @@
 module C_Domain.Architecture.MnistCNN (cnnArch, cnn) where
 
 import C_Domain.Interpretation (Weights, runArch)
-import C_Domain.Signature (Arch, conv2dL, eluL, flattenL, linearL, maxPoolL, reluL, (>>>))
+import C_Domain.Signature (Arch, Layer (..), (>>>))
 import Torch (Tensor)
 
 -- | LeNet-style MNIST CNN: [B,1,28,28] -> [B,10] raw logits.
 cnnArch :: Arch
 cnnArch =
-  conv2dL 1 6 5 >>> reluL >>> maxPoolL
-    >>> conv2dL 6 16 5 >>> reluL >>> maxPoolL
-    >>> flattenL
-    >>> linearL 256 100 >>> eluL
-    >>> linearL 100 10
+  convBlock 1 6 >>> convBlock 6 16 >>> [Flatten, Linear 256 100, ELU, Linear 100 10]
+  where
+    convBlock i o = [Conv2d i o 5, ReLU, MaxPool]
 
 -- | The CNN forward at θ: @cnn θ x = runArch cnnArch θ x@.
 cnn :: Weights -> Tensor -> Tensor
