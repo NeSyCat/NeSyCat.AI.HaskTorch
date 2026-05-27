@@ -14,6 +14,7 @@ module F_Inferential.Train
   )
 where
 
+import Control.Monad (when)
 import Data.Time.Clock (diffUTCTime, getCurrentTime)
 import Text.Printf (printf)
 import Torch (Parameterized (..))
@@ -70,18 +71,16 @@ trainBatched verbose mkInit numEpochs learningRate mkBatches dat objective = do
         let !loss = objective epoch b m
         (m', o') <- runStep m o loss lrTens
         return (m', o', loss)
-    if verbose && ((epoch + 1) `mod` printEvery == 0 || epoch == 0 || epoch == numEpochs - 1)
-      then do
-        epochEnd <- getCurrentTime
-        let diffMs = (realToFrac (diffUTCTime epochEnd startTime) :: Double) * 1000
-        putStrLn $
-          printf "[Epoch %3d/%d] J=%7.5f | %.2fms"
-            (epoch + 1) numEpochs (Torch.asValue lastLoss :: Float) diffMs
-      else return ()
+    when (verbose && ((epoch + 1) `mod` printEvery == 0 || epoch == 0 || epoch == numEpochs - 1)) $ do
+      epochEnd <- getCurrentTime
+      let diffMs = (realToFrac (diffUTCTime epochEnd startTime) :: Double) * 1000
+      putStrLn $
+        printf "[Epoch %3d/%d] J=%7.5f | %.2fms"
+          (epoch + 1) numEpochs (Torch.asValue lastLoss :: Float) diffMs
     return (m1, o1)
   totalEnd <- getCurrentTime
   let totalDiff = realToFrac (diffUTCTime totalEnd startTime) :: Double
-  if verbose then putStrLn (printf "[Training complete] %.2fs" totalDiff) else return ()
+  when verbose $ putStrLn (printf "[Training complete] %.2fs" totalDiff)
   return final
 
 foldLoop :: a -> [b] -> (a -> b -> IO a) -> IO a
