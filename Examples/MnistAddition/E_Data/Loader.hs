@@ -40,8 +40,8 @@ loadMnistDataset = do
   unless (and present) $
     die ("MNIST data not found in " ++ mnistDir ++ "/. Run:  Examples/MnistAddition/E_Data/get-mnist.sh")
   (trainMD, testMD) <- V.initMnist mnistDir
-  let nTr = 1000
-      nTe = 500
+  let nTr = 3000
+      nTe = 1000
       buildPairs md nPairs =
         let xIdx = [2 * i | i <- [0 .. nPairs - 1]]
             yIdx = [2 * i + 1 | i <- [0 .. nPairs - 1]]

@@ -25,12 +25,12 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import qualified B_Logical.Interpretations.Tensor as TensLogic
 import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
+import C_Domain.Arithmetic.LogConv (logConv)
 import C_Domain.NeuralNets.MnistCNN (cnn, cnnArch)
 import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
 import Data.Functor.Identity (Identity (..))
 import qualified Torch
 import qualified Torch.Functional as F
-import qualified Torch.Functional.Internal as FI
 
 -- ============================================================
 --  Sort assignments: I(Image), I(Digit)
@@ -104,20 +104,6 @@ instance MnistArith GeomU where
   eqNat :: Torch.Tensor -> Torch.Tensor -> Torch.Tensor
   eqNat oneHotN sums =
     Torch.sumDim (Torch.Dim 1) Torch.RemoveDim Torch.Float (oneHotN `Torch.mul` sums)
-
--- | Log-space convolution of two digit-logit vectors, @[B,10] -> [B,10] -> [B,19]@:
---   @out[b,s] = LogSumExp_{i+j=s} (lx[b,i] + ly[b,j])@. The geometric (logit-space)
---   shadow of the law of total probability -- the same LogSumExp/add the TensReal
---   logic uses, none introduced.
-logConv :: Torch.Tensor -> Torch.Tensor -> Torch.Tensor
-logConv lx ly =
-  let b = head (Torch.shape lx)
-      jj = Torch.reshape [b, 10, 1] lx `Torch.add` Torch.reshape [b, 1, 10] ly -- [B,10,10]
-      entry i j = FI.select (FI.select jj 1 i) 1 j -- jj[:,i,j] :: [B]
-      colFor s =
-        let es = [entry i (s - i) | i <- [0 .. 9], s - i >= 0, s - i <= 9]
-         in FI.logsumexp (Torch.stack (Torch.Dim 1) es) 1 False -- [B]
-   in Torch.stack (Torch.Dim 1) [colFor s | s <- [0 .. 18]] -- [B,19]
 
 -- ============================================================
 --  BRIDGE: MeasU <-> GeomU (softmax decode to a Dist over digits)

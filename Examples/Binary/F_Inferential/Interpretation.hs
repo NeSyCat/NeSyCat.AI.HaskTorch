@@ -17,6 +17,6 @@ trainConfig :: (Int, Float)
 trainConfig = (1000, 0.001)
 
 -- | The loss the trainer minimizes: lossKnow (softplus) of the GeomU axiom over
---   the training points (beta = 1.75).
-objective :: BinaryDataset -> Weights -> Torch.Tensor
-objective ds theta = lossKnow (binaryAxiomTens (Torch.asTensor (1.75 :: Float)) (trainData ds) theta)
+--   the training points (beta = 1.75). Full batch, so the epoch is ignored.
+objective :: Int -> BinaryDataset -> Weights -> Torch.Tensor
+objective _ ds theta = lossKnow (binaryAxiomTens (Torch.asTensor (1.75 :: Float)) (trainData ds) theta)
