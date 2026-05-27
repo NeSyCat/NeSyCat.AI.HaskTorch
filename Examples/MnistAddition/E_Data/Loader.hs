@@ -10,6 +10,7 @@
 module MnistAddition.E_Data.Loader
   ( loadMnistDataset,
     loadData,
+    batches,
   )
 where
 
@@ -71,3 +72,19 @@ loadMnistDataset = do
 -- | E-layer manifest piece for the Example: how to obtain the data.
 loadData :: IO Dataset
 loadData = loadMnistDataset
+
+-- | Mini-batches of the training pairs (batch 64), re-SHUFFLED each epoch by a pure
+--   per-epoch permutation @i \mapsto (a_e i + c_e) \bmod n@ (with @a_e@ coprime to @n@),
+--   gathered via 'Torch.indexSelect''. Good SGD hygiene; deterministic in @epoch@ (no RNG).
+batches :: Int -> MnistDataset -> [(Torch.Tensor, Torch.Tensor, Torch.Tensor)]
+batches epoch ds =
+  let (xs, ys, hs) = trainBatch ds
+      n = head (Torch.shape xs)
+      mults = [997, 1031, 1033, 1039, 1049, 1051, 1061, 1063, 1069, 1087, 1091, 1093, 1097, 1103, 1109, 1117]
+      a = mults !! (epoch `mod` length mults) -- coprime to n (prime > 5), so the map is a bijection
+      perm = [(a * i + 137 * epoch) `mod` n | i <- [0 .. n - 1]]
+      gather t = Torch.indexSelect' 0 perm t
+      (xs', ys', hs') = (gather xs, gather ys, gather hs)
+      bs = 64
+      slice t s = Torch.sliceDim 0 s (min (s + bs) n) 1 t
+   in [(slice xs' s, slice ys' s, slice hs' s) | s <- [0, bs .. n - 1]]

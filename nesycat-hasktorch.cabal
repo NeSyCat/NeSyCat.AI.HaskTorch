@@ -28,6 +28,7 @@ library
       B_Logical.Interpretations.TensorProb
       B_Logical.Library.PMean
       B_Logical.Library.PMeanError
+      B_Logical.Library.SatAgg
       B_Logical.Library.Stable
       B_Logical.Signature.A2MonBLat
       B_Logical.Signature.Classical

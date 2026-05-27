@@ -1,32 +1,41 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeApplications #-}
 
--- | GeomU interpretation of the MNIST-addition formula (Identity monad, tensor
---   spaces). The same symbols, read at @\@GeomU@: @digit@ is raw logits and
---   @plus@ is the log-space convolution, so the /term/ @digit(x) + digit(y)@
---   interprets to a logit vector over sums @[B,19]@ -- pure logits, no softmax.
---
---   The remaining symbols are interpreted per universe in different layers: in
---   MeasU @eqNat@/@(=)@ gives @P(sum=n)@ (via the bridge's softmax); in GeomU the
---   @= add(x,y)@ (softmax + select n -> @P(sum=n)@) and the @forall@ over pairs
---   (the logic's 'bigWedge' read as p-mean-error) are realized by MNIST's /inference/
---   interpretation (@J = 1 - SAT@), keeping the softmax out of GeomU entirely.
+-- | GeomU interpretation of the MNIST-addition axiom, in the TensorProb ([0,1] product
+--   fuzzy) logic -- the differentiable mirror of the MeasU reading in
+--   "MnistAddition.D_Grammatical.InterpretationData". The SAME 'mnistFormula', read at
+--   @\@GeomU@: @digit@ = logits, @plus@ = log-space convolution (the marginalization,
+--   kept in logit space), @eqNat@ = softmax + select -> @P(sum=n)@ in [0,1]. The
+--   @forall@ over the data batch is the logic's 'bigWedge' (= product t-norm, a
+--   geometric mean), so the GeomU reading of the WHOLE axiom is the satisfaction @SAT@
+--   that the inference layer (F) then penalizes via @lossKnow@.
 module MnistAddition.D_Grammatical.InterpretationTens
-  ( mnistSumLogits,
+  ( mnistSat,
+    mnistAxiomTens,
   )
 where
 
 import A_Categorical.CategoricalInterpretation (GeomU)
+import B_Logical.Interpretations.TensorProb (OmegaP (..))
+import B_Logical.Library.SatAgg (satAgg)
+import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import MnistAddition.C_Domain.Interpretation ()
-import MnistAddition.C_Domain.Signature (MnistArith (..), MnistKlRel (..))
+import MnistAddition.D_Grammatical.Signature (mnistFormula)
 import C_Domain.NeuralNets.DSL.Semantics (Weights)
-import Data.Functor.Identity (runIdentity)
+import Data.Functor.Identity (Identity (..), runIdentity)
 import qualified Torch
 
--- | @digit(x) + digit(y)@ in GeomU: a logit vector over the 19 possible sums,
---   @[B,1,28,28] x [B,1,28,28] -> [B,19]@, built from @digit \@GeomU@ (logits)
---   and @plus \@GeomU@ (log-space convolution). No softmax, no normalization.
-mnistSumLogits :: Weights -> (Torch.Tensor, Torch.Tensor) -> Torch.Tensor
-mnistSumLogits theta (xB, yB) =
-  plus @GeomU
-    (runIdentity (digit @GeomU theta xB))
-    (runIdentity (digit @GeomU theta yB))
+-- | The whole axiom in GeomU: @forall@ over the batch = 'bigWedge' (product t-norm,
+--   computed as a geometric mean) of the per-pair satisfaction @P(sum=n)@ (which is
+--   @mnistFormula \@GeomU@). Mirrors 'MnistAddition.D_Grammatical.InterpretationData.mnistAxiomData'
+--   (MeasU). The @1.0@ is the inert @ParamsLogic@ (the product @forall@ is parameter-free).
+mnistAxiomTens :: Weights -> (Torch.Tensor, Torch.Tensor, Torch.Tensor) -> OmegaP
+mnistAxiomTens theta triple =
+  let OmegaP perPair = runIdentity (mnistFormula @GeomU theta triple) -- [B] = P(sum=n)
+   in runIdentity (bigWedge @Torch.Tensor @GeomU @OmegaP (1.0 :: Float) perPair (Identity . OmegaP))
+
+-- | The knowledge-base satisfaction exported to the inference layer: the conjunction
+--   ('satAgg') of MNIST's closed axioms. MNIST has a single axiom, so this collapses to
+--   it -- but it is written as a conjunction so a second axiom is a one-line addition.
+mnistSat :: Weights -> (Torch.Tensor, Torch.Tensor, Torch.Tensor) -> OmegaP
+mnistSat theta batch = satAgg [mnistAxiomTens theta batch]

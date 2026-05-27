@@ -7,6 +7,7 @@
 module Binary.E_Data.Loader
   ( generateBinaryDataset,
     loadData,
+    batches,
   )
 where
 
@@ -35,3 +36,8 @@ generateBinaryDataset = do
 -- | E-layer manifest piece for the Example: how to obtain the data.
 loadData :: IO Dataset
 loadData = generateBinaryDataset
+
+-- | Full batch: Binary trains on all 50 training points at once, so one batch = the
+--   training tensor (the @Batch@ the axiom consumes; the epoch is unused).
+batches :: Int -> BinaryDataset -> [Torch.Tensor]
+batches _ ds = [trainData ds]
