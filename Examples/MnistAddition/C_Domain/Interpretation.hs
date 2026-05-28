@@ -25,7 +25,7 @@ import A_Categorical.Category.Monads.Dist (Dist (..))
 import qualified B_Logical.Interpretations.Boolean as BoolLogic
 import qualified B_Logical.Interpretations.TensorProb as TensProbLogic
 import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
-import C_Domain.Arithmetic.LogConv (logConv)
+import C_Domain.Arithmetic (logConv, probEq)
 import C_Domain.NeuralNets.MnistCNN (cnn, cnnArch)
 import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
 import Data.Functor.Identity (Identity (..))
@@ -100,14 +100,11 @@ instance MnistArith GeomU where
   plus :: Torch.Tensor -> Torch.Tensor -> Torch.Tensor
   plus = logConv
 
-  -- (=) : the truth of @add(x,y) = n@ in [0,1]. softmax the sum-logits -- the bridge
-  --       from logit space to the [0,1] fuzzy truth (the GeomU analogue of MeasU's
-  --       'decDigit') -- then select the observed sum: @P(sum=n) = <one-hot n, softmax(sums)>@.
-  --       This is the only softmax; the marginalization in @plus@ stays logit-space.
+  -- (=) : the truth of @add(x,y) = n@ in [0,1] -- the SHARED 'probEq' (soft categorical
+  --       equality: softmax the sum-logits, then select the observed sum; the logit->[0,1]
+  --       bridge, the GeomU analogue of MeasU's 'decDigit'), wrapped as the fuzzy truth.
   eqNat :: Torch.Tensor -> Torch.Tensor -> TensProbLogic.OmegaP
-  eqNat oneHotN sums =
-    TensProbLogic.OmegaP $
-      Torch.sumDim (Torch.Dim 1) Torch.RemoveDim Torch.Float (oneHotN `Torch.mul` F.softmax (F.Dim 1) sums)
+  eqNat oneHotN sums = TensProbLogic.OmegaP (probEq oneHotN sums)
 
 -- ============================================================
 --  BRIDGE: MeasU <-> GeomU (softmax decode to a Dist over digits)

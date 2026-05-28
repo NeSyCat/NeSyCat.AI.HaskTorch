@@ -26,8 +26,11 @@ import qualified Torch.Functional.Internal as F
 -- | Omega := I(tau) = \mathbb{R}^1 (a 1-element tensor)
 type Omega = Torch.Tensor
 
--- | GeomU guards are batch tensors.
-type instance Guard GeomU Torch.Tensor = Torch.Tensor
+-- | In GeomU the guard IS the batched data itself (the vectorized predicate is applied
+--   to the whole batch, then reduced) -- polymorphic in the point type, mirroring
+--   @Guard MeasU a = [a]@. So quantifying over single tensors (Binary) or tuples (MNIST)
+--   needs no per-shape Guard instance.
+type instance Guard GeomU a = a
 
 ------------------------------------------------------
 -- TwoMonBLat: connectives on Omega (R-valued, logit space)

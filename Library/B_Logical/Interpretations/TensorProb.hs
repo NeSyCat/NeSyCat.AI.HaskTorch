@@ -2,23 +2,24 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
--- | Logical interpretation: fuzzy (product t-norm) logic on truth degrees in [0,1]
---   in the GeomU universe -- the LTN semantics. This is the probability-space sibling
---   of "B_Logical.Interpretations.Tensor" (which works on logits in \mathbb{R}):
+-- | Logical interpretation: fuzzy (product t-norm) logic on truth degrees in [0,1] in
+--   the GeomU universe -- the probability-space sibling of "B_Logical.Interpretations.Tensor"
+--   (which works on logits in \mathbb{R}):
 --
 --     * connectives:  neg = 1 - x,  otimes = product (the t-norm),  oplus / vee =
---       probabilistic sum (the t-conorm),  wedge = its De Morgan dual.
---     * quantifiers:  bigVee = pMean (\exists, with exponent @p = ParamsLogic@);
---       bigWedge = the PRODUCT t-norm aggregation (\forall), computed as a geometric
---       mean @exp(mean(log .))@ to avoid underflow -- the GeomU shadow of the MeasU
---       @bigWedge = product@ (so \forall reads the same in both universes). Paired with
---       @lossKnow = negLog@ (see "F_Inferential.InferenceInterpretation") this gives
---       @-log(geomean_i s_i) = mean_i(-log s_i)@, the categorical NLL -- whose steep
---       per-point gradient avoids the collapsed optimum a soft p-mean-error falls into.
+--       probabilistic sum (the t-conorm),  wedge = its De Morgan dual. Parameter-free
+--       (@ParamsLogic OmegaP = ()@), so the universal carries no smoothing knob.
+--     * quantifiers:  bigWedge = the PRODUCT t-norm aggregation (\forall), as a geometric
+--       mean @exp(mean(log .))@ (stable; the GeomU shadow of the MeasU @bigWedge = product@,
+--       so \forall reads the same in both universes); bigVee its De Morgan dual (\exists).
+--       Paired with @lossKnow = negLog@ this gives @-log(geomean s) = mean(-log s)@, the NLL.
 --
---   The point type stays @Torch.Tensor@ (a batch), reusing the @Guard GeomU
---   Torch.Tensor@ instance from "B_Logical.Interpretations.Tensor".
+--   The 'A2MonBLat' instance is POLYMORPHIC in the point type @a@ (any batched data shape:
+--   single tensors, tuples, ...), exactly like Boolean's @A2MonBLat a MeasU Bool@: in GeomU
+--   the (vectorized) predicate is applied to the batched guard and reduced over the batch,
+--   so no per-example/per-shape instance is ever needed. Reuses @Guard GeomU a = a@ from "Tensor".
 module B_Logical.Interpretations.TensorProb
   ( OmegaP (..),
     module B_Logical.Signature.TwoMonBLat,
@@ -27,8 +28,7 @@ module B_Logical.Interpretations.TensorProb
 where
 
 import A_Categorical.CategoricalInterpretation (GeomU)
-import B_Logical.Interpretations.Tensor () -- reuse: type instance Guard GeomU Torch.Tensor
-import B_Logical.Library.PMean (pMean)
+import B_Logical.Interpretations.Tensor () -- reuse: type instance Guard GeomU a = a
 import B_Logical.Library.Stable (clampNotZero)
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
@@ -40,11 +40,11 @@ import qualified Torch
 newtype OmegaP = OmegaP {unOmegaP :: Torch.Tensor}
 
 ------------------------------------------------------
--- TwoMonBLat: connectives on Omega_P ([0,1]-valued, product fuzzy logic)
+-- TwoMonBLat: connectives on Omega_P ([0,1]-valued, product fuzzy logic; parameter-free)
 ------------------------------------------------------
 
 instance TwoMonBLat GeomU OmegaP where
-  type ParamsLogic OmegaP = Float -- the LTN aggregator exponent p
+  type ParamsLogic OmegaP = () -- the product logic carries no smoothing parameter
   top = OmegaP (Torch.asTensor [1.0 :: Float])
   bot = OmegaP (Torch.asTensor [0.0 :: Float])
   neg (OmegaP x) = OmegaP (Torch.onesLike x `Torch.sub` x)
@@ -58,20 +58,20 @@ instance TwoMonBLat GeomU OmegaP where
   vdash (OmegaP a) (OmegaP b) = Torch.asValue a <= (Torch.asValue b :: Float)
 
 ------------------------------------------------------
--- A2MonBLat: quantifiers via the LTN generalized means
+-- A2MonBLat: the GeomU quantifier interpretation -- polymorphic in the point type @a@
+-- (apply the vectorized predicate to the batched guard, then reduce over the batch).
 ------------------------------------------------------
 
-instance A2MonBLat Torch.Tensor GeomU OmegaP where
-  -- bigVee = exists = pMean(p)
-  bigVee p guard phi =
-    let OmegaP result = runIdentity (phi guard)
-     in Identity (OmegaP (pMean p 0 result))
-  -- bigWedge = forall = the PRODUCT t-norm aggregation, as a geometric mean (the
-  -- exponent p is unused: the universal product is parameter-free). Matches MeasU's
-  -- bigWedge = product; with lossKnow = negLog it yields the categorical NLL.
-  bigWedge _p guard phi =
-    let OmegaP result = runIdentity (phi guard)
-     in Identity (OmegaP (geoMean 0 result))
+instance A2MonBLat a GeomU OmegaP where
+  -- forall = product t-norm over the batch (geometric mean). Matches MeasU's bigWedge=product.
+  bigWedge _ g phi =
+    let OmegaP r = runIdentity (phi g)
+     in Identity (OmegaP (geoMean 0 r))
+  -- exists = the De Morgan dual (parameter-free); not exercised by current examples.
+  bigVee _ g phi =
+    let OmegaP r = runIdentity (phi g)
+        agg = geoMean 0 (Torch.onesLike r `Torch.sub` r)
+     in Identity (OmegaP (Torch.onesLike agg `Torch.sub` agg))
   bigOplus _ _ = error "bigOplus over OmegaP not yet supported"
   bigOtimes _ _ = error "bigOtimes over OmegaP not yet supported"
 

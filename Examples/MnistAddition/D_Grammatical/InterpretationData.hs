@@ -15,10 +15,9 @@ import A_Categorical.Category.Monads.Dist (Dist)
 import A_Categorical.Category.Monads.DistExpect (distPTrue)
 import A_Categorical.CategoricalInterpretation (MeasU)
 import B_Logical.Interpretations.Boolean () -- A2MonBLat _ MeasU Bool (bigWedge)
-import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import MnistAddition.C_Domain.Interpretation ()
 import C_Domain.NeuralNets.DSL.Semantics (Weights)
-import MnistAddition.D_Grammatical.Signature (mnistFormula)
+import MnistAddition.D_Grammatical.Signature (mnistFormula, mnistSentence)
 import qualified Torch
 
 -- | @P(add(x,y) = digit(x)+digit(y))@ for one pair: the per-pair satisfaction,
@@ -26,7 +25,8 @@ import qualified Torch
 mnistProb :: Weights -> (Torch.Tensor, Torch.Tensor, Int) -> Double
 mnistProb theta triple = distPTrue (mnistFormula @MeasU theta triple)
 
--- | The whole axiom in MeasU: @forall@ over the dataset = 'bigWedge' (= product
---   in @Dist@ over @Bool@), reusing the domain-independent quantifier as-is.
+-- | The whole axiom in MeasU: 'mnistSentence' at @\@MeasU@ — @forall@ over the dataset
+--   list is the @Dist@-monad product over @Bool@ (the law of total probability for the
+--   product reading). Same sentence as the GeomU side; only the universe differs.
 mnistAxiomData :: Weights -> [(Torch.Tensor, Torch.Tensor, Int)] -> Dist Bool
-mnistAxiomData theta dataset = bigWedge () dataset (mnistFormula @MeasU theta)
+mnistAxiomData theta dataset = mnistSentence @MeasU () dataset theta
