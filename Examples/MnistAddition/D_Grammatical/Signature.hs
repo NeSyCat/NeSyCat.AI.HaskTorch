@@ -38,13 +38,15 @@ mnistFormula ::
   ThetaCNN u ->
   (Image u, Image u, Natural u) ->
   M u (Omega u)
-mnistFormula theta (x, y, n) = do
-  d1 <- digit @u theta x  -- digit(x)
-  d2 <- digit @u theta y  -- digit(y)
-  -- bind the domain symbols as infix operators (u pinned here), like binary's @let and = wedge lp@
-  let (.+) = plus @u
-      (.=) = eqNat @u
-  return (n .= (d1 .+ d2)) -- add(x,y) = digit(x) + digit(y)
+mnistFormula theta (x, y, n) =
+  let
+    (.+) = plus @u
+    (.=) = eqNat @u
+    dig = digit @u theta
+  in do
+    d1 <- dig x
+    d2 <- dig y
+    return (n .= (d1 .+ d2))
 
 -- | The SENTENCE  @forall (x,y,n) in data. add(x,y) = digit(x) + digit(y)@ — the whole
 --   quantified axiom, abstract over @u@. The guard @Guard u a@ is the data quantified over
