@@ -12,14 +12,15 @@ module MnistAddition.D_Grammatical.InterpretationTens
 where
 
 import A_Categorical.CategoricalInterpretation (GeomU)
+import A_Categorical.Category.Monads.LogVecExpect (logVecRunPure)
 import B_Logical.Interpretations.TensorProb (OmegaP)
-import MnistAddition.C_Domain.Interpretation ()
+import MnistAddition.C_Domain.Interpretation (obsLeaf)
 import MnistAddition.D_Grammatical.Signature (mnistSentence)
 import C_Domain.NeuralNets.DSL.Semantics (Weights)
-import Data.Functor.Identity (runIdentity)
 import qualified Torch
 
 -- | MNIST axiom in GeomU: 'mnistSentence' at @\@GeomU@, the satisfaction the inference
 --   layer penalizes. @batch@ is the guard (the batched @(image,image,sum)@ triple).
 mnistAxiomTens :: Weights -> (Torch.Tensor, Torch.Tensor, Torch.Tensor) -> OmegaP
-mnistAxiomTens theta batch = runIdentity (mnistSentence @GeomU () batch theta)
+mnistAxiomTens theta (x, y, oneHotN) =
+  logVecRunPure (mnistSentence @GeomU () (x, y, obsLeaf oneHotN) theta)

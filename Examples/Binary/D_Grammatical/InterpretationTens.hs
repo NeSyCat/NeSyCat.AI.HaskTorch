@@ -17,10 +17,10 @@ import Binary.C_Domain.Signature (BinarySorts (..))
 import Binary.C_Domain.Interpretation ()
 import C_Domain.NeuralNets.DSL.Semantics (Weights)
 import Binary.D_Grammatical.Signature (binarySentence)
-import Data.Functor.Identity (runIdentity)
+import A_Categorical.Category.Monads.LogVecExpect (logVecRunPure)
 import qualified Torch
 
 -- | Binary axiom in GeomU: 'binarySentence' at @\@GeomU@ over the batch tensor (the guard).
 binaryAxiomTens :: Weights -> Torch.Tensor -> Omega GeomU
 binaryAxiomTens theta guard =
-  runIdentity (binarySentence @GeomU (Torch.asTensor (1.75 :: Float)) guard theta)
+  logVecRunPure (binarySentence @GeomU (Torch.asTensor (1.75 :: Float)) guard theta)

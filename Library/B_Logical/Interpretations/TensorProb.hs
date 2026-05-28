@@ -28,11 +28,12 @@ module B_Logical.Interpretations.TensorProb
 where
 
 import A_Categorical.CategoricalInterpretation (GeomU)
+import A_Categorical.Category.Monads.LogVec (LogVec (..))
+import A_Categorical.Category.Monads.LogVecExpect (logVecExpect)
 import B_Logical.Interpretations.Tensor () -- reuse: type instance Guard GeomU a = a
 import B_Logical.Library.Stable (clampNotZero)
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
-import Data.Functor.Identity (Identity (..), runIdentity)
 import qualified Torch
 
 -- | Omega_P := the fuzzy truth object I(tau) = [0,1] (a tensor of degrees). A newtype
@@ -65,13 +66,13 @@ instance TwoMonBLat GeomU OmegaP where
 instance A2MonBLat a GeomU OmegaP where
   -- forall = product t-norm over the batch (geometric mean). Matches MeasU's bigWedge=product.
   bigWedge _ g phi =
-    let OmegaP r = runIdentity (phi g)
-     in Identity (OmegaP (geoMean 0 r))
+    let OmegaP r = logVecReadoutP (phi g)
+     in Pure (OmegaP (geoMean 0 r))
   -- exists = the De Morgan dual (parameter-free); not exercised by current examples.
   bigVee _ g phi =
-    let OmegaP r = runIdentity (phi g)
+    let OmegaP r = logVecReadoutP (phi g)
         agg = geoMean 0 (Torch.onesLike r `Torch.sub` r)
-     in Identity (OmegaP (Torch.onesLike agg `Torch.sub` agg))
+     in Pure (OmegaP (Torch.onesLike agg `Torch.sub` agg))
   bigOplus _ _ = error "bigOplus over OmegaP not yet supported"
   bigOtimes _ _ = error "bigOtimes over OmegaP not yet supported"
 
@@ -82,3 +83,17 @@ geoMean d x =
   let n = Torch.shape x !! d
       lx = Torch.log (clampNotZero 1e-4 x)
    in Torch.exp (Torch.sumDim (Torch.Dim d) Torch.RemoveDim Torch.Float lx `Torch.div` Torch.asTensor (fromIntegral n :: Float))
+
+-- | Marginalize a 'LogVec'-valued GeomU formula to its satisfaction degree in [0,1]
+--   (a @[B]@ tensor). The convolution is performed by the 'LogVec' bind inside
+--   'logVecExpect'; this reads out @P(formula true)@ as the softmax-normalized
+--   log-mass on the formula's true outcomes:
+--     @P = exp( logsumexp_x(logw_x + log truth_x)  -  logsumexp_x(logw_x) )@.
+--   For the MNIST axiom (truth_x = 1[d1+d2 = observed]) this is exactly the old
+--   @probEq (oneHot n) (logConv lx ly)@ -- same forward and backward graph -- so the
+--   hand-coded convolution is replaced with no change in behaviour.
+logVecReadoutP :: LogVec OmegaP -> OmegaP
+logVecReadoutP prog =
+  let logDen = logVecExpect prog (const (Torch.asTensor (0.0 :: Float)))
+      logNum = logVecExpect prog (\(OmegaP t) -> Torch.log (clampNotZero 1e-9 t))
+   in OmegaP (Torch.exp (logNum `Torch.sub` logDen))

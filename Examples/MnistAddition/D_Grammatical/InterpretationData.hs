@@ -18,6 +18,9 @@ import C_Domain.NeuralNets.DSL.Semantics (Weights)
 import MnistAddition.D_Grammatical.Signature (mnistSentence)
 import qualified Torch
 
--- | MNIST axiom in MeasU: 'mnistSentence' at @\@MeasU@ over the dataset of pairs.
+-- | MNIST axiom in MeasU: 'mnistSentence' at @\@MeasU@ over the dataset of pairs. The
+--   observed sum @n@ enters the formula as a (certain) monadic value @pure n :: Dist Int@,
+--   so the formula is identical to the GeomU reading -- one formula, two interpretations.
 mnistAxiomData :: Weights -> [(Torch.Tensor, Torch.Tensor, Int)] -> Dist Bool
-mnistAxiomData theta dataset = mnistSentence @MeasU () dataset theta
+mnistAxiomData theta dataset =
+  mnistSentence @MeasU () [(x, y, pure n) | (x, y, n) <- dataset] theta

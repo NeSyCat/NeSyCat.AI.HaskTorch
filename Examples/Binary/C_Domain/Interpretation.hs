@@ -28,7 +28,7 @@ import qualified B_Logical.Interpretations.Tensor as TensLogic
 import C_Domain.NeuralNets.MLP (mlp, mlpArch)
 import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
 import Binary.C_Domain.Signature (BinaryBridge (..), BinaryKlRel (..), BinaryParams (..), BinaryRel (..), BinarySorts (..))
-import Data.Functor.Identity (Identity (..))
+import A_Categorical.Category.Monads.LogVec (LogVec)
 import qualified Torch
 import qualified Torch.Functional.Internal as F
 
@@ -108,9 +108,9 @@ logitScale = 10.0
 -- ============================================================
 
 instance BinaryKlRel GeomU where
-  classifierA :: Weights -> Point GeomU -> Identity (Omega GeomU)
+  classifierA :: Weights -> Point GeomU -> LogVec (Omega GeomU)
   classifierA theta ptTensor =
-    Identity (mlp theta ptTensor)
+    pure (mlp theta ptTensor)
 
 -- ============================================================
 --  BRIDGE: MeasU <-> GeomU (with Dist monad for decoding)

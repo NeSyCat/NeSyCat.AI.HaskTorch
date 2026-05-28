@@ -36,7 +36,7 @@ mnistFormula ::
   forall u.
   (MnistKlRel u, MnistArith u) =>
   ThetaCNN u ->
-  (Image u, Image u, Natural u) ->
+  (Image u, Image u, M u (Natural u)) ->
   M u (Omega u)
 mnistFormula theta (x, y, n) =
   let
@@ -46,7 +46,8 @@ mnistFormula theta (x, y, n) =
   in do
     d1 <- dig x
     d2 <- dig y
-    return (n .= (d1 .+ d2))
+    s <- n
+    return (s .= (d1 .+ d2))
 
 -- | The SENTENCE  @forall (x,y,n) in data. add(x,y) = digit(x) + digit(y)@ — the whole
 --   quantified axiom, abstract over @u@. The guard @Guard u a@ is the data quantified over
@@ -59,7 +60,7 @@ mnistSentence ::
     TwoMonBLat u (Omega u),
     A2MonBLat a u (Omega u),
     Monad (M u),
-    a ~ (Image u, Image u, Natural u)
+    a ~ (Image u, Image u, M u (Natural u))
   ) =>
   ParamsLogic (Omega u) ->
   Guard u a ->

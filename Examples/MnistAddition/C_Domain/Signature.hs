@@ -62,7 +62,7 @@ class (MnistSorts u) => MnistArith u where
   eqNat :: Natural u -> Natural u -> Omega u
 
 -- | Bridge between two universe interpretations: encode an image into the other
---   universe, decode a digit back (mirrors the binary @encPoint@/@decOmega@).
+--   universe (mirrors the binary @encPoint@). (Digit decoding is no longer a bridge:
+--   each universe's @digit@ builds its own distribution from the CNN logits.)
 class (MnistSorts from, MnistSorts to) => MnistBridge from to where
   encImage :: Image from -> Image to
-  decDigit :: Digit to -> M from (Digit from)

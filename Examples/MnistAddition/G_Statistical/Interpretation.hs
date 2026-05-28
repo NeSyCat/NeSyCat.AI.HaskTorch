@@ -7,7 +7,7 @@
 --   the argmax of the GeomU logits (no softmax).
 module MnistAddition.G_Statistical.Interpretation (report, mnistReport) where
 
-import Data.Functor.Identity (runIdentity)
+import A_Categorical.Category.Monads.LogVecExpect (logVecLeafTensor)
 import A_Categorical.Category.Monads.DistExpect (distPTrue)
 import A_Categorical.CategoricalInterpretation (GeomU, MeasU)
 import MnistAddition.C_Domain.Interpretation ()
@@ -20,7 +20,7 @@ import qualified Torch
 
 predDigits :: Weights -> Torch.Tensor -> [Int]
 predDigits theta imgs =
-  Torch.asValue (Torch.argmax (Torch.Dim 1) Torch.RemoveDim (runIdentity (digit @GeomU theta imgs)))
+  Torch.asValue (Torch.argmax (Torch.Dim 1) Torch.RemoveDim (logVecLeafTensor (digit @GeomU theta imgs)))
 
 fracEq :: [Int] -> [Int] -> Double
 fracEq a b = fromIntegral (length (filter id (zipWith (==) a b))) / fromIntegral (max 1 (length a))
@@ -43,7 +43,7 @@ meanConfidence :: Weights -> MnistDataset -> Int -> Double
 meanConfidence theta ds cap =
   let n = min cap (length (testSums ds))
       slice img i = Torch.sliceDim 0 i (i + 1) 1 img
-      prob i = distPTrue (mnistFormula @MeasU theta (slice (testXImg ds) i, slice (testYImg ds) i, testSums ds !! i))
+      prob i = distPTrue (mnistFormula @MeasU theta (slice (testXImg ds) i, slice (testYImg ds) i, pure (testSums ds !! i)))
       ps = [prob i | i <- [0 .. n - 1]]
    in if null ps then 0 else sum ps / fromIntegral (length ps)
 

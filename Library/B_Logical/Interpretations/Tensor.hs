@@ -16,10 +16,11 @@ module B_Logical.Interpretations.Tensor
 where
 
 import A_Categorical.CategoricalInterpretation (GeomU)
+import A_Categorical.Category.Monads.LogVec (LogVec (..))
+import A_Categorical.Category.Monads.LogVecExpect (logVecRunPure)
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
-import Data.Functor.Identity (Identity (..), runIdentity)
 import qualified Torch
 import qualified Torch.Functional.Internal as F
 
@@ -61,19 +62,19 @@ instance TwoMonBLat GeomU Omega where
 instance A2MonBLat Torch.Tensor GeomU Omega where
   -- bigWedge = forall = smooth inf = De Morgan of LogSumExp
   bigWedge betaT guard phi =
-    let result = runIdentity (phi guard)
+    let result = logVecRunPure (phi guard)
         n = head (Torch.shape guard)
         negResult = neg result
         lse = F.logsumexp (negResult `Torch.mul` betaT) 0 False
         reduced = negate ((lse `Torch.sub` Torch.log (Torch.asTensor (fromIntegral n :: Float))) `Torch.div` betaT)
-     in Identity (Torch.reshape [1] reduced)
+     in Pure (Torch.reshape [1] reduced)
   -- bigVee = exists = LogSumExp
   bigVee betaT guard phi =
-    let result = runIdentity (phi guard)
+    let result = logVecRunPure (phi guard)
         n = head (Torch.shape guard)
         lse = F.logsumexp (result `Torch.mul` betaT) 0 False
         reduced = (lse `Torch.sub` Torch.log (Torch.asTensor (fromIntegral n :: Float))) `Torch.div` betaT
-     in Identity (Torch.reshape [1] reduced)
+     in Pure (Torch.reshape [1] reduced)
   bigOplus _ _ = error "bigOplus over GeomU not yet supported"
   bigOtimes _ _ = error "bigOtimes over GeomU not yet supported"
 

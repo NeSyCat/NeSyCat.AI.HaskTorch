@@ -23,6 +23,8 @@ library
       A_Categorical.Category.Monads.DistExpect
       A_Categorical.Category.Monads.Giry
       A_Categorical.Category.Monads.GiryExpect
+      A_Categorical.Category.Monads.LogVec
+      A_Categorical.Category.Monads.LogVecExpect
       B_Logical.Interpretations.Boolean
       B_Logical.Interpretations.Tensor
       B_Logical.Interpretations.TensorProb
@@ -35,7 +37,6 @@ library
       B_Logical.Signature.Guard
       B_Logical.Signature.RealNumbers
       B_Logical.Signature.TwoMonBLat
-      C_Domain.Arithmetic
       C_Domain.NeuralNets.DSL.Library.Activation.ELU
       C_Domain.NeuralNets.DSL.Library.Activation.ReLU
       C_Domain.NeuralNets.DSL.Library.Activation.Sigmoid
