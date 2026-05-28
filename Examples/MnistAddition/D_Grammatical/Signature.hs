@@ -49,7 +49,7 @@ mnistFormula theta (x, y, n) = do
 -- | The SENTENCE  @forall (x,y,n) in data. add(x,y) = digit(x) + digit(y)@ — the whole
 --   quantified axiom, abstract over @u@. The guard @Guard u a@ is the data quantified over
 --   (a list of triples in MeasU, the batched triple in GeomU); the universal is the logic's
---   'bigWedge'. Interpreted per universe by 'mnistSat' (GeomU) / 'mnistAxiomData' (MeasU).
+--   'bigWedge'. Interpreted per universe by 'mnistAxiomTens' (GeomU) / 'mnistAxiomData' (MeasU).
 mnistSentence ::
   forall u a.
   ( MnistKlRel u,

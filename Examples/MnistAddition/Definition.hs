@@ -16,7 +16,7 @@ import B_Logical.Interpretations.Boolean ()
 import B_Logical.Interpretations.TensorProb (OmegaP)
 -- C (domain) — STANDALONE: MNIST's own sorts/symbols + model (Params/initParams).
 import qualified MnistAddition.C_Domain.Interpretation as C
--- D (grammatical) — STANDALONE: builds the satisfaction 'sat' (= conjunction of the axioms).
+-- D (grammatical) — STANDALONE: the GeomU reading of the axiom (the satisfaction 'sat').
 import qualified MnistAddition.D_Grammatical.InterpretationTens as D
 -- E (data) — STANDALONE: MNIST's own data format + loader (exports the data + the batches).
 import qualified MnistAddition.E_Data.Signature as E
@@ -42,5 +42,5 @@ instance Example MnistAddition where
   loadData = EL.loadData
   trainConfig = F.trainConfig
   batches = EL.batches
-  sat = D.mnistSat
+  sat = D.mnistAxiomTens
   report = G.report

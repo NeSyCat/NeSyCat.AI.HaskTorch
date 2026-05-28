@@ -42,5 +42,5 @@ instance Example Binary where
   loadData = EL.loadData
   trainConfig = F.trainConfig
   batches = EL.batches
-  sat = D.binarySat
+  sat = D.binaryAxiomTens
   report = G.report
