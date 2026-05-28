@@ -29,12 +29,13 @@ where
 
 import A_Categorical.CategoricalInterpretation (GeomU)
 import A_Categorical.Category.Monads.LogVec (LogVec (..))
-import A_Categorical.Category.Monads.LogVecExpect (logVecExpect)
+import A_Categorical.Category.Monads.LogVecExpect (collectLeaves)
 import B_Logical.Interpretations.Tensor () -- reuse: type instance Guard GeomU a = a
 import B_Logical.Library.Stable (clampNotZero)
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
 import qualified Torch
+import qualified Torch.Functional.Internal as FI
 
 -- | Omega_P := the fuzzy truth object I(tau) = [0,1] (a tensor of degrees). A newtype
 --   so its instances do not overlap the logit @Omega = Torch.Tensor@ of "Tensor".
@@ -94,6 +95,19 @@ geoMean d x =
 --   hand-coded convolution is replaced with no change in behaviour.
 logVecReadoutP :: LogVec OmegaP -> OmegaP
 logVecReadoutP prog =
-  let logDen = logVecExpect prog (const (Torch.asTensor (0.0 :: Float)))
-      logNum = logVecExpect prog (\(OmegaP t) -> Torch.log (clampNotZero 1e-9 t))
+  let (lws, vals) = collectLeaves prog                          -- the chain's independent leaves [B,k_i]
+      n = length lws
+      ks = [Torch.shape lw !! 1 | lw <- lws]                    -- support sizes
+      b = Torch.shape (head lws) !! 0                           -- batch
+      total = product ks
+      -- joint log-weight [B, k_0, ..., k_{n-1}] by broadcasting each leaf over its own axis
+      reshapeFor i lw = Torch.reshape (b : [if j == i then ks !! j else 1 | j <- [0 .. n - 1]]) lw
+      joint = foldr1 Torch.add [reshapeFor i lw | (i, lw) <- zip [0 ..] lws]
+      jointFlat = Torch.reshape [b, total] joint
+      logDen = FI.logsumexp jointFlat 1 False                   -- log Sum exp(logweights)   [B]
+      -- truth mask over the index-combos (batch-independent 0/1), as a log-domain offset
+      combos = sequence [[0 .. k - 1] | k <- ks]
+      mask = Torch.reshape [total] (Torch.stack (Torch.Dim 0) [unOmegaP (vals c) | c <- combos])
+      logMask = (mask `Torch.sub` Torch.onesLike mask) `Torch.mul` Torch.asTensor (1.0e9 :: Float)
+      logNum = FI.logsumexp (jointFlat `Torch.add` Torch.reshape [1, total] logMask) 1 False
    in OmegaP (Torch.exp (logNum `Torch.sub` logDen))
