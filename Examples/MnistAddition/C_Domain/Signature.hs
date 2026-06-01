@@ -24,11 +24,11 @@ module MnistAddition.C_Domain.Signature
   )
 where
 
-import A_Categorical.CategoricalSignature (Universe (..))
+import A_Categorical.CategoricalSignature (Framework (..))
 import Data.Kind (Type)
 
 -- | Sort symbols, assigned concrete objects by an interpretation.
-class (Universe u) => MnistSorts u where
+class (Framework u) => MnistSorts u where
   type Image u :: Type
   type Digit u :: Type
   type Natural u :: Type
@@ -41,7 +41,7 @@ class (Universe u) => MnistSorts u where
 
 -- | Parameter-space symbol (horizontal sort), assigned a concrete space (the CNN
 --   weight space) by an interpretation.
-class (Universe u) => MnistParams u where
+class (Framework u) => MnistParams u where
   type ThetaCNN u :: Type
 
 -- | The neural digit classifier as a parametrized Kleisli relation

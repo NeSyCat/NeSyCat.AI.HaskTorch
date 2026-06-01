@@ -13,9 +13,7 @@ module A_Categorical.CategoricalInterpretation
   )
 where
 
-import A_Categorical.CategoricalSignature (Universe (..))
-import A_Categorical.Category.Categories.Data (DataObj)
-import A_Categorical.Category.Categories.Tens (TensObj)
+import A_Categorical.CategoricalSignature (Framework (..))
 import A_Categorical.Category.Monads.Dist (Dist)
 import A_Categorical.Category.Monads.LogVec (LogVec)
 
@@ -25,10 +23,8 @@ data GeomU
 -- | Measure theory paradigm: data types + Dist monad.
 data MeasU
 
-instance Universe GeomU where
-  type Cat GeomU = TensObj
+instance Framework GeomU where
   type M GeomU = LogVec
 
-instance Universe MeasU where
-  type Cat MeasU = DataObj
+instance Framework MeasU where
   type M MeasU = Dist

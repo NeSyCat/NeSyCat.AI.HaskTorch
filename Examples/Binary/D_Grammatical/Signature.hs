@@ -16,7 +16,7 @@ module Binary.D_Grammatical.Signature
   )
 where
 
-import A_Categorical.CategoricalSignature (Universe (..))
+import A_Categorical.CategoricalSignature (Framework (..))
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))

@@ -10,10 +10,10 @@
 --   \to, while the lattice \wedge / \vee (min / max) and \neg are usually shared.
 module B_Logical.Signature.Fuzzy (FuzzySignature (..)) where
 
-import A_Categorical.CategoricalSignature (Universe (..))
+import A_Categorical.CategoricalSignature (Framework (..))
 import B_Logical.Signature.Guard (Guard)
 
-class (Universe u, Monad (M u)) => FuzzySignature u tau | tau -> u where
+class (Framework u, Monad (M u)) => FuzzySignature u tau | tau -> u where
   -- connectives
   top :: tau -- ^ \top  (truth degree 1)
   bot :: tau -- ^ \bot  (truth degree 0)

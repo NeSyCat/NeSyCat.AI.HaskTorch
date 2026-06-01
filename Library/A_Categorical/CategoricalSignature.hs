@@ -1,20 +1,19 @@
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE NoStarIsType #-}
 
 module A_Categorical.CategoricalSignature
-  ( Universe (..),
+  ( Framework (..),
   )
 where
 
-import Data.Kind (Constraint, Type)
+import Data.Kind (Type)
 
--- | Semantic Universe: a (category, monad) pair that determines
--- the entire interpretation pipeline.
+-- | Semantic Framework: a label naming the Kleisli monad @M u@ that drives the
+-- interpretation pipeline. The label (e.g. GeomU, MeasU) is the anchor every
+-- interpretation class hangs off -- the truth object @Omega u@, @Guard u a@, the
+-- logical connectives, the domain sorts/params are all separate classes keyed on
+-- the SAME label, so selecting a framework selects that whole constellation.
 --
--- Cat u : Type -> Constraint  (which types are objects)
--- M u   : Type -> Type        (the Kleisli monad)
-class Universe u where
-  type Cat u :: Type -> Constraint
+-- M u : Type -> Type  (the Kleisli monad)
+class Framework u where
   type M u :: Type -> Type

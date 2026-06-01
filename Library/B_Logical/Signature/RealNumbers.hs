@@ -11,10 +11,10 @@
 --   (e.g. @Double@, or a @Torch.Tensor@) is an instance defining all of it.
 module B_Logical.Signature.RealNumbers (RealNumbersSignature (..)) where
 
-import A_Categorical.CategoricalSignature (Universe (..))
+import A_Categorical.CategoricalSignature (Framework (..))
 import B_Logical.Signature.Guard (Guard)
 
-class (Universe u, Monad (M u)) => RealNumbersSignature u tau | tau -> u where
+class (Framework u, Monad (M u)) => RealNumbersSignature u tau | tau -> u where
   -- bounds + field operations
   posInf :: tau -- ^ +\infty  (greatest extended real)
   negInf :: tau -- ^ -\infty  (least extended real)

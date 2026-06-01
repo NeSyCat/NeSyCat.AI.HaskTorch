@@ -5,7 +5,7 @@
 
 module Binary.C_Domain.Signature where
 
-import A_Categorical.CategoricalSignature (Universe (..))
+import A_Categorical.CategoricalSignature (Framework (..))
 import Data.Kind (Type)
 
 -- | Non-logical signature Sigma_gamma for the Binary Classification domain.
@@ -19,7 +19,7 @@ import Data.Kind (Type)
 --   morphism of the actor) is supplied by an interpretation. The monad is M u.
 
 -- | Sort symbols, assigned to concrete objects by an interpretation.
-class (Universe u) => BinarySorts u where
+class (Framework u) => BinarySorts u where
   type Point u :: Type
   type Omega u :: Type
 
@@ -31,7 +31,7 @@ class (Universe u) => BinarySorts u where
 
 -- | Parameter-space symbols (horizontal sorts), each assigned a concrete space
 --   (e.g. an MLP weight space) by an interpretation.
-class (Universe u) => BinaryParams u where
+class (Framework u) => BinaryParams u where
   type Theta u :: Type
 
 -- | Tarski relation symbol.

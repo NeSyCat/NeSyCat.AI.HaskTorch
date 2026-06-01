@@ -17,8 +17,6 @@ library
   exposed-modules:
       A_Categorical.CategoricalInterpretation
       A_Categorical.CategoricalSignature
-      A_Categorical.Category.Categories.Data
-      A_Categorical.Category.Categories.Tens
       A_Categorical.Category.Monads.Dist
       A_Categorical.Category.Monads.DistExpect
       A_Categorical.Category.Monads.Giry

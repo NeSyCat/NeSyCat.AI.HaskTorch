@@ -10,10 +10,10 @@
 --   @u@ and truth type @tau@ (fundep @tau -> u@; use newtypes to reuse a carrier).
 module B_Logical.Signature.Classical (ClassicalSignature (..)) where
 
-import A_Categorical.CategoricalSignature (Universe (..))
+import A_Categorical.CategoricalSignature (Framework (..))
 import B_Logical.Signature.Guard (Guard)
 
-class (Universe u, Monad (M u)) => ClassicalSignature u tau | tau -> u where
+class (Framework u, Monad (M u)) => ClassicalSignature u tau | tau -> u where
   -- connectives
   top :: tau -- ^ \top  (true / lattice greatest)
   bot :: tau -- ^ \bot  (false / lattice least)
