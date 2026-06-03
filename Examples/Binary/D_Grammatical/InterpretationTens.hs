@@ -1,26 +1,27 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeApplications #-}
 
--- | GeomU interpretation of the Binary axiom (TENS + Identity): the ONE 'binarySentence'
---   read at @\@GeomU@ (the differentiable reading, the satisfaction the inference layer
---   penalizes). Mirrors "Binary.D_Grammatical.InterpretationData" (the MeasU reading);
---   one formula, two interpretations. @beta = 1.75@ is the logit logic's smoothing.
+-- | GeomU interpretation of the Binary axiom (TENS + LogVec): the ONE 'binarySentence' read
+--   at @\@GeomU@ (the differentiable reading, the satisfaction the inference layer penalizes).
+--   Mirrors "Binary.D_Grammatical.InterpretationData" (the MeasU reading); one formula, two
+--   interpretations. Like MNIST, the satisfaction object is the sentence ITSELF, a
+--   @LogVec Bool@: the F layer reads it out to a degree with 'logVecPTrue' and negative-logs
+--   it (binary cross-entropy). The crisp Boolean logic is parameter-free, so the logic
+--   parameter is @()@.
 module Binary.D_Grammatical.InterpretationTens
   ( binaryAxiomTens,
   )
 where
 
 import A_Categorical.CategoricalInterpretation (GeomU)
-import B_Logical.Interpretations.Tensor () -- TwoMonBLat / A2MonBLat GeomU Torch.Tensor (the logit logic)
-import Binary.C_Domain.Signature (BinarySorts (..))
+import A_Categorical.Category.Monads.LogVec (LogVec)
+import B_Logical.Interpretations.TensorBool () -- TwoMonBLat Bool + A2MonBLat GeomU Bool (the quantifier)
 import Binary.C_Domain.Interpretation ()
-import C_Domain.NeuralNets.DSL.Semantics (Weights)
+import Binary.C_Domain.Signature (BinarySorts (..))
 import Binary.D_Grammatical.Signature (binarySentence)
-import A_Categorical.Category.Monads.LogVecExpect (logVecRunPure)
+import C_Domain.NeuralNets.DSL.Semantics (Weights)
 import qualified Torch
 
 -- | Binary axiom in GeomU: 'binarySentence' at @\@GeomU@ over the batch tensor (the guard).
-binaryAxiomTens :: Weights -> Torch.Tensor -> Omega GeomU
+binaryAxiomTens :: Weights -> Torch.Tensor -> LogVec (Omega GeomU)
 binaryAxiomTens theta guard =
-  logVecRunPure (binarySentence @GeomU (Torch.asTensor (1.75 :: Float)) guard theta)
+  binarySentence @GeomU () guard theta

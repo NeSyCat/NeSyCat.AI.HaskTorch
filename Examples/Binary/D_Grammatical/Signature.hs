@@ -35,7 +35,7 @@ binaryPredicate ::
   M u (Omega u)
 binaryPredicate lp paramMLP pt = do
   pred <- classifierA @u paramMLP pt
-  let label = labelA @u pt
+  label <- labelA @u pt   -- the label now flows through the monad (a certain leaf), like MNIST's observed sum
   let and = wedge lp
   let imply = implies lp
   return ((label `imply` pred) `and` (neg label `imply` neg pred))

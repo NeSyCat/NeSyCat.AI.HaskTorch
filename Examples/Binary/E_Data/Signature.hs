@@ -10,12 +10,12 @@ where
 
 import qualified Torch
 
--- | A binary classification dataset (circle-in-square). 50 train / 50 test.
+-- | A binary classification dataset (circle-in-square). 50 train / 50 test. Only the POINTS
+--   are stored: the label is a deterministic concept of the point (the circle test, computed
+--   by @labelA@), so unlike MNIST's ground-truth digit labels it needs no separate field.
 data BinaryDataset = BinaryDataset
   { trainData :: Torch.Tensor,
-    trainLabels :: Torch.Tensor,
-    testData :: Torch.Tensor,
-    testLabels :: Torch.Tensor
+    testData :: Torch.Tensor
   }
 
 -- | The canonical dataset type the Example manifest refers to.

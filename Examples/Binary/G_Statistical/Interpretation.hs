@@ -19,7 +19,7 @@ binaryReport :: Weights -> BinaryDataset -> Report
 binaryReport theta ds =
   let toPoints t = map (\[x1, x2] -> (x1, x2)) (Torch.asValue t :: [[Float]]) :: [Point MeasU]
       predict pt = distPTrue (classifierA @MeasU theta pt)
-      label = labelA @MeasU
+      label pt = distPTrue (labelA @MeasU pt) > 0.5  -- labelA is now a (certain) Dist Bool
       trainPairs = evaluate predict label (toPoints (trainData ds))
       testPairs = evaluate predict label (toPoints (testData ds))
    in runMetrics trainPairs testPairs

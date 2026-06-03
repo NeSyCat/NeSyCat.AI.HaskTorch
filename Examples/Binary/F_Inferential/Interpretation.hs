@@ -5,6 +5,7 @@
 --   The generic objective @lossKnow . sat@ (in "Example") penalizes the @sat@ from D.
 module Binary.F_Inferential.Interpretation (trainConfig) where
 
--- | (epochs, learning rate).
+-- | (epochs, learning rate). The probabilistic (BCE) objective converges more slowly than
+--   the old smoothed-fuzzy SAT, so use a larger step than the historical 0.001.
 trainConfig :: (Int, Float)
-trainConfig = (1000, 0.001)
+trainConfig = (1000, 0.01)

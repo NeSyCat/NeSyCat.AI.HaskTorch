@@ -22,9 +22,10 @@ import qualified MnistAddition.D_Grammatical.InterpretationTens as D
 -- E (data) — STANDALONE: MNIST's own data format + loader (exports the data + the batches).
 import qualified MnistAddition.E_Data.Signature as E
 import qualified MnistAddition.E_Data.Loader as EL
--- F (inference) — REUSE template signature; STANDALONE interpretation = ONLY the loss
---   choices (instance InferenceSignature (LogVec Bool)) + trainConfig. Imported for its instance.
+-- F (inference) — REUSE template signature AND the library's shared
+--   @instance InferenceSignature (LogVec Bool)@ (negLog . logVecPTrue); STANDALONE only for trainConfig.
 import F_Inferential.InferenceSignature ()
+import F_Inferential.InferenceInterpretation ()
 import qualified MnistAddition.F_Inferential.Interpretation as F
 -- G (statistics) — REUSE template signature; STANDALONE interpretation (report).
 import G_Statistical.BenchmarkSignature ()

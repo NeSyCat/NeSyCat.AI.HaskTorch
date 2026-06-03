@@ -24,14 +24,15 @@ module MnistAddition.C_Domain.Interpretation
 where
 
 import A_Categorical.CategoricalInterpretation (GeomU, MeasU)
-import A_Categorical.Category.Monads.Dist (Dist (..))
+import A_Categorical.CategoricalSignature (Framework)
+import A_Categorical.Category.Monads.Dist (Dist)
+import A_Categorical.Category.Monads.DistDecode (categorical)
 import A_Categorical.Category.Monads.LogVec (LogVec (..))
 import B_Logical.Library.Stable (clampNotZero)
 import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
 import C_Domain.NeuralNets.MnistCNN (cnn, cnnArch)
 import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
 import qualified Torch
-import qualified Torch.Functional as F
 
 -- ============================================================
 --  Sort assignments: I(Image), I(Digit)
@@ -56,9 +57,9 @@ instance MnistSorts GeomU where
 -- | The horizontal sort: the PURE parameters (weights) of 'cnnArch'.
 type Params = Weights
 
-instance MnistParams MeasU where type ThetaCNN MeasU = Weights
-
-instance MnistParams GeomU where type ThetaCNN GeomU = Weights
+-- Universe-invariant: the CNN weight space is the same in every interpretation, so ONE
+-- polymorphic instance covers all universes (like 'MnistArith').
+instance (Framework u) => MnistParams u where type ThetaCNN u = Weights
 
 -- | Draw the initial theta_0 — fresh weights for 'cnnArch'.
 initParams :: IO Params
@@ -70,10 +71,8 @@ initParams = sampleWeights cnnArch
 
 instance MnistKlRel MeasU where
   digit :: Weights -> Image MeasU -> Dist (Digit MeasU)
-  digit theta img =
-    let logits = cnn theta (encImage @MeasU @GeomU img)        -- run the chosen architecture at θ (logits)
-        ps = head (Torch.asValue (F.softmax (F.Dim 1) logits) :: [[Float]])
-     in FiniteSupp [(d, realToFrac (ps !! d)) | d <- [0 .. 9]] -- softmax -> Dist over 0..9
+  digit theta = categorical [0 .. 9] . cnn theta . encImage @MeasU @GeomU
+    -- pure composition: run the net (logits) then the modular softmax decode
 
 -- ============================================================
 --  GeomU: the neural Kleisli relation (digit). (+/= are universe-invariant; see below.)

@@ -34,16 +34,20 @@ class (Framework u) => BinarySorts u where
 class (Framework u) => BinaryParams u where
   type Theta u :: Type
 
--- | Tarski relation symbol.
-class (BinarySorts u) => BinaryRel u where
-  labelA :: Point u -> Omega u
+-- | The ground-truth label relation. CERTAIN but Kleisli (@M u (Omega u)@, not @Omega u@):
+--   the truth flows through the monad so the GeomU batch can ride in the leaf weights, exactly
+--   as MnistAddition's observed sum does (a delta distribution). MeasU sees one point at a time
+--   (per 'bigWedge''s mapM), GeomU the whole batch.
+class (BinarySorts u, Monad (M u)) => BinaryRel u where
+  labelA :: Point u -> M u (Omega u)
 
 -- | Parametrized Kleisli relation symbol. @Theta u@ is the parameter-space
 --   symbol (a horizontal point); its semantics is fixed by the interpretation.
 class (BinaryRel u, BinaryParams u, Monad (M u)) => BinaryKlRel u where
   classifierA :: Theta u -> Point u -> M u (Omega u)
 
--- | Bridge for encoding/decoding between two universe interpretations.
+-- | Bridge for encoding between two universe interpretations (the @Point@ representations
+--   differ: a host tuple in MeasU, a tensor in GeomU). No @decOmega@: each universe's
+--   @classifierA@/@labelA@ builds its own distribution, so no truth-object bridge is needed.
 class (BinarySorts from, BinarySorts to) => BinaryBridge from to where
   encPoint :: Point from -> Point to
-  decOmega :: Omega to -> M from (Omega from)
