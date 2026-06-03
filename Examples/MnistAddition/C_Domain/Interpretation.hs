@@ -5,6 +5,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 -- | Interpretation I_gamma for MNIST single-digit addition, mirroring the binary
 --   interpretation section-for-section: sort assignments, then the MeasU and
@@ -63,7 +65,7 @@ initParams :: IO Params
 initParams = sampleWeights cnnArch
 
 -- ============================================================
---  MeasU: relation & function symbols (digit, +, =)
+--  MeasU: the neural Kleisli relation (digit). (+/= are universe-invariant; see below.)
 -- ============================================================
 
 instance MnistKlRel MeasU where
@@ -73,35 +75,30 @@ instance MnistKlRel MeasU where
         ps = head (Torch.asValue (F.softmax (F.Dim 1) logits) :: [[Float]])
      in FiniteSupp [(d, realToFrac (ps !! d)) | d <- [0 .. 9]] -- softmax -> Dist over 0..9
 
-instance MnistArith MeasU where
-  -- (+) : host integer addition. The Sigma (law of total probability) is supplied
-  --       by the Dist bind in the formula, not here.
-  plus :: Int -> Int -> Int
-  plus = (+)
-
-  -- (=) : ordinary equality of naturals -> Bool.
-  eqNat :: Int -> Int -> Bool
-  eqNat = (==)
-
 -- ============================================================
---  GeomU: relation & function symbols (digit, +, =)
+--  GeomU: the neural Kleisli relation (digit). (+/= are universe-invariant; see below.)
 -- ============================================================
 
 instance MnistKlRel GeomU where
   digit :: Weights -> Image GeomU -> LogVec (Digit GeomU)
   digit theta img = LogLeaf [0 .. 9] (cnn theta img) -- the batched digit distribution as raw logits
 
-instance MnistArith GeomU where
-  -- (+) : literally host integer addition of the two digit indices. The convolution
-  --       (LogSumExp over the anti-diagonal d1+d2=s) is supplied by the LogVec BIND,
-  --       not here -- exactly as MeasU's (+) leans on the Dist bind.
-  plus :: Int -> Int -> Int
-  plus = (+)
+-- ============================================================
+--  Universe-INVARIANT arithmetic: (+) and (=). These are host operations -- the SAME in
+--  every interpretation (digits/naturals are Int, the truth object is Bool) -- so ONE
+--  polymorphic instance covers all universes, with no per-universe duplication. The genuine
+--  per-universe content of MNIST is ONLY 'digit' (above) and the monad's bind/quantifier:
+--  (+) and (=) carry no interpretive choice.
+--    (+) : host integer addition. The Sigma -- the law of total probability (Dist) / the
+--          convolution over d1+d2=s (LogVec) -- is supplied by the monad's BIND, not here.
+--    (=) : ordinary equality of naturals. The per-(d1,d2,s) Booleans are marginalized to a
+--          probability by the monad readout (distPTrue / logVecPTrue).
+-- ============================================================
 
-  -- (=) : ordinary equality of two sum indices -> Bool, the SAME @eqNat = (==)@ as MeasU
-  --       (one truth algebra, two universes). The per-(d1,d2,s) Booleans are marginalized to
-  --       a probability by the LogVec readout (logVecPTrue), reproducing softmax-of-logConv.
-  eqNat :: Int -> Int -> Bool
+instance (MnistSorts u, Digit u ~ Int, Natural u ~ Int, Omega u ~ Bool) => MnistArith u where
+  plus :: Digit u -> Digit u -> Natural u
+  plus = (+)
+  eqNat :: Natural u -> Natural u -> Omega u
   eqNat = (==)
 
 -- ============================================================
