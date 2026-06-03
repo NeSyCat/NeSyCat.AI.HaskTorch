@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -15,7 +16,7 @@ import A_Categorical.CategoricalSignature (Framework (..))
 import B_Logical.Signature.Guard (Guard)
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
 
-class (TwoMonBLat u tau, Framework u, Monad (M u)) => A2MonBLat a u tau where
+class (TwoMonBLat tau, Framework u, Monad (M u)) => A2MonBLat a u tau where
   -- == Quantor symbols ==
 
   -- lattice aggregations

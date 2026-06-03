@@ -38,10 +38,12 @@ type Omega = Bool
 type instance Guard MeasU a = [a]
 
 ------------------------------------------------------
--- TwoMonBLat: the connective interpretation (Boolean lattice + the two monoids)
+-- TwoMonBLat: the connective interpretation (Boolean lattice + the two monoids). Universe-free
+-- -- this crisp @Bool@ truth algebra is shared by every interpretation (MeasU's @Dist Bool@
+-- and GeomU's @LogVec Bool@); only the quantifiers ('A2MonBLat', below for MeasU) pick a monad.
 ------------------------------------------------------
 
-instance TwoMonBLat MeasU Bool where
+instance TwoMonBLat Bool where
   type ParamsLogic Bool = ()
   -- bounded lattice
   top = True
@@ -71,9 +73,15 @@ instance A2MonBLat a MeasU Bool where
   bigVee _ guard phi = do
     omegas <- mapM phi guard
     return (foldl (vee ()) False omegas)
-  -- the monoid aggregations reduce to the lattice ones in the Boolean model
-  bigOplus guard phi = bigVee () guard phi
-  bigOtimes guard phi = bigWedge () guard phi
+  -- the monoid aggregations reduce to the lattice ones in the Boolean model (inlined rather
+  -- than delegating to bigVee/bigWedge: the self-call's universe is no longer fixed by the
+  -- truth type, and here it is plainly MeasU).
+  bigOplus guard phi = do
+    omegas <- mapM phi guard
+    return (foldl (vee ()) False omegas)
+  bigOtimes guard phi = do
+    omegas <- mapM phi guard
+    return (foldl (wedge ()) True omegas)
 
 ------------------------------------------------------
 -- Comparison predicates

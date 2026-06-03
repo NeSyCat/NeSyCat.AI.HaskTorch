@@ -25,7 +25,7 @@ library
       A_Categorical.Category.Monads.LogVecExpect
       B_Logical.Interpretations.Boolean
       B_Logical.Interpretations.Tensor
-      B_Logical.Interpretations.TensorProb
+      B_Logical.Interpretations.TensorBool
       B_Logical.Library.PMean
       B_Logical.Library.PMeanError
       B_Logical.Library.Stable

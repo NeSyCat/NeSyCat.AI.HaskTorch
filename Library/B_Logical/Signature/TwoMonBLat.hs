@@ -1,15 +1,20 @@
-{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE TypeFamilies #-}
 
 -- | SIGNATURE TwoMon-BLat -- the "2-monoid bounded lattice": the CONNECTIVE vocabulary
 --   (kept separate from the quantifiers, which live in 'A2MonBLat' on top of this).
 --   Symbols are grouped Connector (lattice, then the two monoids) then Comparator.
---   Indexed by universe @u@ and truth type @tau@ (fundep @tau -> u@).
+--
+--   A PURE truth algebra on the truth type @tau@ ALONE -- it carries no universe. The
+--   connectives are ordinary algebraic operations on truth values (a bounded lattice + two
+--   monoids), identical in every interpretation; there is only one Haskell category, and the
+--   truth algebra lives in it regardless of how a formula is read. The universe enters only
+--   at the QUANTIFIERS ('A2MonBLat'), whose aggregation is the Kleisli bind of the monad
+--   @M u@ (the law of total probability for @Dist@, the convolution for @LogVec@).
 module B_Logical.Signature.TwoMonBLat (TwoMonBLat (..)) where
 
 import Data.Kind (Type)
 
-class TwoMonBLat u tau | tau -> u where
+class TwoMonBLat tau where
   -- | Para PARAMETER SPACE of the logic -- the B-layer analogue of the domain's
   --   horizontal sort \theta (both are the parameter of a parametric morphism).
   --   Default: () (an unparameterised logic).

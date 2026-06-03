@@ -26,7 +26,7 @@ import Binary.C_Domain.Signature (BinaryRel (..), BinaryKlRel (..), BinaryParams
 binaryPredicate ::
   forall u.
   ( BinaryKlRel u,
-    TwoMonBLat u (Omega u),
+    TwoMonBLat (Omega u),
     Monad (M u)
   ) =>
   ParamsLogic (Omega u) ->
@@ -46,7 +46,7 @@ binaryPredicate lp paramMLP pt = do
 binarySentence ::
   forall u a.
   ( BinaryKlRel u,
-    TwoMonBLat u (Omega u),
+    TwoMonBLat (Omega u),
     A2MonBLat a u (Omega u),
     Monad (M u),
     a ~ Point u
@@ -56,5 +56,7 @@ binarySentence ::
   Theta u ->
   M u (Omega u)
 binarySentence lp guard paramMLP =
-  bigWedge lp guard
+  -- @u@/@(Omega u)@ are pinned explicitly: the truth algebra no longer fixes the universe
+  -- (the @tau -> u@ fundep is gone), so the universe is supplied at the quantifier.
+  bigWedge @a @u @(Omega u) lp guard
     (binaryPredicate @u lp paramMLP)

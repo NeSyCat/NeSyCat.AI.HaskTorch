@@ -24,8 +24,6 @@ where
 import A_Categorical.CategoricalInterpretation (GeomU, MeasU)
 import A_Categorical.Category.Monads.Dist (Dist (..))
 import A_Categorical.Category.Monads.LogVec (LogVec (..))
-import qualified B_Logical.Interpretations.Boolean as BoolLogic
-import qualified B_Logical.Interpretations.TensorProb as TensProbLogic
 import B_Logical.Library.Stable (clampNotZero)
 import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
 import C_Domain.NeuralNets.MnistCNN (cnn, cnnArch)
@@ -41,13 +39,13 @@ instance MnistSorts MeasU where
   type Image MeasU = Torch.Tensor      -- a single image [1,28,28]
   type Digit MeasU = Int               -- a digit; the distribution is carried by Dist
   type Natural MeasU = Int             -- a natural number (the sum)
-  type Omega MeasU = BoolLogic.Omega   -- = Bool (the logic's MeasU truth object)
+  type Omega MeasU = Bool              -- the shared crisp truth object (the Dist carries the degree)
 
 instance MnistSorts GeomU where
   type Image GeomU = Torch.Tensor          -- a batch [B,1,28,28]
   type Digit GeomU = Int                   -- a digit index 0..9 (the batch lives in the LogVec weights)
   type Natural GeomU = Int                 -- a sum index 0..18 (likewise)
-  type Omega GeomU = TensProbLogic.OmegaP  -- = [0,1] truth (the fuzzy/product logic of TensorProb)
+  type Omega GeomU = Bool                  -- the SAME crisp truth object as MeasU (the LogVec carries the degree)
 
 -- ============================================================
 --  Parameter spaces (horizontal sorts): I(ThetaCNN) = the pure weights of 'arch'
@@ -100,11 +98,11 @@ instance MnistArith GeomU where
   plus :: Int -> Int -> Int
   plus = (+)
 
-  -- (=) : crisp equality of two sum indices, as the (degenerate) fuzzy truth 0/1. The
-  --       per-(d1,d2,s) truths are marginalized to a probability by the LogVec readout
-  --       (logVecReadoutP), reproducing the old softmax-of-logConv exactly.
-  eqNat :: Int -> Int -> TensProbLogic.OmegaP
-  eqNat a b = TensProbLogic.OmegaP (Torch.asTensor [if a == b then 1.0 else 0.0 :: Float])
+  -- (=) : ordinary equality of two sum indices -> Bool, the SAME @eqNat = (==)@ as MeasU
+  --       (one truth algebra, two universes). The per-(d1,d2,s) Booleans are marginalized to
+  --       a probability by the LogVec readout (logVecPTrue), reproducing softmax-of-logConv.
+  eqNat :: Int -> Int -> Bool
+  eqNat = (==)
 
 -- ============================================================
 --  BRIDGE: MeasU <-> GeomU (softmax decode to a Dist over digits)

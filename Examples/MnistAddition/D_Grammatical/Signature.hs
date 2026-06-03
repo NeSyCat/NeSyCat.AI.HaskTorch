@@ -57,7 +57,7 @@ mnistSentence ::
   forall u a.
   ( MnistKlRel u,
     MnistArith u,
-    TwoMonBLat u (Omega u),
+    TwoMonBLat (Omega u),
     A2MonBLat a u (Omega u),
     Monad (M u),
     a ~ (Image u, Image u, M u (Natural u))
@@ -67,4 +67,6 @@ mnistSentence ::
   ThetaCNN u ->
   M u (Omega u)
 mnistSentence lp guard theta =
-  bigWedge lp guard (mnistFormula @u theta)
+  -- @u@/@(Omega u)@ are pinned explicitly: the truth algebra no longer fixes the universe
+  -- (the @tau -> u@ fundep is gone), so the universe is supplied at the quantifier.
+  bigWedge @a @u @(Omega u) lp guard (mnistFormula @u theta)

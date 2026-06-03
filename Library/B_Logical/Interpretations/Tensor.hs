@@ -37,7 +37,7 @@ type instance Guard GeomU a = a
 -- TwoMonBLat: connectives on Omega (R-valued, logit space)
 ------------------------------------------------------
 
-instance TwoMonBLat GeomU Omega where
+instance TwoMonBLat Omega where
   type ParamsLogic Omega = Torch.Tensor
   -- bounded lattice
   top = Torch.asTensor [(1.0 / 0.0) :: Float]

@@ -7,8 +7,8 @@
 --     lossKnow |-> softplus   lossData |-> crossEntropy   lossComb |-> convex
 --
 --   An example with a different truth object or different loss preferences declares its
---   own @instance InferenceSignature ...@ in its F layer (as MNIST does for the [0,1]
---   satisfaction @OmegaP@, with @lossKnow = negLog@).
+--   own @instance InferenceSignature ...@ in its F layer (as MNIST does for its @LogVec Bool@
+--   satisfaction, reading it out with @logVecPTrue@ and using @lossKnow = negLog@).
 module F_Inferential.InferenceInterpretation () where
 
 import F_Inferential.InferenceSignature (InferenceSignature (..))
