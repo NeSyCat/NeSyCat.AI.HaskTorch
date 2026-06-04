@@ -1,20 +1,13 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE UndecidableInstances #-}
 
--- | Interpretation I_gamma for MNIST single-digit addition, mirroring the binary
---   interpretation section-for-section: sort assignments, then the MeasU and
---   GeomU assignments of the symbols, then the bridge.
+-- | Interpretation I_gamma for MNIST single-digit addition. The sorts are universe-invariant
+--   plain types (see "MnistAddition.C_Domain.Signature"), so there is no per-universe sort
+--   assignment and no image bridge -- an image is the same tensor in both readings. The only
+--   per-universe content is 'digit':
 --
---     Sorts : I(Image), I(Digit)        per universe (MeasU, GeomU)
---     digit : cnn -- the chosen CNN architecture (= runArch cnnArch) at θ (pure weights)
---     bridge: encImage / decDigit between MeasU and GeomU
+--     digit \@GeomU = LogLeaf [0..9] . cnn theta   -- raw logits as a LogVec leaf
+--     digit \@MeasU = decode . digit \@GeomU theta  -- the MeasU reading is decode of that leaf
 module MnistAddition.C_Domain.Interpretation
   ( module MnistAddition.C_Domain.Signature,
     Params,
@@ -24,94 +17,32 @@ module MnistAddition.C_Domain.Interpretation
 where
 
 import A_Categorical.CategoricalInterpretation (GeomU, MeasU)
-import A_Categorical.CategoricalSignature (Framework)
+import A_Categorical.Category.Bridge (decode)
 import A_Categorical.Category.Monads.Dist (Dist)
-import A_Categorical.Category.Monads.DistDecode (categorical)
 import A_Categorical.Category.Monads.LogVec (LogVec (..))
 import B_Logical.Library.Stable (clampNotZero)
-import MnistAddition.C_Domain.Signature (MnistArith (..), MnistBridge (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
+import MnistAddition.C_Domain.Signature (Digit, Image, MnistKlRel (..), Natural)
 import C_Domain.NeuralNets.MnistCNN (cnn, cnnArch)
 import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
 import qualified Torch
 
--- ============================================================
---  Sort assignments: I(Image), I(Digit)
--- ============================================================
-
-instance MnistSorts MeasU where
-  type Image MeasU = Torch.Tensor      -- a single image [1,28,28]
-  type Digit MeasU = Int               -- a digit; the distribution is carried by Dist
-  type Natural MeasU = Int             -- a natural number (the sum)
-  type Omega MeasU = Bool              -- the shared crisp truth object (the Dist carries the degree)
-
-instance MnistSorts GeomU where
-  type Image GeomU = Torch.Tensor          -- a batch [B,1,28,28]
-  type Digit GeomU = Int                   -- a digit index 0..9 (the batch lives in the LogVec weights)
-  type Natural GeomU = Int                 -- a sum index 0..18 (likewise)
-  type Omega GeomU = Bool                  -- the SAME crisp truth object as MeasU (the LogVec carries the degree)
-
--- ============================================================
---  Parameter spaces (horizontal sorts): I(ThetaCNN) = the pure weights of 'arch'
--- ============================================================
-
--- | The horizontal sort: the PURE parameters (weights) of 'cnnArch'.
+-- | The parameter space: the pure weights of 'cnnArch'.
 type Params = Weights
-
--- Universe-invariant: the CNN weight space is the same in every interpretation, so ONE
--- polymorphic instance covers all universes (like 'MnistArith').
-instance (Framework u) => MnistParams u where type ThetaCNN u = Weights
 
 -- | Draw the initial theta_0 — fresh weights for 'cnnArch'.
 initParams :: IO Params
 initParams = sampleWeights cnnArch
 
--- ============================================================
---  MeasU: the neural Kleisli relation (digit). (+/= are universe-invariant; see below.)
--- ============================================================
+instance MnistKlRel GeomU where
+  digit :: Weights -> Image -> LogVec Digit
+  digit theta img = LogLeaf [0 .. 9] (cnn theta img) -- raw logits over 0..9 (no softmax)
 
 instance MnistKlRel MeasU where
-  digit :: Weights -> Image MeasU -> Dist (Digit MeasU)
-  digit theta = categorical [0 .. 9] . cnn theta . encImage @MeasU @GeomU
-    -- pure composition: run the net (logits) then the modular softmax decode
+  digit :: Weights -> Image -> Dist Digit
+  digit theta = decode . digit @GeomU theta
+    -- the MeasU reading IS 'decode' of the GeomU leaf (an image is the same tensor; no bridge)
 
--- ============================================================
---  GeomU: the neural Kleisli relation (digit). (+/= are universe-invariant; see below.)
--- ============================================================
-
-instance MnistKlRel GeomU where
-  digit :: Weights -> Image GeomU -> LogVec (Digit GeomU)
-  digit theta img = LogLeaf [0 .. 9] (cnn theta img) -- the batched digit distribution as raw logits
-
--- ============================================================
---  Universe-INVARIANT arithmetic: (+) and (=). These are host operations -- the SAME in
---  every interpretation (digits/naturals are Int, the truth object is Bool) -- so ONE
---  polymorphic instance covers all universes, with no per-universe duplication. The genuine
---  per-universe content of MNIST is ONLY 'digit' (above) and the monad's bind/quantifier:
---  (+) and (=) carry no interpretive choice.
---    (+) : host integer addition. The Sigma -- the law of total probability (Dist) / the
---          convolution over d1+d2=s (LogVec) -- is supplied by the monad's BIND, not here.
---    (=) : ordinary equality of naturals. The per-(d1,d2,s) Booleans are marginalized to a
---          probability by the monad readout (distPTrue / logVecPTrue).
--- ============================================================
-
-instance (MnistSorts u, Digit u ~ Int, Natural u ~ Int, Omega u ~ Bool) => MnistArith u where
-  plus :: Digit u -> Digit u -> Natural u
-  plus = (+)
-  eqNat :: Natural u -> Natural u -> Omega u
-  eqNat = (==)
-
--- ============================================================
---  BRIDGE: MeasU <-> GeomU (softmax decode to a Dist over digits)
--- ============================================================
-
-instance MnistBridge MeasU GeomU where
-  -- An image is the same pixel tensor in both universes (no representation gap,
-  -- unlike binary's (Float,Float) -> tensor), so the encode is the identity.
-  encImage :: Image MeasU -> Image GeomU
-  encImage img = img
-
--- | Wrap the observed one-hot sum @[B,19]@ into a (certain) 'LogVec' distribution over
---   the sum indices @0..18@ -- a batched point mass. Lets the observed sum flow through
---   the monad just like the digit predictions, so the formula stays universe-uniform.
-obsLeaf :: Torch.Tensor -> LogVec Int
+-- | The observed one-hot sum @[B,19]@ as a CERTAIN LogVec over 0..18 (a batched point mass) --
+--   the 'encode' of the observation, realized at the construction site (support 0..18 explicit).
+obsLeaf :: Torch.Tensor -> LogVec Natural
 obsLeaf oneHotN = LogLeaf [0 .. 18] (Torch.log (clampNotZero 1e-13 oneHotN))

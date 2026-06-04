@@ -8,7 +8,7 @@ module Binary.G_Statistical.Interpretation (report, binaryReport) where
 
 import A_Categorical.CategoricalInterpretation (MeasU)
 import Binary.C_Domain.Interpretation ()
-import Binary.C_Domain.Signature (BinaryKlRel (..), BinaryRel (..), BinarySorts (..))
+import Binary.C_Domain.Signature (BinaryKlRel (..), BinaryRel (..), Point)
 import Binary.E_Data.Signature (BinaryDataset (..))
 import A_Categorical.Category.Monads.DistExpect (distPTrue)
 import G_Statistical.Report (Report, evaluate, runMetrics)
@@ -17,7 +17,7 @@ import qualified Torch
 
 binaryReport :: Weights -> BinaryDataset -> Report
 binaryReport theta ds =
-  let toPoints t = map (\[x1, x2] -> (x1, x2)) (Torch.asValue t :: [[Float]]) :: [Point MeasU]
+  let toPoints t = map Torch.asTensor (Torch.asValue t :: [[Float]]) :: [Point] -- each row -> a [2] tensor
       predict pt = distPTrue (classifierA @MeasU theta pt)
       label pt = distPTrue (labelA @MeasU pt) > 0.5  -- labelA is now a (certain) Dist Bool
       trainPairs = evaluate predict label (toPoints (trainData ds))

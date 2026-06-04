@@ -1,53 +1,36 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Binary.C_Domain.Signature where
+-- | Non-logical signature for Binary classification.
+--
+--   The sorts are universe-INVARIANT plain types: a @Point@ is a @Torch.Tensor@ in BOTH
+--   universes (MeasU reasons on a single @[2]@ point, GeomU on a @[B,2]@ batch), and the truth
+--   object is @Bool@. So there is no per-universe sort assignment and no @encPoint@ bridge. The
+--   only universe-dependent symbols are the Kleisli relations 'labelA' and 'classifierA' (their
+--   monad @M u@ is @Dist@ in MeasU, @LogVec@ in GeomU).
+module Binary.C_Domain.Signature
+  ( Point,
+    Omega,
+    BinaryRel (..),
+    BinaryKlRel (..),
+  )
+where
 
 import A_Categorical.CategoricalSignature (Framework (..))
-import Data.Kind (Type)
+import C_Domain.NeuralNets.DSL.Semantics (Weights)
+import qualified Torch
 
--- | Non-logical signature Sigma_gamma for the Binary Classification domain.
---
---   Vertical points (sorts)        : Point, Omega   -- objects of the domain category C_gamma
---   Horizontal point (param space) : Theta          -- object of the actor A
---   Relation symbols               : labelA      : Point -> Omega           (Tarski)
---                                     classifierA : Theta . Point -> M Omega (parametrized Kleisli)
---
---   Theta is only a *symbol* here; its semantics (e.g. an MLP weight space, a
---   morphism of the actor) is supplied by an interpretation. The monad is M u.
+-- Sorts (universe-invariant plain types).
+type Point = Torch.Tensor -- a point in R^2 (a [2] tensor, or a [B,2] batch)
+type Omega = Bool         -- the truth object
 
--- | Sort symbols, assigned to concrete objects by an interpretation.
-class (Framework u) => BinarySorts u where
-  type Point u :: Type
-  type Omega u :: Type
+-- | The ground-truth label relation -- CERTAIN but Kleisli (@M u Omega@), so the truth flows
+--   through the monad (MeasU: one point at a time; GeomU: the whole batch in the leaf weights).
+class (Framework u, Monad (M u)) => BinaryRel u where
+  labelA :: Point -> M u Omega
 
--- ============================================================
---  Parameter spaces (horizontal sorts): the actor objects Theta where the
---  learnable parameters live. The vertical sorts above hold the variables (x, y);
---  these hold the parameters theta. One symbol per network -- here a single Theta.
--- ============================================================
-
--- | Parameter-space symbols (horizontal sorts), each assigned a concrete space
---   (e.g. an MLP weight space) by an interpretation.
-class (Framework u) => BinaryParams u where
-  type Theta u :: Type
-
--- | The ground-truth label relation. CERTAIN but Kleisli (@M u (Omega u)@, not @Omega u@):
---   the truth flows through the monad so the GeomU batch can ride in the leaf weights, exactly
---   as MnistAddition's observed sum does (a delta distribution). MeasU sees one point at a time
---   (per 'bigWedge''s mapM), GeomU the whole batch.
-class (BinarySorts u, Monad (M u)) => BinaryRel u where
-  labelA :: Point u -> M u (Omega u)
-
--- | Parametrized Kleisli relation symbol. @Theta u@ is the parameter-space
---   symbol (a horizontal point); its semantics is fixed by the interpretation.
-class (BinaryRel u, BinaryParams u, Monad (M u)) => BinaryKlRel u where
-  classifierA :: Theta u -> Point u -> M u (Omega u)
-
--- | Bridge for encoding between two universe interpretations (the @Point@ representations
---   differ: a host tuple in MeasU, a tensor in GeomU). No @decOmega@: each universe's
---   @classifierA@/@labelA@ builds its own distribution, so no truth-object bridge is needed.
-class (BinarySorts from, BinarySorts to) => BinaryBridge from to where
-  encPoint :: Point from -> Point to
+-- | The neural classifier as a parametrized Kleisli relation -- the genuinely per-universe
+--   symbol (its monad @M u@ is @Dist@ vs @LogVec@).
+class (BinaryRel u) => BinaryKlRel u where
+  classifierA :: Weights -> Point -> M u Omega

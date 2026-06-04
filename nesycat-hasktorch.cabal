@@ -17,8 +17,8 @@ library
   exposed-modules:
       A_Categorical.CategoricalInterpretation
       A_Categorical.CategoricalSignature
+      A_Categorical.Category.Bridge
       A_Categorical.Category.Monads.Dist
-      A_Categorical.Category.Monads.DistDecode
       A_Categorical.Category.Monads.DistExpect
       A_Categorical.Category.Monads.Giry
       A_Categorical.Category.Monads.GiryExpect

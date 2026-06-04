@@ -26,7 +26,8 @@ import A_Categorical.CategoricalSignature (Framework (..))
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
-import MnistAddition.C_Domain.Signature (MnistArith (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
+import MnistAddition.C_Domain.Signature (Image, MnistKlRel (..), Natural, Omega, eqNat, plus)
+import C_Domain.NeuralNets.DSL.Semantics (Weights)
 
 -- | The per-pair PREDICATE  @add(x,y) = digit(x) + digit(y)@  at the observed sum @n@,
 --   polymorphic over the universe @u@. The @do@-block never changes; only the symbols
@@ -34,14 +35,14 @@ import MnistAddition.C_Domain.Signature (MnistArith (..), MnistKlRel (..), Mnist
 --   in GeomU it runs once on a batch (@d1,d2 :: logits@) with @plus@ = log-space convolution.
 mnistFormula ::
   forall u.
-  (MnistKlRel u, MnistArith u) =>
-  ThetaCNN u ->
-  (Image u, Image u, M u (Natural u)) ->
-  M u (Omega u)
+  (MnistKlRel u) =>
+  Weights ->
+  (Image, Image, M u Natural) ->
+  M u Omega
 mnistFormula theta (x, y, n) =
   let
-    (.+) = plus @u
-    (.=) = eqNat @u
+    (.+) = plus
+    (.=) = eqNat
     dig = digit @u theta
   in do
     d1 <- dig x
@@ -56,17 +57,16 @@ mnistFormula theta (x, y, n) =
 mnistSentence ::
   forall u a.
   ( MnistKlRel u,
-    MnistArith u,
-    TwoMonBLat (Omega u),
-    A2MonBLat a u (Omega u),
+    TwoMonBLat Omega,
+    A2MonBLat a u Omega,
     Monad (M u),
-    a ~ (Image u, Image u, M u (Natural u))
+    a ~ (Image, Image, M u Natural)
   ) =>
-  ParamsLogic (Omega u) ->
+  ParamsLogic Omega ->
   Guard u a ->
-  ThetaCNN u ->
-  M u (Omega u)
+  Weights ->
+  M u Omega
 mnistSentence lp guard theta =
-  -- @u@/@(Omega u)@ are pinned explicitly: the truth algebra no longer fixes the universe
-  -- (the @tau -> u@ fundep is gone), so the universe is supplied at the quantifier.
-  bigWedge @a @u @(Omega u) lp guard (mnistFormula @u theta)
+  -- @u@/@Omega@ are pinned explicitly: the truth algebra is universe-free, so the universe is
+  -- supplied at the quantifier.
+  bigWedge @a @u @Omega lp guard (mnistFormula @u theta)

@@ -9,8 +9,8 @@ import C_Domain.NeuralNets.DSL.Syntax (Arch, Layer (..))
 import Torch (Tensor)
 
 -- | The Binary MLP: 2 -> 16 -> 16 -> 2, ELU between the linear layers. Two output logits (one
---   per class @{True, False}@) -- pure logits, so @classifierA@ is @LogLeaf [True,False] . mlp@
---   (GeomU) / @categorical [True,False] . mlp@ (MeasU), with no logit-padding hack.
+--   per class @{True, False}@) -- pure logits, so @classifierA \@GeomU = LogLeaf [True,False] . mlp@
+--   and @classifierA \@MeasU = decode . classifierA \@GeomU@, with no logit-padding hack.
 mlpArch :: Arch
 mlpArch = [Linear 2 16, ELU, Linear 16 16, ELU, Linear 16 2]
 

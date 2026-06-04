@@ -20,19 +20,20 @@ import A_Categorical.CategoricalSignature (Framework (..))
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
-import Binary.C_Domain.Signature (BinaryRel (..), BinaryKlRel (..), BinaryParams (..), BinarySorts (..))
+import Binary.C_Domain.Signature (BinaryKlRel (..), BinaryRel (..), Omega, Point)
+import C_Domain.NeuralNets.DSL.Semantics (Weights)
 
 -- | Abstract pointwise predicate for binary classification.
 binaryPredicate ::
   forall u.
   ( BinaryKlRel u,
-    TwoMonBLat (Omega u),
+    TwoMonBLat Omega,
     Monad (M u)
   ) =>
-  ParamsLogic (Omega u) ->
-  Theta u ->
-  Point u ->
-  M u (Omega u)
+  ParamsLogic Omega ->
+  Weights ->
+  Point ->
+  M u Omega
 binaryPredicate lp paramMLP pt = do
   pred <- classifierA @u paramMLP pt
   label <- labelA @u pt   -- the label now flows through the monad (a certain leaf), like MNIST's observed sum
@@ -46,17 +47,16 @@ binaryPredicate lp paramMLP pt = do
 binarySentence ::
   forall u a.
   ( BinaryKlRel u,
-    TwoMonBLat (Omega u),
-    A2MonBLat a u (Omega u),
+    TwoMonBLat Omega,
+    A2MonBLat a u Omega,
     Monad (M u),
-    a ~ Point u
+    a ~ Point
   ) =>
-  ParamsLogic (Omega u) ->
+  ParamsLogic Omega ->
   Guard u a ->
-  Theta u ->
-  M u (Omega u)
+  Weights ->
+  M u Omega
 binarySentence lp guard paramMLP =
-  -- @u@/@(Omega u)@ are pinned explicitly: the truth algebra no longer fixes the universe
-  -- (the @tau -> u@ fundep is gone), so the universe is supplied at the quantifier.
-  bigWedge @a @u @(Omega u) lp guard
+  -- @u@/@Omega@ pinned explicitly: the truth algebra is universe-free.
+  bigWedge @a @u @Omega lp guard
     (binaryPredicate @u lp paramMLP)

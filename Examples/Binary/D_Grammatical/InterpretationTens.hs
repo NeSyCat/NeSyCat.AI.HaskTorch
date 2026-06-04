@@ -16,12 +16,12 @@ import A_Categorical.CategoricalInterpretation (GeomU)
 import A_Categorical.Category.Monads.LogVec (LogVec)
 import B_Logical.Interpretations.TensorBool () -- TwoMonBLat Bool + A2MonBLat GeomU Bool (the quantifier)
 import Binary.C_Domain.Interpretation ()
-import Binary.C_Domain.Signature (BinarySorts (..))
+import Binary.C_Domain.Signature (Omega)
 import Binary.D_Grammatical.Signature (binarySentence)
 import C_Domain.NeuralNets.DSL.Semantics (Weights)
 import qualified Torch
 
 -- | Binary axiom in GeomU: 'binarySentence' at @\@GeomU@ over the batch tensor (the guard).
-binaryAxiomTens :: Weights -> Torch.Tensor -> LogVec (Omega GeomU)
+binaryAxiomTens :: Weights -> Torch.Tensor -> LogVec Omega
 binaryAxiomTens theta guard =
   binarySentence @GeomU () guard theta
