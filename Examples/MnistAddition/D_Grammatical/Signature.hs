@@ -1,70 +1,66 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
 
 -- | Grammatical layer (D) — SIGNATURE for the MNIST example: the single abstract
---   MNIST-addition formula, universe-polymorphic over @u@, INCLUDING its quantifier.
---   Like Binary's @binarySentence@, the whole sentence
+--   MNIST-addition formula, monad-polymorphic over @m@, INCLUDING its quantifier.
 --
---     forall (x,y,n) in data.  add(x,y) = digit(x) + digit(y)
+--     forall (x,y,n) in data.  n = digit(x) + digit(y)
 --
---   is written ONCE here (the predicate 'mnistFormula' under the logic's 'bigWedge'),
---   then interpreted per universe in InterpretationData (MeasU) / InterpretationTens
---   (GeomU). There is no existential: the marginalization (the @Sigma@ of the law of
---   total probability) is part of @plus@'s interpretation.
+--   Faithful to the theory (presi.tex): @digit : (m)Image -> (m)Digit@, the observed sum enters
+--   as @eta n :: m Natural@ (bound with @s <- n@, exactly like the digits), and @(+)@/@(=)@ are
+--   plain host functions on the bound values. Written ONCE; only the monad @m@ changes -- @Dist@
+--   (probability) or @LogVec@ (differentiable). Interpreted per monad in
+--   "MnistAddition.D_Grammatical.Interpretation".
 module MnistAddition.D_Grammatical.Signature
   ( mnistFormula,
     mnistSentence,
   )
 where
 
-import A_Categorical.CategoricalSignature (Framework (..))
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
-import MnistAddition.C_Domain.Signature (MnistArith (..), MnistKlRel (..), MnistParams (..), MnistSorts (..))
+import MnistAddition.C_Domain.Signature (Image, MnistKlRel (..), Natural, Omega, eqNat, plus)
+import C_Domain.NeuralNets.DSL.Semantics (Weights)
 
--- | The per-pair PREDICATE  @add(x,y) = digit(x) + digit(y)@  at the observed sum @n@,
---   polymorphic over the universe @u@. The @do@-block never changes; only the symbols
---   are reinterpreted. In MeasU it marginalizes through the @Dist@ bind (@d1,d2 :: Int@);
---   in GeomU it runs once on a batch (@d1,d2 :: logits@) with @plus@ = log-space convolution.
+-- | The per-pair FORMULA  @n = digit(x) + digit(y)@, monad-polymorphic over @m@. The observed
+--   sum @n :: m Natural@ is bound (@s <- n@) exactly like the digits; @(.+)@/@(.=)@ are plain
+--   host ops on the three bound values; the bind supplies the marginalization (the law of total
+--   probability for @Dist@, the log-space convolution for @LogVec@).
 mnistFormula ::
-  forall u.
-  (MnistKlRel u, MnistArith u) =>
-  ThetaCNN u ->
-  (Image u, Image u, M u (Natural u)) ->
-  M u (Omega u)
+  forall m.
+  (MnistKlRel m) =>
+  Weights ->
+  (Image, Image, m Natural) ->
+  m Omega
 mnistFormula theta (x, y, n) =
   let
-    (.+) = plus @u
-    (.=) = eqNat @u
-    dig = digit @u theta
-  in do
-    d1 <- dig x
-    d2 <- dig y
-    s <- n
-    return (s .= (d1 .+ d2))
+    (.+) = plus
+    (.=) = eqNat
+    dig = digit @m theta
+   in
+    do
+      d1 <- dig x
+      d2 <- dig y
+      s <- n
+      return (s .= (d1 .+ d2))
 
--- | The SENTENCE  @forall (x,y,n) in data. add(x,y) = digit(x) + digit(y)@ — the whole
---   quantified axiom, abstract over @u@. The guard @Guard u a@ is the data quantified over
---   (a list of triples in MeasU, the batched triple in GeomU); the universal is the logic's
---   'bigWedge'. Interpreted per universe by 'mnistAxiomTens' (GeomU) / 'mnistAxiomData' (MeasU).
+-- | The SENTENCE  @forall (x,y,n) in data. n = digit(x) + digit(y)@ — the whole quantified axiom,
+--   abstract over @m@. The guard @Guard m (Image, Image, m Natural)@ is the data quantified over
+--   (a list of triples in @Dist@, the batched triple in @LogVec@); the universal is 'bigWedge'.
 mnistSentence ::
-  forall u a.
-  ( MnistKlRel u,
-    MnistArith u,
-    TwoMonBLat u (Omega u),
-    A2MonBLat a u (Omega u),
-    Monad (M u),
-    a ~ (Image u, Image u, M u (Natural u))
+  forall m.
+  ( MnistKlRel m,
+    TwoMonBLat Omega,
+    A2MonBLat m Omega,
+    Monad m
   ) =>
-  ParamsLogic (Omega u) ->
-  Guard u a ->
-  ThetaCNN u ->
-  M u (Omega u)
+  ParamsLogic Omega ->
+  Guard m (Image, Image, m Natural) ->
+  Weights ->
+  m Omega
 mnistSentence lp guard theta =
-  bigWedge lp guard (mnistFormula @u theta)
+  bigWedge lp guard (mnistFormula @m theta)

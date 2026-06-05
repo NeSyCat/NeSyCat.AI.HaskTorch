@@ -15,25 +15,20 @@ build-type:     Simple
 
 library
   exposed-modules:
-      A_Categorical.CategoricalInterpretation
-      A_Categorical.CategoricalSignature
-      A_Categorical.Category.Monads.Dist
-      A_Categorical.Category.Monads.DistExpect
-      A_Categorical.Category.Monads.Giry
-      A_Categorical.Category.Monads.GiryExpect
-      A_Categorical.Category.Monads.LogVec
-      A_Categorical.Category.Monads.LogVecExpect
+      A_Categorical.Monads.Bridge
+      A_Categorical.Monads.Dist
+      A_Categorical.Monads.DistExpect
+      A_Categorical.Monads.Giry
+      A_Categorical.Monads.GiryExpect
+      A_Categorical.Monads.LogVec
+      A_Categorical.Monads.LogVecExpect
       B_Logical.Interpretations.Boolean
-      B_Logical.Interpretations.Tensor
-      B_Logical.Interpretations.TensorProb
+      B_Logical.Interpretations.TensorBool
       B_Logical.Library.PMean
       B_Logical.Library.PMeanError
       B_Logical.Library.Stable
       B_Logical.Signature.A2MonBLat
-      B_Logical.Signature.Classical
-      B_Logical.Signature.Fuzzy
       B_Logical.Signature.Guard
-      B_Logical.Signature.RealNumbers
       B_Logical.Signature.TwoMonBLat
       C_Domain.NeuralNets.DSL.Library.Activation.ELU
       C_Domain.NeuralNets.DSL.Library.Activation.ReLU
@@ -65,8 +60,7 @@ library
       Run
       Binary.C_Domain.Interpretation
       Binary.C_Domain.Signature
-      Binary.D_Grammatical.InterpretationData
-      Binary.D_Grammatical.InterpretationTens
+      Binary.D_Grammatical.Interpretation
       Binary.D_Grammatical.Signature
       Binary.Definition
       Binary.E_Data.Loader
@@ -75,8 +69,7 @@ library
       Binary.G_Statistical.Interpretation
       MnistAddition.C_Domain.Interpretation
       MnistAddition.C_Domain.Signature
-      MnistAddition.D_Grammatical.InterpretationData
-      MnistAddition.D_Grammatical.InterpretationTens
+      MnistAddition.D_Grammatical.Interpretation
       MnistAddition.D_Grammatical.Signature
       MnistAddition.Definition
       MnistAddition.E_Data.Loader

@@ -5,7 +5,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Logical interpretation: classical Boolean logic (Omega = \{True, False\}) in the
---   MeasU universe. Instantiates 'TwoMonBLat' (the connectives) and 'A2MonBLat' (the
+--   @Dist@ monad. Instantiates 'TwoMonBLat' (the connectives) and 'A2MonBLat' (the
 --   quantifiers).
 module B_Logical.Interpretations.Boolean
   ( Omega,
@@ -23,8 +23,7 @@ module B_Logical.Interpretations.Boolean
   )
 where
 
-import A_Categorical.CategoricalInterpretation (MeasU)
-import A_Categorical.Category.Monads.Dist () -- Monad instance for Dist
+import A_Categorical.Monads.Dist (Dist) -- the monad (+ its Monad instance)
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
@@ -34,14 +33,16 @@ infix 4 .==, ./=, .<, .>, .<=, .>=
 -- | Omega := I(tau) = \{True, False\}
 type Omega = Bool
 
--- | MeasU guards are finite subsets (lists).
-type instance Guard MeasU a = [a]
+-- | @Dist@ guards are finite subsets (lists).
+type instance Guard Dist a = [a]
 
 ------------------------------------------------------
--- TwoMonBLat: the connective interpretation (Boolean lattice + the two monoids)
+-- TwoMonBLat: the connective interpretation (Boolean lattice + the two monoids). Universe-free
+-- -- this crisp @Bool@ truth algebra is shared by every interpretation (the @Dist Bool@
+-- and @LogVec Bool@ readings); only the quantifiers ('A2MonBLat', below for Dist) pick a monad.
 ------------------------------------------------------
 
-instance TwoMonBLat MeasU Bool where
+instance TwoMonBLat Bool where
   type ParamsLogic Bool = ()
   -- bounded lattice
   top = True
@@ -62,7 +63,7 @@ instance TwoMonBLat MeasU Bool where
 -- A2MonBLat: the quantifier interpretation (commutator via mapM, then lattice reduce)
 ------------------------------------------------------
 
-instance A2MonBLat a MeasU Bool where
+instance A2MonBLat Dist Bool where
   -- forall = commutator + inf (lattice meet = and)
   bigWedge _ guard phi = do
     omegas <- mapM phi guard
@@ -71,9 +72,15 @@ instance A2MonBLat a MeasU Bool where
   bigVee _ guard phi = do
     omegas <- mapM phi guard
     return (foldl (vee ()) False omegas)
-  -- the monoid aggregations reduce to the lattice ones in the Boolean model
-  bigOplus guard phi = bigVee () guard phi
-  bigOtimes guard phi = bigWedge () guard phi
+  -- the monoid aggregations reduce to the lattice ones in the Boolean model (inlined rather
+  -- than delegating to bigVee/bigWedge: the self-call's monad is no longer fixed by the
+  -- truth type, and here it is plainly Dist).
+  bigOplus guard phi = do
+    omegas <- mapM phi guard
+    return (foldl (vee ()) False omegas)
+  bigOtimes guard phi = do
+    omegas <- mapM phi guard
+    return (foldl (wedge ()) True omegas)
 
 ------------------------------------------------------
 -- Comparison predicates

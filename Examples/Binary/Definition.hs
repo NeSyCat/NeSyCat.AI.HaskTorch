@@ -7,21 +7,21 @@
 --   carries 'trainConfig'; D exports the satisfaction 'sat', E the data + batches.
 module Binary.Definition (Binary) where
 
--- A (category) — REUSE template: the library universes + categorical signature.
-import A_Categorical.CategoricalSignature ()
-import A_Categorical.CategoricalInterpretation ()
--- B (logic) — REUSE template: the library Boolean (MeasU) + Tensor (GeomU, logit logic).
+-- A (category) — REUSE shared: the LogVec monad (the truth object's carrier).
+import A_Categorical.Monads.LogVec (LogVec)
+-- B (logic) — REUSE template: the library Boolean (the shared crisp-Bool truth algebra +
+--   the Dist quantifier) + TensorBool (the LogVec quantifier for Bool).
 import B_Logical.Interpretations.Boolean ()
-import B_Logical.Interpretations.Tensor ()
+import B_Logical.Interpretations.TensorBool ()
 -- C (domain) — STANDALONE: Binary's own sorts/symbols + parameter space (Params/initParams).
 import qualified Binary.C_Domain.Interpretation as C
--- D (grammatical) — STANDALONE: builds the satisfaction 'sat' (= conjunction of the axioms).
-import qualified Binary.D_Grammatical.InterpretationTens as D
+-- D (grammatical) — STANDALONE: the axiom in both monads (one file); 'sat' = the LogVec reading.
+import qualified Binary.D_Grammatical.Interpretation as D
 -- E (data) — STANDALONE: Binary's own data format + loader (exports the data + the batches).
 import qualified Binary.E_Data.Signature as E
 import qualified Binary.E_Data.Loader as EL
--- F (inference) — REUSE template signature AND the library logit-truth loss interpretation
---   (instance InferenceSignature Torch.Tensor = softplus); STANDALONE only for trainConfig.
+-- F (inference) — REUSE template signature AND the library's shared probabilistic-truth loss
+--   (instance InferenceSignature (LogVec Bool) = negLog . logVecPTrue); STANDALONE only for trainConfig.
 import F_Inferential.InferenceSignature ()
 import F_Inferential.InferenceInterpretation ()
 import qualified Binary.F_Inferential.Interpretation as F
@@ -37,7 +37,7 @@ instance Example Binary where
   type Params Binary = C.Params
   type Data Binary = E.Dataset
   type Batch Binary = Torch.Tensor
-  type Truth Binary = Torch.Tensor
+  type Truth Binary = LogVec Bool
   initParams = C.initParams
   loadData = EL.loadData
   trainConfig = F.trainConfig

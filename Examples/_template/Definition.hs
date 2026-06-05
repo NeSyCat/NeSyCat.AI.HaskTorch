@@ -10,9 +10,10 @@ module Template.Definition (Template) where
 -- A (category) — REUSE shared: the library universes + categorical signature.
 import A_Categorical.CategoricalSignature ()
 import A_Categorical.CategoricalInterpretation ()
--- B (logic) — REUSE shared: the library Boolean (MeasU) + Tensor (GeomU).
+-- B (logic) — REUSE shared: the library Boolean (the crisp-Bool truth algebra + MeasU
+--   quantifier) + TensorBool (the GeomU quantifier for Bool).
 import B_Logical.Interpretations.Boolean ()
-import B_Logical.Interpretations.Tensor ()
+import B_Logical.Interpretations.TensorBool ()
 -- C (domain) — STANDALONE: this example's own sorts/symbols + parameter space (Params/initParams).
 import qualified Template.C_Domain.Interpretation as C
 -- D (grammatical) — STANDALONE: this example's own axiom.

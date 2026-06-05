@@ -1,49 +1,34 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Binary.C_Domain.Signature where
-
-import A_Categorical.CategoricalSignature (Framework (..))
-import Data.Kind (Type)
-
--- | Non-logical signature Sigma_gamma for the Binary Classification domain.
+-- | Non-logical signature for Binary classification.
 --
---   Vertical points (sorts)        : Point, Omega   -- objects of the domain category C_gamma
---   Horizontal point (param space) : Theta          -- object of the actor A
---   Relation symbols               : labelA      : Point -> Omega           (Tarski)
---                                     classifierA : Theta . Point -> M Omega (parametrized Kleisli)
---
---   Theta is only a *symbol* here; its semantics (e.g. an MLP weight space, a
---   morphism of the actor) is supplied by an interpretation. The monad is M u.
+--   The sorts are monad-INVARIANT plain types: a @Point@ is a @Torch.Tensor@ in BOTH readings
+--   (@Dist@ reasons on a single @[2]@ point, @LogVec@ on a @[B,2]@ batch), and the truth
+--   object is @Bool@. So there is no per-monad sort assignment and no @encPoint@ bridge. The
+--   only monad-dependent symbols are the Kleisli relations 'labelA' and 'classifierA' (their
+--   monad @m@ is @Dist@ or @LogVec@).
+module Binary.C_Domain.Signature
+  ( Point,
+    Omega,
+    BinaryRel (..),
+    BinaryKlRel (..),
+  )
+where
 
--- | Sort symbols, assigned to concrete objects by an interpretation.
-class (Framework u) => BinarySorts u where
-  type Point u :: Type
-  type Omega u :: Type
+import C_Domain.NeuralNets.DSL.Semantics (Weights)
+import qualified Torch
 
--- ============================================================
---  Parameter spaces (horizontal sorts): the actor objects Theta where the
---  learnable parameters live. The vertical sorts above hold the variables (x, y);
---  these hold the parameters theta. One symbol per network -- here a single Theta.
--- ============================================================
+-- Sorts (universe-invariant plain types).
+type Point = Torch.Tensor -- a point in R^2 (a [2] tensor, or a [B,2] batch)
+type Omega = Bool         -- the truth object
 
--- | Parameter-space symbols (horizontal sorts), each assigned a concrete space
---   (e.g. an MLP weight space) by an interpretation.
-class (Framework u) => BinaryParams u where
-  type Theta u :: Type
+-- | The ground-truth label relation -- CERTAIN but Kleisli (@m Omega@), so the truth flows
+--   through the monad (@Dist@: one point at a time; @LogVec@: the whole batch in the leaf weights).
+class (Monad m) => BinaryRel m where
+  labelA :: Point -> m Omega
 
--- | Tarski relation symbol.
-class (BinarySorts u) => BinaryRel u where
-  labelA :: Point u -> Omega u
-
--- | Parametrized Kleisli relation symbol. @Theta u@ is the parameter-space
---   symbol (a horizontal point); its semantics is fixed by the interpretation.
-class (BinaryRel u, BinaryParams u, Monad (M u)) => BinaryKlRel u where
-  classifierA :: Theta u -> Point u -> M u (Omega u)
-
--- | Bridge for encoding/decoding between two universe interpretations.
-class (BinarySorts from, BinarySorts to) => BinaryBridge from to where
-  encPoint :: Point from -> Point to
-  decOmega :: Omega to -> M from (Omega from)
+-- | The neural classifier as a parametrized Kleisli relation -- the genuinely per-monad
+--   symbol (its monad @m@ is @Dist@ vs @LogVec@).
+class (BinaryRel m) => BinaryKlRel m where
+  classifierA :: Weights -> Point -> m Omega

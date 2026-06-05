@@ -2,13 +2,13 @@
 
 -- | Expectation under the Dist monad.
 --   Dist is always finitely supported, so expectation is a weighted sum.
-module A_Categorical.Category.Monads.DistExpect
+module A_Categorical.Monads.DistExpect
   ( distExpect,
     distPTrue,
   )
 where
 
-import A_Categorical.Category.Monads.Dist (Dist (..))
+import A_Categorical.Monads.Dist (Dist (..))
 
 -- | Expectation of @f@ under a finitely-supported distribution.
 distExpect :: Dist a -> (a -> Double) -> Double

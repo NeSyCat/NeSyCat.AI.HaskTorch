@@ -1,20 +1,20 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE InstanceSigs #-}
 
--- | The LogVec monad: the geometry-paradigm (GeomU) sibling of 'Dist'. A free monad
+-- | The LogVec monad: the log-space sibling of 'Dist'. A free monad
 --   whose leaves carry a batched, log-weighted finite support -- i.e. the
 --   function-space / free-module functor  @Vec a = (a -> R)@  realized over the LOG
 --   semiring @(R, +, LogSumExp)@ with the weights kept as a 'Torch.Tensor' so autograd
 --   survives. Its Kleisli BIND is the (log-space) convolution / law of total
 --   probability: this is what lets the do-notation lift @plus = (+)@ to the
---   convolution automatically, exactly as the 'Dist' bind does for MeasU.
+--   convolution automatically, exactly as the 'Dist' bind does for probabilities.
 --
 --   Finiteness is NOT intrinsic to the monad -- the construction @a |-> (a -> R)@ is
 --   the representable functor for ANY @a@. It is only what the interpreter
---   ("A_Categorical.Category.Monads.LogVecExpect") needs to MATERIALIZE the bind as a
+--   ("A_Categorical.Monads.LogVecExpect") needs to MATERIALIZE the bind as a
 --   dense tensor (a finite sum = the discrete convolution). The continuous case
 --   (an integral = the general convolution) is the 'Giry' monad.
-module A_Categorical.Category.Monads.LogVec
+module A_Categorical.Monads.LogVec
   ( LogVec (..),
   )
 where

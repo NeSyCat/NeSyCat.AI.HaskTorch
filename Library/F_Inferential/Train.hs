@@ -16,12 +16,14 @@ where
 
 import Control.Monad (when)
 import Data.Time.Clock (diffUTCTime, getCurrentTime)
+import System.Mem (performGC)
 import Text.Printf (printf)
 import Torch (Parameterized (..))
 import qualified Torch
+import Torch.Autograd (makeIndependent, toDependent)
 import Torch.Device (Device (..), DeviceType (..))
-import Torch.NN ()
-import Torch.Optim (mkAdam, runStep)
+import Torch.NN (replaceParameters)
+import Torch.Optim (Optimizer (..), grad', mkAdam)
 
 -- | Minimize a full-batch @objective@ (theta -> scalar loss) over the parameters
 --   drawn by @mkInit@ using Adam for @numEpochs@ steps. A thin wrapper over
@@ -69,8 +71,9 @@ trainBatched verbose mkInit numEpochs learningRate mkBatches dat objective = do
     (m1, o1, lastLoss) <-
       foldLoop (m0, o0, Torch.asTensor (0.0 :: Float)) theBatches $ \(m, o, _) b -> do
         let !loss = objective epoch b m
-        (m', o') <- runStep m o loss lrTens
+        (m', o') <- runStepNoGC m o loss lrTens
         return (m', o', loss)
+    performGC -- once per epoch (not per step) -- frees libtorch tensors via the ForeignPtr finalizers
     when (verbose && ((epoch + 1) `mod` printEvery == 0 || epoch == 0 || epoch == numEpochs - 1)) $ do
       epochEnd <- getCurrentTime
       let diffMs = (realToFrac (diffUTCTime epochEnd startTime) :: Double) * 1000
@@ -86,3 +89,19 @@ trainBatched verbose mkInit numEpochs learningRate mkBatches dat objective = do
 foldLoop :: a -> [b] -> (a -> b -> IO a) -> IO a
 foldLoop acc [] _ = return acc
 foldLoop acc (x : xs) f = f acc x >>= \a -> foldLoop a xs f
+
+-- | 'Torch.Optim.runStep' MINUS the per-step @performGC@ + @mallocTrim 0@ that hasktorch
+--   bakes into its @runStep'@ (a full major Haskell GC + an OS malloc-trim on EVERY step).
+--   The Adam update is bit-for-bit identical; we GC once per epoch instead (see the loop above)
+--   so libtorch tensors are still freed promptly via their ForeignPtr finalizers, without
+--   paying a forced GC ~940 times.
+runStepNoGC ::
+  (Parameterized model, Optimizer opt) =>
+  model -> opt -> Torch.Tensor -> Torch.Tensor -> IO (model, opt)
+runStepNoGC paramState optState loss lr = do
+  let flatParameters = flattenParameters paramState
+      gradients = grad' loss flatParameters
+      depParameters = fmap toDependent flatParameters
+      (flatParameters', optState') = step lr gradients depParameters optState
+  newFlatParam <- mapM makeIndependent flatParameters'
+  pure (replaceParameters paramState newFlatParam, optState')
