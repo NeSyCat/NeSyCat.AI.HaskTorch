@@ -35,12 +35,11 @@ module B_Logical.Interpretations.TensorBool
 where
 
 import A_Categorical.Monads.LogVec (LogVec (..))
-import A_Categorical.Monads.LogVecExpect (collectLeaves)
+import A_Categorical.Monads.LogVecExpect (marginalize)
 import B_Logical.Interpretations.Boolean () -- reuse: the universe-free @instance TwoMonBLat Bool@
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)
 import qualified Torch
-import qualified Torch.Functional.Internal as FI
 
 -- | In the @LogVec@ reading the guard IS the batched data itself: the vectorized predicate is
 --   applied to the whole batch and reduced (polymorphic in the point type, mirroring
@@ -69,26 +68,11 @@ instance A2MonBLat LogVec Bool where
 -- | The log-space marginalization of a 'LogVec Bool' formula over its outcome-combos, as a
 --   pair @(logNum, logDen)@ (each a @[B]@ tensor): @logDen = logsumexp@ over ALL combos,
 --   @logNum = logsumexp@ over the SAT-true combos. Pure @logsumexp@ on the raw leaf logits --
---   no probability is formed. This is the convolution / law of total probability.
+--   no probability is formed (the convolution / law of total probability). Just the shared
+--   vectorized 'marginalize' engine, with the SAT mask = the formula's own (batch-independent)
+--   @Bool@ at each combo.
 logNumDen :: LogVec Bool -> (Torch.Tensor, Torch.Tensor)
-logNumDen prog =
-  let (lws, vals) = collectLeaves prog -- the chain's independent leaves [B,k_i]
-      n = length lws
-      ks = [Torch.shape lw !! 1 | lw <- lws] -- support sizes
-      b = Torch.shape (head lws) !! 0 -- batch
-      total = product ks
-      -- joint log-weight [B, k_0, ..., k_{n-1}] by broadcasting each leaf over its own axis
-      reshapeFor i lw = Torch.reshape (b : [if j == i then ks !! j else 1 | j <- [0 .. n - 1]]) lw
-      joint = foldr1 Torch.add [reshapeFor i lw | (i, lw) <- zip [0 ..] lws]
-      jointFlat = Torch.reshape [b, total] joint
-      logDen = FI.logsumexp jointFlat 1 False -- log Sum exp(logweights)   [B]
-      -- truth mask over the index-combos (batch-independent 0/1), as a log-domain offset
-      combos = sequence [[0 .. k - 1] | k <- ks]
-      truth c = Torch.asTensor [if vals c then 1.0 else 0.0 :: Float]
-      mask = Torch.reshape [total] (Torch.stack (Torch.Dim 0) [truth c | c <- combos])
-      logMask = (mask `Torch.sub` Torch.onesLike mask) `Torch.mul` Torch.asTensor (1.0e9 :: Float)
-      logNum = FI.logsumexp (jointFlat `Torch.add` Torch.reshape [1, total] logMask) 1 False
-   in (logNum, logDen)
+logNumDen prog = marginalize prog (\vs -> Torch.asTensor [if v then 1.0 else 0.0 :: Float | v <- vs])
 
 -- | Negative-log satisfaction @-log P(true) = logDen - logNum@ (a @[B]@ tensor) -- the LOSS
 --   readout, pure log space (a difference of @logsumexp@s = the log-domain cross-entropy / the

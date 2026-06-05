@@ -5,15 +5,15 @@
 {-# LANGUAGE TypeFamilies #-}
 
 -- | Grammatical layer (D) — SIGNATURE for the MNIST example: the single abstract
---   MNIST-addition formula, universe-polymorphic over @u@, INCLUDING its quantifier.
---   Like Binary's @binarySentence@, the whole sentence
+--   MNIST-addition formula, monad-polymorphic over @m@, INCLUDING its quantifier.
 --
---     forall (x,y,n) in data.  add(x,y) = digit(x) + digit(y)
+--     forall (x,y,n) in data.  n = digit(x) + digit(y)
 --
---   is written ONCE here (the predicate 'mnistFormula' under the logic's 'bigWedge'),
---   then read in both monads in 'MnistAddition.D_Grammatical.Interpretation' (@Dist@ /
---   @LogVec@). There is no existential: the marginalization (the @Sigma@ of the law of
---   total probability) is part of @plus@'s interpretation.
+--   Faithful to the theory (presi.tex): @digit : (m)Image -> (m)Digit@, the observed sum enters
+--   as @eta n :: m Natural@ (bound with @s <- n@, exactly like the digits), and @(+)@/@(=)@ are
+--   plain host functions on the bound values. Written ONCE; only the monad @m@ changes -- @Dist@
+--   (probability) or @LogVec@ (differentiable). Interpreted per monad in
+--   "MnistAddition.D_Grammatical.Interpretation".
 module MnistAddition.D_Grammatical.Signature
   ( mnistFormula,
     mnistSentence,
@@ -26,10 +26,10 @@ import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
 import MnistAddition.C_Domain.Signature (Image, MnistKlRel (..), Natural, Omega, eqNat, plus)
 import C_Domain.NeuralNets.DSL.Semantics (Weights)
 
--- | The per-pair PREDICATE  @add(x,y) = digit(x) + digit(y)@  at the observed sum @n@,
---   polymorphic over the monad @m@. The @do@-block never changes; only the symbols
---   are reinterpreted. In @Dist@ it marginalizes through the bind (@d1,d2 :: Int@);
---   in @LogVec@ it runs once on a batch (@d1,d2 :: logits@) with @plus@ = log-space convolution.
+-- | The per-pair FORMULA  @n = digit(x) + digit(y)@, monad-polymorphic over @m@. The observed
+--   sum @n :: m Natural@ is bound (@s <- n@) exactly like the digits; @(.+)@/@(.=)@ are plain
+--   host ops on the three bound values; the bind supplies the marginalization (the law of total
+--   probability for @Dist@, the log-space convolution for @LogVec@).
 mnistFormula ::
   forall m.
   (MnistKlRel m) =>
@@ -41,16 +41,16 @@ mnistFormula theta (x, y, n) =
     (.+) = plus
     (.=) = eqNat
     dig = digit @m theta
-  in do
-    d1 <- dig x
-    d2 <- dig y
-    s <- n
-    return (s .= (d1 .+ d2))
+   in
+    do
+      d1 <- dig x
+      d2 <- dig y
+      s <- n
+      return (s .= (d1 .+ d2))
 
--- | The SENTENCE  @forall (x,y,n) in data. add(x,y) = digit(x) + digit(y)@ — the whole
---   quantified axiom, abstract over @m@. The guard @Guard m a@ is the data quantified over
---   (a list of triples in @Dist@, the batched triple in @LogVec@); the universal is the logic's
---   'bigWedge'. Interpreted per monad by 'mnistAxiomTens' (@LogVec@) / 'mnistAxiomData' (@Dist@).
+-- | The SENTENCE  @forall (x,y,n) in data. n = digit(x) + digit(y)@ — the whole quantified axiom,
+--   abstract over @m@. The guard @Guard m (Image, Image, m Natural)@ is the data quantified over
+--   (a list of triples in @Dist@, the batched triple in @LogVec@); the universal is 'bigWedge'.
 mnistSentence ::
   forall m.
   ( MnistKlRel m,
@@ -63,5 +63,4 @@ mnistSentence ::
   Weights ->
   m Omega
 mnistSentence lp guard theta =
-  -- the point type is inferred from the predicate; only the monad @m@ is supplied (by the caller).
   bigWedge lp guard (mnistFormula @m theta)

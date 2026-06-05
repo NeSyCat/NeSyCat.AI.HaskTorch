@@ -9,6 +9,8 @@
 module A_Categorical.Monads.LogVecExpect
   ( logVecExpect,
     collectLeaves,
+    marginalize,
+    mapLeafWeights,
     logVecRunPure,
     logVecLeafTensor,
   )
@@ -51,6 +53,31 @@ collectLeaves (Bind m k) =
                 in snd (collectLeaves (k (valsM isM))) isK
       )
 
+-- | The vectorized marginalization engine: collect the (independent) leaves of a 'LogVec' term,
+--   build the joint log-weight @[B, k_0, ..., k_{n-1}]@ over all index-combos, and return the pair
+--   @(logNum, logDen)@ (each a @[B]@ tensor) -- @logDen = logsumexp@ over ALL combos, @logNum =
+--   logsumexp@ over the SAT combos. The caller supplies the SAT mask as a function of the combos'
+--   VALUES (in flat row-major order): a @0/1@ tensor, either @[total]@ (batch-independent) or
+--   @[B,total]@ (per-row), which broadcasts against the joint. This is the ONE fast engine behind
+--   the @Bool@ quantifier ('B_Logical.Interpretations.TensorBool.logNumDen'); the per-row-mask
+--   option keeps it ready for a per-row target predicate too. A few batched ops; no host-side fold.
+marginalize :: LogVec a -> ([a] -> Torch.Tensor) -> (Torch.Tensor, Torch.Tensor)
+marginalize prog satMask =
+  let (lws, vals) = collectLeaves prog
+      n = length lws
+      ks = [Torch.shape lw !! 1 | lw <- lws] -- support sizes
+      b = Torch.shape (head lws) !! 0 -- batch
+      total = product ks
+      reshapeFor i lw = Torch.reshape (b : [if j == i then ks !! j else 1 | j <- [0 .. n - 1]]) lw
+      joint = foldr1 Torch.add [reshapeFor i lw | (i, lw) <- zip [0 ..] lws] -- broadcast each leaf over its own axis
+      jointFlat = Torch.reshape [b, total] joint
+      logDen = FI.logsumexp jointFlat 1 False -- [B]
+      combos = sequence [[0 .. k - 1] | k <- ks]
+      mask = satMask [vals c | c <- combos] -- [total] or [B,total], 1 = SAT
+      logMask = (mask `Torch.sub` Torch.onesLike mask) `Torch.mul` Torch.asTensor (1.0e9 :: Float)
+      logNum = FI.logsumexp (jointFlat `Torch.add` logMask) 1 False -- [B]
+   in (logNum, logDen)
+
 -- | Collapse a deterministic 'LogVec' (only 'Pure'/'Bind', or a one-point 'LogLeaf')
 --   to its value. Used where the program carries no genuine spread (e.g. Binary's
 --   @classifierA = pure logits@). Errors on a multi-point 'LogLeaf'.
@@ -65,3 +92,10 @@ logVecRunPure (LogLeaf _ _) = error "logVecRunPure: non-deterministic LogVec (mu
 logVecLeafTensor :: LogVec a -> Torch.Tensor
 logVecLeafTensor (LogLeaf _ lw) = lw
 logVecLeafTensor _ = error "logVecLeafTensor: not a LogLeaf"
+
+-- | Apply a tensor map to a leaf's @[B,k]@ weights, keeping its support (e.g. to gather/slice a
+--   batched observation leaf along the batch dim 0 -- mini-batching the data without leaving the
+--   monad). Errors on a non-leaf (a batched observation is always a single 'LogLeaf').
+mapLeafWeights :: (Torch.Tensor -> Torch.Tensor) -> LogVec a -> LogVec a
+mapLeafWeights f (LogLeaf xs lw) = LogLeaf xs (f lw)
+mapLeafWeights _ _ = error "mapLeafWeights: expected a single LogLeaf"
