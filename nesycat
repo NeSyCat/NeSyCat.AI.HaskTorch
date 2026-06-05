@@ -6,6 +6,15 @@
 # is registered automatically by regenerating the dispatcher Library/Run.hs from
 # the folder list. Add a folder and it just works — no manual registration.
 set -euo pipefail
+
+# libtorch/OpenMP spins up a thread pool for every tensor op. These are small-tensor
+# workloads (batch 64, tiny finite supports, a small CNN), so the per-op thread-launch
+# overhead dominates the actual compute -- a single thread is ~2x faster end-to-end here
+# (the kernel/sys time collapses from ~25s to ~0.1s). HaskTorch exposes no in-program
+# at::set_num_threads, so it is set here, at process launch. Override to benchmark, e.g.
+#   OMP_NUM_THREADS=4 ./nesycat MnistAddition 1
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}"
+
 # Resolve symlinks so this works when invoked via a PATH symlink (e.g. ~/.local/bin/nesycat).
 src="${BASH_SOURCE[0]}"
 while [ -L "$src" ]; do
