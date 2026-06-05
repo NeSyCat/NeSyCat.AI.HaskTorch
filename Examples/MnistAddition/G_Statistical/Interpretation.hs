@@ -3,14 +3,14 @@
 
 -- | Statistics layer (G) — INTERPRETATION for the MNIST example: honest labeled
 --   metrics — sum-accuracy (train/test), digit accuracy (the latent digits, scored
---   against true labels), and the mean @Dist@ probability @P(sum=n)@. Predictions are
---   the argmax of the @LogVec@ logits (no softmax).
+--   against true labels), and the mean satisfaction probability @P(sum=n)@ (read in
+--   @LogVec@ via 'logVecPTrue'). Predictions are the argmax of the @LogVec@ logits (no softmax).
 module MnistAddition.G_Statistical.Interpretation (report, mnistReport) where
 
 import A_Categorical.Monads.LogVecExpect (logVecLeafTensor)
-import A_Categorical.Monads.DistExpect (distPTrue)
+import A_Categorical.Monads.Bridge (encode)
 import A_Categorical.Monads.LogVec (LogVec)
-import A_Categorical.Monads.Dist (Dist)
+import B_Logical.Interpretations.TensorBool (logVecPTrue)
 import MnistAddition.C_Domain.Interpretation ()
 import MnistAddition.C_Domain.Signature (MnistKlRel (..))
 import MnistAddition.D_Grammatical.Signature (mnistFormula)
@@ -37,16 +37,23 @@ mnistReport theta ds =
   where
     predSum xs ys = zipWith (+) (predDigits theta xs) (predDigits theta ys)
 
--- | Mean @P(add(x,y) = digit(x)+digit(y))@ over a capped test subset: the per-pair @Dist@
---   reading ('mnistFormula' at @\@Dist@, then @distPTrue@), averaged. (G does its own
---   per-pair reading, like binary's report, rather than the whole-dataset axiom.)
+-- | Mean @P(add(x,y) = digit(x)+digit(y))@ over a capped test subset, in ONE batched @LogVec@
+--   pass: forward the first @cap@ pairs together and read 'logVecPTrue' (the @LogVec@ twin of
+--   @distPTrue@: @exp(logNum - logDen)@ over the leaf logits), then average. Numerically the same
+--   per-pair probability as the @Dist@ reading (@digit \@Dist = decode . digit \@LogVec@), but one
+--   batched forward instead of @cap@ single-image forwards.
 meanConfidence :: Weights -> MnistDataset -> Int -> Double
 meanConfidence theta ds cap =
   let n = min cap (length (testSums ds))
-      slice img i = Torch.sliceDim 0 i (i + 1) 1 img
-      prob i = distPTrue (mnistFormula @Dist theta (slice (testXImg ds) i, slice (testYImg ds) i, pure (testSums ds !! i)))
-      ps = [prob i | i <- [0 .. n - 1]]
-   in if null ps then 0 else sum ps / fromIntegral (length ps)
+   in if n == 0
+        then 0
+        else
+          let xCap = Torch.sliceDim 0 0 n 1 (testXImg ds)
+              yCap = Torch.sliceDim 0 0 n 1 (testYImg ds)
+              oneHot = Torch.asTensor [[if s == k then 1.0 else 0.0 :: Float | k <- [0 .. 18]] | s <- take n (testSums ds)]
+              obsCap = encode [0 .. 18] oneHot
+              ps = logVecPTrue (mnistFormula @LogVec theta (xCap, yCap, obsCap))
+           in realToFrac (Torch.asValue (Torch.mean ps) :: Float)
 
 -- | G-layer manifest piece for the Example.
 report :: Weights -> MnistDataset -> IO Report
