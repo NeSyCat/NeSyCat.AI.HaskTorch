@@ -1,15 +1,13 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
 
 -- | Grammatical layer (D) — SIGNATURE for the Binary example: the abstract binary
 --   classification formula (the axiom), monad-polymorphic over @m@. Uses
 --   bigWedge from A2MonBLat for quantification; this single formula is
---   interpreted per monad in InterpretationData (@Dist@) / InterpretationTens (@LogVec@).
+--   read in both monads in 'Binary.D_Grammatical.Interpretation' (@Dist@ / @LogVec@).
 module Binary.D_Grammatical.Signature
   ( binaryPredicate,
     binarySentence,
@@ -44,18 +42,16 @@ binaryPredicate lp paramMLP pt = do
 --   The guard (Guard m a) specifies the subset S to quantify over.
 --   The predicate (binaryPredicate) is pointwise on elements of type a.
 binarySentence ::
-  forall m a.
+  forall m.
   ( BinaryKlRel m,
     TwoMonBLat Omega,
-    A2MonBLat a m Omega,
-    Monad m,
-    a ~ Point
+    A2MonBLat m Omega,
+    Monad m
   ) =>
   ParamsLogic Omega ->
-  Guard m a ->
+  Guard m Point ->
   Weights ->
   m Omega
 binarySentence lp guard paramMLP =
-  -- @m@/@Omega@ pinned explicitly: the truth algebra is monad-free.
-  bigWedge @a @m @Omega lp guard
-    (binaryPredicate @m lp paramMLP)
+  -- the point type is inferred from the predicate; only the monad @m@ is supplied (by the caller).
+  bigWedge lp guard (binaryPredicate @m lp paramMLP)

@@ -53,7 +53,7 @@ type instance Guard LogVec a = a
 -- read out, reduce over the batch). The connectives come from Boolean's @TwoMonBLat Bool@.
 ------------------------------------------------------
 
-instance A2MonBLat a LogVec Bool where
+instance A2MonBLat LogVec Bool where
   -- forall = product t-norm over the batch = mean of the per-element negative-log satisfaction,
   -- all in LOG space (no exp-to-probability, no clamp). The aggregate is returned as the
   -- sentence's truth Bernoulli, built in log space, so 'logVecNLL' reads it back exactly.

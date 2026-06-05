@@ -1,10 +1,8 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
 
 -- | Grammatical layer (D) — SIGNATURE for the MNIST example: the single abstract
 --   MNIST-addition formula, universe-polymorphic over @u@, INCLUDING its quantifier.
@@ -13,8 +11,8 @@
 --     forall (x,y,n) in data.  add(x,y) = digit(x) + digit(y)
 --
 --   is written ONCE here (the predicate 'mnistFormula' under the logic's 'bigWedge'),
---   then interpreted per monad in InterpretationData (@Dist@) / InterpretationTens
---   (@LogVec@). There is no existential: the marginalization (the @Sigma@ of the law of
+--   then read in both monads in 'MnistAddition.D_Grammatical.Interpretation' (@Dist@ /
+--   @LogVec@). There is no existential: the marginalization (the @Sigma@ of the law of
 --   total probability) is part of @plus@'s interpretation.
 module MnistAddition.D_Grammatical.Signature
   ( mnistFormula,
@@ -54,18 +52,16 @@ mnistFormula theta (x, y, n) =
 --   (a list of triples in @Dist@, the batched triple in @LogVec@); the universal is the logic's
 --   'bigWedge'. Interpreted per monad by 'mnistAxiomTens' (@LogVec@) / 'mnistAxiomData' (@Dist@).
 mnistSentence ::
-  forall m a.
+  forall m.
   ( MnistKlRel m,
     TwoMonBLat Omega,
-    A2MonBLat a m Omega,
-    Monad m,
-    a ~ (Image, Image, m Natural)
+    A2MonBLat m Omega,
+    Monad m
   ) =>
   ParamsLogic Omega ->
-  Guard m a ->
+  Guard m (Image, Image, m Natural) ->
   Weights ->
   m Omega
 mnistSentence lp guard theta =
-  -- @m@/@Omega@ are pinned explicitly: the truth algebra is monad-free, so the monad is
-  -- supplied at the quantifier.
-  bigWedge @a @m @Omega lp guard (mnistFormula @m theta)
+  -- the point type is inferred from the predicate; only the monad @m@ is supplied (by the caller).
+  bigWedge lp guard (mnistFormula @m theta)

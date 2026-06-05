@@ -63,7 +63,7 @@ instance TwoMonBLat Bool where
 -- A2MonBLat: the quantifier interpretation (commutator via mapM, then lattice reduce)
 ------------------------------------------------------
 
-instance A2MonBLat a Dist Bool where
+instance A2MonBLat Dist Bool where
   -- forall = commutator + inf (lattice meet = and)
   bigWedge _ guard phi = do
     omegas <- mapM phi guard

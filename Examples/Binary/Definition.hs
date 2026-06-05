@@ -15,8 +15,8 @@ import B_Logical.Interpretations.Boolean ()
 import B_Logical.Interpretations.TensorBool ()
 -- C (domain) — STANDALONE: Binary's own sorts/symbols + parameter space (Params/initParams).
 import qualified Binary.C_Domain.Interpretation as C
--- D (grammatical) — STANDALONE: builds the satisfaction 'sat' (= conjunction of the axioms).
-import qualified Binary.D_Grammatical.InterpretationTens as D
+-- D (grammatical) — STANDALONE: the axiom in both monads (one file); 'sat' = the LogVec reading.
+import qualified Binary.D_Grammatical.Interpretation as D
 -- E (data) — STANDALONE: Binary's own data format + loader (exports the data + the batches).
 import qualified Binary.E_Data.Signature as E
 import qualified Binary.E_Data.Loader as EL

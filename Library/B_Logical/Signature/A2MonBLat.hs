@@ -9,14 +9,15 @@
 --
 --   The aggregation IS the Kleisli bind of the monad @m@ (the law of total probability for
 --   @Dist@, the convolution for @LogVec@), so the class is parametrized over @m@ directly. The
---   point type @a@ sits at the class level too (so an interpretation may fix it -- e.g. the
---   @LogVec@ instance only quantifies over batch tensors, @a = Torch.Tensor@).
+--   point type @a@ is just a METHOD variable -- each aggregation is polymorphic in it (neither
+--   interpretation inspects @a@; it is only threaded through the predicate), so it is inferred
+--   from the predicate at the call site, NOT a class index.
 module B_Logical.Signature.A2MonBLat (A2MonBLat (..)) where
 
 import B_Logical.Signature.Guard (Guard)
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
 
-class (TwoMonBLat tau, Monad m) => A2MonBLat a m tau where
+class (TwoMonBLat tau, Monad m) => A2MonBLat m tau where
   -- == Quantor symbols ==
 
   -- lattice aggregations

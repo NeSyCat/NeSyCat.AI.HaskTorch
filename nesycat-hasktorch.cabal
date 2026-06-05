@@ -60,8 +60,7 @@ library
       Run
       Binary.C_Domain.Interpretation
       Binary.C_Domain.Signature
-      Binary.D_Grammatical.InterpretationData
-      Binary.D_Grammatical.InterpretationTens
+      Binary.D_Grammatical.Interpretation
       Binary.D_Grammatical.Signature
       Binary.Definition
       Binary.E_Data.Loader
@@ -70,8 +69,7 @@ library
       Binary.G_Statistical.Interpretation
       MnistAddition.C_Domain.Interpretation
       MnistAddition.C_Domain.Signature
-      MnistAddition.D_Grammatical.InterpretationData
-      MnistAddition.D_Grammatical.InterpretationTens
+      MnistAddition.D_Grammatical.Interpretation
       MnistAddition.D_Grammatical.Signature
       MnistAddition.Definition
       MnistAddition.E_Data.Loader

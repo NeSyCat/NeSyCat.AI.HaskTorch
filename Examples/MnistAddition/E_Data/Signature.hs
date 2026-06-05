@@ -1,6 +1,6 @@
 -- | Data layer (E) — SIGNATURE for the MNIST example: the fixed FORMAT of the
 --   data. @trainBatch@ is the differentiable training input (images x, images y,
---   one-hot observed sums [B,19]); the @*Img@/@*Lab@/@*Sums@ fields back the
+--   observed sums [B] as raw indices); the @*Img@/@*Lab@/@*Sums@ fields back the
 --   (argmax) accuracy report. What the data IS, independent of how it is loaded
 --   (loading is the Loader's job, "MnistAddition.E_Data.Loader").
 module MnistAddition.E_Data.Signature

@@ -15,8 +15,8 @@ import B_Logical.Interpretations.Boolean ()
 import B_Logical.Interpretations.TensorBool ()
 -- C (domain) — STANDALONE: MNIST's own sorts/symbols + model (Params/initParams).
 import qualified MnistAddition.C_Domain.Interpretation as C
--- D (grammatical) — STANDALONE: the LogVec reading of the axiom (the satisfaction 'sat').
-import qualified MnistAddition.D_Grammatical.InterpretationTens as D
+-- D (grammatical) — STANDALONE: the axiom in both monads (one file); 'sat' = the LogVec reading.
+import qualified MnistAddition.D_Grammatical.Interpretation as D
 -- E (data) — STANDALONE: MNIST's own data format + loader (exports the data + the batches).
 import qualified MnistAddition.E_Data.Signature as E
 import qualified MnistAddition.E_Data.Loader as EL
