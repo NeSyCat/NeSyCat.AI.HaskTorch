@@ -68,10 +68,20 @@ instance A2MonBLat LogVec Bool where
 
 -- | The log-space marginalization of a 'LogVec Bool' formula, as a pair @(logNum, logDen)@
 --   (each a @[B]@ tensor): @logDen = logsumexp@ over ALL outcome-combos, @logNum = logsumexp@
---   over the SAT-true ones. The marginalization EMERGES from the bind as a log-space convolution
---   ('logNumDenConv') whenever the formula is an equality against an additive function of the
---   leaves (the addition pattern -- single/multi digit, Binary's iff) -- folding the leaves with
---   no @O(prod k_i)@ joint; otherwise it falls back to the full-joint 'marginalize'.
+--   over the SAT-true ones.
+--
+--   Efficient marginalization REQUIRES structure -- marginalizing an arbitrary predicate is
+--   @O(prod k_i)@ (the treewidth bound; no free lunch). So this exploits the ONE structure the
+--   NeSy-arithmetic tasks have: when the predicate is an equality @observation == f(latents)@
+--   with @f@ SEPARABLE (@f = base + sum_i c_i(x_i)@ for arbitrary per-leaf integer @c_i@), the
+--   marginalization EMERGES from the bind as VARIABLE ELIMINATION / a log-space convolution
+--   ('logNumDenConv') -- folding the leaves with no joint. This is NOT specialized to @(+)@: the
+--   @c_i@ are discovered by probing the predicate, so sums, weighted sums (@10*d1+d2@), counts,
+--   squares, Binary's iff (@c_i@ = identity) all take this path through the same code. Any
+--   predicate that is NOT a separable-observation equality (a product, a @max@, an inequality, a
+--   conjunction) fails the probe and falls back to the general full-joint 'marginalize' -- still
+--   correct, just not scalable. (Efficiency for non-separable STRUCTURED predicates is what
+--   knowledge compilation / arithmetic circuits, a la DeepProbLog, would add -- a separate engine.)
 logNumDen :: LogVec Bool -> (Torch.Tensor, Torch.Tensor)
 logNumDen prog = case logNumDenConv prog of
   Just r -> r
