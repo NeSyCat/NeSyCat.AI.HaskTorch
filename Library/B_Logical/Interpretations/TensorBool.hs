@@ -35,11 +35,12 @@ module B_Logical.Interpretations.TensorBool
 where
 
 import A_Categorical.Monads.LogVec (LogVec (..))
-import A_Categorical.Monads.LogVecExpect (marginalize)
+import A_Categorical.Monads.LogVecExpect (collectLeaves, logConvolve, marginalize)
 import B_Logical.Interpretations.Boolean () -- reuse: the universe-free @instance TwoMonBLat Bool@
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)
 import qualified Torch
+import qualified Torch.Functional.Internal as FI
 
 -- | In the @LogVec@ reading the guard IS the batched data itself: the vectorized predicate is
 --   applied to the whole batch and reduced (polymorphic in the point type, mirroring
@@ -65,14 +66,62 @@ instance A2MonBLat LogVec Bool where
 -- Readouts: one log-space marginalization, two views of it.
 ------------------------------------------------------
 
--- | The log-space marginalization of a 'LogVec Bool' formula over its outcome-combos, as a
---   pair @(logNum, logDen)@ (each a @[B]@ tensor): @logDen = logsumexp@ over ALL combos,
---   @logNum = logsumexp@ over the SAT-true combos. Pure @logsumexp@ on the raw leaf logits --
---   no probability is formed (the convolution / law of total probability). Just the shared
---   vectorized 'marginalize' engine, with the SAT mask = the formula's own (batch-independent)
---   @Bool@ at each combo.
+-- | The log-space marginalization of a 'LogVec Bool' formula, as a pair @(logNum, logDen)@
+--   (each a @[B]@ tensor): @logDen = logsumexp@ over ALL outcome-combos, @logNum = logsumexp@
+--   over the SAT-true ones. The marginalization EMERGES from the bind as a log-space convolution
+--   ('logNumDenConv') whenever the formula is an equality against an additive function of the
+--   leaves (the addition pattern -- single/multi digit, Binary's iff) -- folding the leaves with
+--   no @O(prod k_i)@ joint; otherwise it falls back to the full-joint 'marginalize'.
 logNumDen :: LogVec Bool -> (Torch.Tensor, Torch.Tensor)
-logNumDen prog = marginalize prog (\vs -> Torch.asTensor [if v then 1.0 else 0.0 :: Float | v <- vs])
+logNumDen prog = case logNumDenConv prog of
+  Just r -> r
+  Nothing -> marginalize prog (\vs -> Torch.asTensor [if v then 1.0 else 0.0 :: Float | v <- vs])
+
+-- | The convolution reading of a 'LogVec Bool' formula of the shape
+--   @return (obs .= additiveFunctionOf latents)@: the observation is the LAST bound leaf, and the
+--   predicate is an equality between the observation index and an additive combination of the
+--   other (latent) leaves' indices. Returns @(logNum, logDen)@ folded by 'logConvolve' (no joint),
+--   or @Nothing@ if the formula is not that pattern (verified by an additivity + indicator check
+--   on the corner combo), so the caller falls back to 'marginalize'.
+--
+--   @logDen@ factorizes over the independent leaves (@sum_i logsumexp(leaf_i)@); @logNum =
+--   logsumexp_v (sumDist[v] + obs[v])@ where @sumDist@ is the latent leaves convolved onto the
+--   observation's value axis. Bit-identical to 'marginalize' (verified on single-digit).
+logNumDenConv :: LogVec Bool -> Maybe (Torch.Tensor, Torch.Tensor)
+logNumDenConv prog =
+  let (lws, vals) = collectLeaves prog
+      n = length lws
+   in if n < 2
+        then Nothing
+        else
+          let obsW = last lws
+              latentWs = init lws
+              nd = length latentWs
+              ks = [Torch.shape w !! 1 | w <- latentWs]
+              kObs = Torch.shape obsW !! 1
+              maxSum = kObs - 1
+              predicted dIdx = case [j | j <- [0 .. kObs - 1], vals (dIdx ++ [j])] of
+                (j : _) -> Just j
+                [] -> Nothing
+              eVec i x = [if t == i then x else 0 | t <- [0 .. nd - 1]]
+           in case predicted (replicate nd 0) of
+                Nothing -> Nothing
+                Just base ->
+                  case sequence [sequence [subtract base <$> predicted (eVec i x) | x <- [0 .. ks !! i - 1]] | i <- [0 .. nd - 1]] of
+                    Nothing -> Nothing
+                    Just contribs ->
+                      let maxCombo = [ks !! i - 1 | i <- [0 .. nd - 1]]
+                          addOK = predicted maxCombo == Just (base + sum [contribs !! i !! (ks !! i - 1) | i <- [0 .. nd - 1]])
+                          indOK = case predicted maxCombo of
+                            Just pm -> vals (maxCombo ++ [pm]) && (kObs <= 1 || not (vals (maxCombo ++ [(pm + 1) `mod` kObs])))
+                            Nothing -> False
+                       in if not (addOK && indOK)
+                            then Nothing
+                            else
+                              let sumDist = logConvolve maxSum base (zip contribs latentWs)
+                                  logNum = FI.logsumexp (sumDist `Torch.add` obsW) 1 False
+                                  logDen = foldr1 Torch.add [FI.logsumexp w 1 False | w <- lws]
+                               in Just (logNum, logDen)
 
 -- | Negative-log satisfaction @-log P(true) = logDen - logNum@ (a @[B]@ tensor) -- the LOSS
 --   readout, pure log space (a difference of @logsumexp@s = the log-domain cross-entropy / the
