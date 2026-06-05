@@ -7,12 +7,10 @@
 --   carries 'trainConfig'; D exports the satisfaction 'sat', E the data + batches.
 module Binary.Definition (Binary) where
 
--- A (category) — REUSE template: the library universes + categorical signature.
-import A_Categorical.CategoricalSignature ()
-import A_Categorical.CategoricalInterpretation ()
+-- A (category) — REUSE shared: the LogVec monad (the truth object's carrier).
 import A_Categorical.Category.Monads.LogVec (LogVec)
 -- B (logic) — REUSE template: the library Boolean (the shared crisp-Bool truth algebra +
---   the MeasU quantifier) + TensorBool (the GeomU quantifier for Bool).
+--   the Dist quantifier) + TensorBool (the LogVec quantifier for Bool).
 import B_Logical.Interpretations.Boolean ()
 import B_Logical.Interpretations.TensorBool ()
 -- C (domain) — STANDALONE: Binary's own sorts/symbols + parameter space (Params/initParams).

@@ -1,14 +1,13 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
 
 -- | Non-logical signature for MNIST single-digit addition.
 --
---   The sorts are universe-INVARIANT, so they are plain types -- NOT @... u@ associated types.
+--   The sorts are monad-INVARIANT, so they are plain types -- NOT @... u@ associated types.
 --   An image is a tensor, a digit/sum an @Int@ index, the truth a @Bool@: the per-value
---   distribution lives in the monad @M u@, not in the sort. The ONLY symbol that depends on the
---   universe is 'digit' (its monad is @Dist@ in MeasU, @LogVec@ in GeomU); @(+)@ and @(=)@ are
---   universe-free host operations (the @Sigma@ / marginalization lives in the monad's bind).
+--   distribution lives in the monad @m@, not in the sort. The ONLY symbol that depends on the
+--   monad is 'digit' (its monad is @Dist@ or @LogVec@); @(+)@ and @(=)@ are monad-free host
+--   operations (the @Sigma@ / marginalization lives in the monad's bind).
 module MnistAddition.C_Domain.Signature
   ( Image,
     Digit,
@@ -20,7 +19,6 @@ module MnistAddition.C_Domain.Signature
   )
 where
 
-import A_Categorical.CategoricalSignature (Framework (..))
 import C_Domain.NeuralNets.DSL.Semantics (Weights)
 import qualified Torch
 
@@ -37,7 +35,7 @@ plus = (+)
 eqNat :: Natural -> Natural -> Omega
 eqNat = (==)
 
--- | The neural digit classifier: the ONE universe-dependent symbol (its distribution monad
---   @M u@ is @Dist@ in MeasU, @LogVec@ in GeomU).
-class (Framework u, Monad (M u)) => MnistKlRel u where
-  digit :: Weights -> Image -> M u Digit
+-- | The neural digit classifier: the ONE monad-dependent symbol (its distribution monad @m@ is
+--   @Dist@ for the probability reading, @LogVec@ for the differentiable one).
+class (Monad m) => MnistKlRel m where
+  digit :: Weights -> Image -> m Digit

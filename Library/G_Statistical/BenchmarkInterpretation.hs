@@ -3,8 +3,8 @@
 -- | DATA benchmark interpretation: composes each metric symbol of
 --   'BenchmarkSignature' from the library primitives.
 --
---   Prediction = Double (expectation of Dist Bool from classifierA @MeasU)
---   Label      = Bool   (from labelA @MeasU)
+--   Prediction = Double (expectation of Dist Bool from classifierA @Dist)
+--   Label      = Bool   (from labelA @Dist)
 module G_Statistical.BenchmarkInterpretation () where
 
 import G_Statistical.BenchmarkSignature (BenchmarkSignature (..))

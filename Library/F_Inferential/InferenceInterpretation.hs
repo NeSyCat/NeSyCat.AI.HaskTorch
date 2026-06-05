@@ -6,7 +6,7 @@
 --
 --     * @Torch.Tensor@ (a LOGIT satisfaction, the TensReal/Real-Logic reading):
 --         lossKnow = softplus,  lossData = crossEntropy,  lossComb = convex.
---     * @LogVec Bool@ (a PROBABILISTIC satisfaction, the GeomU sibling of @Dist Bool@):
+--     * @LogVec Bool@ (a PROBABILISTIC satisfaction, the log-space sibling of @Dist Bool@):
 --         read out to a [0,1] degree with 'logVecPTrue' (the twin of @distPTrue@), then
 --         lossKnow = negLog (so @J = -log SAT@; for the product @bigWedge@ this is the NLL /
 --         binary cross-entropy), lossData = crossEntropy, lossComb = convex.

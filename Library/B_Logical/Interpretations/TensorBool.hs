@@ -4,11 +4,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
--- | Logical interpretation: the GeomU QUANTIFIER for the crisp @Bool@ truth algebra -- the
---   differentiable sibling of MeasU's quantifier in "B_Logical.Interpretations.Boolean".
---   The truth object is just @Bool@, SHARED with MeasU (the connectives live in Boolean's
---   universe-free @instance TwoMonBLat Bool@); this module adds only @A2MonBLat _ GeomU Bool@.
---   So GeomU mirrors MeasU one-for-one, same truth algebra, only the monad differs:
+-- | Logical interpretation: the @LogVec@ QUANTIFIER for the crisp @Bool@ truth algebra -- the
+--   differentiable sibling of @Dist@'s quantifier in "B_Logical.Interpretations.Boolean".
+--   The truth object is just @Bool@, SHARED with @Dist@ (the connectives live in Boolean's
+--   universe-free @instance TwoMonBLat Bool@); this module adds only @A2MonBLat _ LogVec Bool@.
+--   So @LogVec@ mirrors @Dist@ one-for-one, same truth algebra, only the monad differs:
 --
 --     @Dist Bool@  <->  @LogVec Bool@,   @distPTrue@  <->  'logVecPTrue',   @eqNat = (==)@.
 --
@@ -20,12 +20,12 @@
 --     * 'logVecNLL' @= logDen - logNum@  -- the negative-log satisfaction, the LOSS readout.
 --       Pure 'logsumexp' arithmetic on logits: no @exp@-to-probability, no clamp, full gradient.
 --     * 'logVecPTrue' @= exp(logNum - logDen)@  -- the [0,1] probability, the READING readout
---       (the GeomU twin of @distPTrue@); never on the training path.
+--       (the @LogVec@ twin of @distPTrue@); never on the training path.
 --
 --   'bigWedge' (the @forall@ over the batch) aggregates the per-element 'logVecNLL' in LOG space
---   (the mean = the product t-norm = MeasU's @bigWedge = product@) and returns the aggregate as
+--   (the mean = the product t-norm = @Dist@'s @bigWedge = product@) and returns the aggregate as
 --   the sentence's truth: a Bernoulli leaf built directly in log space ('nllLeaf'), so the loss
---   reads it back exactly with no probability ever materialized. Reuses @Guard GeomU a = a@ and
+--   reads it back exactly with no probability ever materialized. Reuses @Guard LogVec a = a@ and
 --   the crisp @TwoMonBLat Bool@ from "Boolean".
 module B_Logical.Interpretations.TensorBool
   ( logVecNLL,
@@ -34,7 +34,6 @@ module B_Logical.Interpretations.TensorBool
   )
 where
 
-import A_Categorical.CategoricalInterpretation (GeomU)
 import A_Categorical.Category.Monads.LogVec (LogVec (..))
 import A_Categorical.Category.Monads.LogVecExpect (collectLeaves)
 import B_Logical.Interpretations.Boolean () -- reuse: the universe-free @instance TwoMonBLat Bool@
@@ -43,24 +42,25 @@ import B_Logical.Signature.Guard (Guard)
 import qualified Torch
 import qualified Torch.Functional.Internal as FI
 
--- | In GeomU the guard IS the batched data itself: the vectorized predicate is applied to the
---   whole batch and reduced (polymorphic in the point type, mirroring @Guard MeasU a = [a]@).
-type instance Guard GeomU a = a
+-- | In the @LogVec@ reading the guard IS the batched data itself: the vectorized predicate is
+--   applied to the whole batch and reduced (polymorphic in the point type, mirroring
+--   @Guard Dist a = [a]@).
+type instance Guard LogVec a = a
 
 ------------------------------------------------------
--- A2MonBLat: the GeomU quantifier interpretation for the crisp @Bool@ truth object --
+-- A2MonBLat: the @LogVec@ quantifier interpretation for the crisp @Bool@ truth object --
 -- polymorphic in the point type @a@ (apply the vectorized predicate to the batched guard,
 -- read out, reduce over the batch). The connectives come from Boolean's @TwoMonBLat Bool@.
 ------------------------------------------------------
 
-instance A2MonBLat a GeomU Bool where
+instance A2MonBLat a LogVec Bool where
   -- forall = product t-norm over the batch = mean of the per-element negative-log satisfaction,
   -- all in LOG space (no exp-to-probability, no clamp). The aggregate is returned as the
   -- sentence's truth Bernoulli, built in log space, so 'logVecNLL' reads it back exactly.
   bigWedge _ g phi = nllLeaf (Torch.mean (logVecNLL (phi g)))
-  bigVee _ _ _ = error "bigVee over GeomU Bool not yet supported in log space"
-  bigOplus _ _ = error "bigOplus over GeomU Bool not yet supported"
-  bigOtimes _ _ = error "bigOtimes over GeomU Bool not yet supported"
+  bigVee _ _ _ = error "bigVee over LogVec Bool not yet supported in log space"
+  bigOplus _ _ = error "bigOplus over LogVec Bool not yet supported"
+  bigOtimes _ _ = error "bigOtimes over LogVec Bool not yet supported"
 
 ------------------------------------------------------
 -- Readouts: one log-space marginalization, two views of it.
@@ -97,7 +97,7 @@ logVecNLL :: LogVec Bool -> Torch.Tensor
 logVecNLL m = let (logNum, logDen) = logNumDen m in logDen `Torch.sub` logNum
 
 -- | Satisfaction probability @P(true) = exp(logNum - logDen)@ (a @[B]@ tensor) -- the READING
---   readout (the GeomU twin of @distPTrue@). Never used on the training path.
+--   readout (the @LogVec@ twin of @distPTrue@). Never used on the training path.
 logVecPTrue :: LogVec Bool -> Torch.Tensor
 logVecPTrue m = let (logNum, logDen) = logNumDen m in Torch.exp (logNum `Torch.sub` logDen)
 

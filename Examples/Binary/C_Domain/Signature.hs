@@ -1,14 +1,13 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
 
 -- | Non-logical signature for Binary classification.
 --
---   The sorts are universe-INVARIANT plain types: a @Point@ is a @Torch.Tensor@ in BOTH
---   universes (MeasU reasons on a single @[2]@ point, GeomU on a @[B,2]@ batch), and the truth
---   object is @Bool@. So there is no per-universe sort assignment and no @encPoint@ bridge. The
---   only universe-dependent symbols are the Kleisli relations 'labelA' and 'classifierA' (their
---   monad @M u@ is @Dist@ in MeasU, @LogVec@ in GeomU).
+--   The sorts are monad-INVARIANT plain types: a @Point@ is a @Torch.Tensor@ in BOTH readings
+--   (@Dist@ reasons on a single @[2]@ point, @LogVec@ on a @[B,2]@ batch), and the truth
+--   object is @Bool@. So there is no per-monad sort assignment and no @encPoint@ bridge. The
+--   only monad-dependent symbols are the Kleisli relations 'labelA' and 'classifierA' (their
+--   monad @m@ is @Dist@ or @LogVec@).
 module Binary.C_Domain.Signature
   ( Point,
     Omega,
@@ -17,7 +16,6 @@ module Binary.C_Domain.Signature
   )
 where
 
-import A_Categorical.CategoricalSignature (Framework (..))
 import C_Domain.NeuralNets.DSL.Semantics (Weights)
 import qualified Torch
 
@@ -25,12 +23,12 @@ import qualified Torch
 type Point = Torch.Tensor -- a point in R^2 (a [2] tensor, or a [B,2] batch)
 type Omega = Bool         -- the truth object
 
--- | The ground-truth label relation -- CERTAIN but Kleisli (@M u Omega@), so the truth flows
---   through the monad (MeasU: one point at a time; GeomU: the whole batch in the leaf weights).
-class (Framework u, Monad (M u)) => BinaryRel u where
-  labelA :: Point -> M u Omega
+-- | The ground-truth label relation -- CERTAIN but Kleisli (@m Omega@), so the truth flows
+--   through the monad (@Dist@: one point at a time; @LogVec@: the whole batch in the leaf weights).
+class (Monad m) => BinaryRel m where
+  labelA :: Point -> m Omega
 
--- | The neural classifier as a parametrized Kleisli relation -- the genuinely per-universe
---   symbol (its monad @M u@ is @Dist@ vs @LogVec@).
-class (BinaryRel u) => BinaryKlRel u where
-  classifierA :: Weights -> Point -> M u Omega
+-- | The neural classifier as a parametrized Kleisli relation -- the genuinely per-monad
+--   symbol (its monad @m@ is @Dist@ vs @LogVec@).
+class (BinaryRel m) => BinaryKlRel m where
+  classifierA :: Weights -> Point -> m Omega

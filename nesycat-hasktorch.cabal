@@ -15,8 +15,6 @@ build-type:     Simple
 
 library
   exposed-modules:
-      A_Categorical.CategoricalInterpretation
-      A_Categorical.CategoricalSignature
       A_Categorical.Category.Bridge
       A_Categorical.Category.Monads.Dist
       A_Categorical.Category.Monads.DistExpect
@@ -30,10 +28,7 @@ library
       B_Logical.Library.PMeanError
       B_Logical.Library.Stable
       B_Logical.Signature.A2MonBLat
-      B_Logical.Signature.Classical
-      B_Logical.Signature.Fuzzy
       B_Logical.Signature.Guard
-      B_Logical.Signature.RealNumbers
       B_Logical.Signature.TwoMonBLat
       C_Domain.NeuralNets.DSL.Library.Activation.ELU
       C_Domain.NeuralNets.DSL.Library.Activation.ReLU

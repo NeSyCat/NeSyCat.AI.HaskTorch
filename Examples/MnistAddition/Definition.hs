@@ -7,17 +7,15 @@
 --   the template signature while supplying their own interpretation.
 module MnistAddition.Definition (MnistAddition) where
 
--- A (category) — REUSE template: the library universes + categorical signature.
-import A_Categorical.CategoricalSignature ()
-import A_Categorical.CategoricalInterpretation ()
+-- A (category) — REUSE shared: the LogVec monad (the truth object's carrier).
 import A_Categorical.Category.Monads.LogVec (LogVec)
 -- B (logic) — REUSE template: the library Boolean (the shared crisp-Bool truth algebra +
---   the MeasU quantifier) + TensorBool (only the GeomU quantifier for Bool).
+--   the Dist quantifier) + TensorBool (only the LogVec quantifier for Bool).
 import B_Logical.Interpretations.Boolean ()
 import B_Logical.Interpretations.TensorBool ()
 -- C (domain) — STANDALONE: MNIST's own sorts/symbols + model (Params/initParams).
 import qualified MnistAddition.C_Domain.Interpretation as C
--- D (grammatical) — STANDALONE: the GeomU reading of the axiom (the satisfaction 'sat').
+-- D (grammatical) — STANDALONE: the LogVec reading of the axiom (the satisfaction 'sat').
 import qualified MnistAddition.D_Grammatical.InterpretationTens as D
 -- E (data) — STANDALONE: MNIST's own data format + loader (exports the data + the batches).
 import qualified MnistAddition.E_Data.Signature as E
