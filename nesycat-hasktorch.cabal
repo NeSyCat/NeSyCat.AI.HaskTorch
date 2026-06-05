@@ -76,6 +76,15 @@ library
       MnistAddition.E_Data.Signature
       MnistAddition.F_Inferential.Interpretation
       MnistAddition.G_Statistical.Interpretation
+      MnistMultiDigit.C_Domain.Interpretation
+      MnistMultiDigit.C_Domain.Signature
+      MnistMultiDigit.D_Grammatical.Interpretation
+      MnistMultiDigit.D_Grammatical.Signature
+      MnistMultiDigit.Definition
+      MnistMultiDigit.E_Data.Loader
+      MnistMultiDigit.E_Data.Signature
+      MnistMultiDigit.F_Inferential.Interpretation
+      MnistMultiDigit.G_Statistical.Interpretation
   other-modules:
       Paths_nesycat_hasktorch
   hs-source-dirs:
