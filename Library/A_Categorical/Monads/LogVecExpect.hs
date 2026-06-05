@@ -6,7 +6,7 @@
 --   The two-leaf fold of  @do { i <- a; j <- b; return (i + j) }@  IS the log-space
 --   convolution -- the marginalization that used to be hand-coded as a log-space
 --   convolution (@logConv@) now falls out of this fold for free.
-module A_Categorical.Category.Monads.LogVecExpect
+module A_Categorical.Monads.LogVecExpect
   ( logVecExpect,
     collectLeaves,
     logVecRunPure,
@@ -14,7 +14,7 @@ module A_Categorical.Category.Monads.LogVecExpect
   )
 where
 
-import A_Categorical.Category.Monads.LogVec (LogVec (..))
+import A_Categorical.Monads.LogVec (LogVec (..))
 import qualified Torch
 import qualified Torch.Functional.Internal as FI
 

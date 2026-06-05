@@ -57,7 +57,7 @@ loadMnistDataset = do
   return
     MnistDataset
       { -- the batch carries the RAW observed sums ([B] tensor of indices); the D interpretation
-        -- ('encodeObs') one-hots + encodes them into the LogVec delta (the @encode@ of the obs).
+        -- ('mnistAxiomTens') one-hots + 'encode's them into the LogVec delta (the @encode@ of the obs).
         trainBatch = (trX, trY, Torch.asTensor (map fromIntegral trS :: [Float])),
         trainXImg = trX,
         trainYImg = trY,

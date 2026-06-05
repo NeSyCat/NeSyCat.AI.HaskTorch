@@ -8,7 +8,7 @@
 --
 --     classifierA \@LogVec = LogLeaf [True,False] . mlp theta    -- raw logits over {True,False}
 --     classifierA \@Dist   = decode . classifierA \@LogVec theta  -- the Dist reading is decode of that
---     labelA       = the circle test as a CERTAIN distribution (delta) -- 'encodeBatch' of an observation
+--     labelA       = the circle test as a CERTAIN distribution (delta) -- 'encode' of an observation
 module Binary.C_Domain.Interpretation
   ( module Binary.C_Domain.Signature,
     Params,
@@ -16,9 +16,9 @@ module Binary.C_Domain.Interpretation
   )
 where
 
-import A_Categorical.Category.Bridge (decode, encodeBatch)
-import A_Categorical.Category.Monads.Dist (Dist)
-import A_Categorical.Category.Monads.LogVec (LogVec (..))
+import A_Categorical.Monads.Bridge (decode, encode)
+import A_Categorical.Monads.Dist (Dist)
+import A_Categorical.Monads.LogVec (LogVec (..))
 import Binary.C_Domain.Signature (BinaryKlRel (..), BinaryRel (..))
 import C_Domain.NeuralNets.MLP (mlp, mlpArch)
 import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
@@ -47,7 +47,7 @@ instance BinaryRel Dist where
 instance BinaryRel LogVec where
   -- the label as a batched CERTAIN distribution: a one-hot delta per batch row (the @LogVec@
   -- analogue of MNIST's observed sum); the circle test over the whole [B,2] batch, then the
-  -- batched bridge 'encodeBatch' (the @encode@ of the observation).
+  -- bridge 'encode' (the @encode@ of the observation).
   labelA pt =
     let center = F.mulScalar (Torch.onesLike pt) (0.5 :: Float)
         diff = pt `Torch.sub` center
@@ -55,7 +55,7 @@ instance BinaryRel LogVec where
         radiusSq = F.mulScalar (Torch.onesLike dist2) (0.09 :: Float)
         insideF = Torch.toType Torch.Float (Torch.lt dist2 radiusSq) -- [B,1] in {0,1}
         oneHot = Torch.cat (Torch.Dim 1) [insideF, Torch.onesLike insideF `Torch.sub` insideF] -- [B,2]
-     in encodeBatch [True, False] oneHot
+     in encode [True, False] oneHot
 
 instance BinaryKlRel Dist where
   -- the Dist reading IS 'decode' of the LogVec leaf (a point is the same tensor; reshape the

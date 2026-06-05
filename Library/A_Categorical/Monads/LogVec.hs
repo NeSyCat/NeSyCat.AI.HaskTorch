@@ -11,10 +11,10 @@
 --
 --   Finiteness is NOT intrinsic to the monad -- the construction @a |-> (a -> R)@ is
 --   the representable functor for ANY @a@. It is only what the interpreter
---   ("A_Categorical.Category.Monads.LogVecExpect") needs to MATERIALIZE the bind as a
+--   ("A_Categorical.Monads.LogVecExpect") needs to MATERIALIZE the bind as a
 --   dense tensor (a finite sum = the discrete convolution). The continuous case
 --   (an integral = the general convolution) is the 'Giry' monad.
-module A_Categorical.Category.Monads.LogVec
+module A_Categorical.Monads.LogVec
   ( LogVec (..),
   )
 where

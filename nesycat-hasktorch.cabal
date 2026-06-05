@@ -15,13 +15,13 @@ build-type:     Simple
 
 library
   exposed-modules:
-      A_Categorical.Category.Bridge
-      A_Categorical.Category.Monads.Dist
-      A_Categorical.Category.Monads.DistExpect
-      A_Categorical.Category.Monads.Giry
-      A_Categorical.Category.Monads.GiryExpect
-      A_Categorical.Category.Monads.LogVec
-      A_Categorical.Category.Monads.LogVecExpect
+      A_Categorical.Monads.Bridge
+      A_Categorical.Monads.Dist
+      A_Categorical.Monads.DistExpect
+      A_Categorical.Monads.Giry
+      A_Categorical.Monads.GiryExpect
+      A_Categorical.Monads.LogVec
+      A_Categorical.Monads.LogVecExpect
       B_Logical.Interpretations.Boolean
       B_Logical.Interpretations.TensorBool
       B_Logical.Library.PMean

@@ -6,11 +6,11 @@
 --   'Report', predicting with @classifierA \@Dist@ and scoring against @labelA \@Dist@.
 module Binary.G_Statistical.Interpretation (report, binaryReport) where
 
-import A_Categorical.Category.Monads.Dist (Dist)
+import A_Categorical.Monads.Dist (Dist)
 import Binary.C_Domain.Interpretation ()
 import Binary.C_Domain.Signature (BinaryKlRel (..), BinaryRel (..), Point)
 import Binary.E_Data.Signature (BinaryDataset (..))
-import A_Categorical.Category.Monads.DistExpect (distPTrue)
+import A_Categorical.Monads.DistExpect (distPTrue)
 import G_Statistical.Report (Report, evaluate, runMetrics)
 import C_Domain.NeuralNets.DSL.Semantics (Weights)
 import qualified Torch

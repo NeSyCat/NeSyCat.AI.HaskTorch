@@ -7,10 +7,10 @@
 --   the argmax of the @LogVec@ logits (no softmax).
 module MnistAddition.G_Statistical.Interpretation (report, mnistReport) where
 
-import A_Categorical.Category.Monads.LogVecExpect (logVecLeafTensor)
-import A_Categorical.Category.Monads.DistExpect (distPTrue)
-import A_Categorical.Category.Monads.LogVec (LogVec)
-import A_Categorical.Category.Monads.Dist (Dist)
+import A_Categorical.Monads.LogVecExpect (logVecLeafTensor)
+import A_Categorical.Monads.DistExpect (distPTrue)
+import A_Categorical.Monads.LogVec (LogVec)
+import A_Categorical.Monads.Dist (Dist)
 import MnistAddition.C_Domain.Interpretation ()
 import MnistAddition.C_Domain.Signature (MnistKlRel (..))
 import MnistAddition.D_Grammatical.Signature (mnistFormula)

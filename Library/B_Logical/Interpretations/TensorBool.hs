@@ -34,8 +34,8 @@ module B_Logical.Interpretations.TensorBool
   )
 where
 
-import A_Categorical.Category.Monads.LogVec (LogVec (..))
-import A_Categorical.Category.Monads.LogVecExpect (collectLeaves)
+import A_Categorical.Monads.LogVec (LogVec (..))
+import A_Categorical.Monads.LogVecExpect (collectLeaves)
 import B_Logical.Interpretations.Boolean () -- reuse: the universe-free @instance TwoMonBLat Bool@
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)

@@ -15,9 +15,9 @@ module MnistAddition.C_Domain.Interpretation
   )
 where
 
-import A_Categorical.Category.Bridge (decode)
-import A_Categorical.Category.Monads.Dist (Dist)
-import A_Categorical.Category.Monads.LogVec (LogVec (..))
+import A_Categorical.Monads.Bridge (decode)
+import A_Categorical.Monads.Dist (Dist)
+import A_Categorical.Monads.LogVec (LogVec (..))
 import MnistAddition.C_Domain.Signature (Digit, Image, MnistKlRel (..))
 import C_Domain.NeuralNets.MnistCNN (cnn, cnnArch)
 import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)

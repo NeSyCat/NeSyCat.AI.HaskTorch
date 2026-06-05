@@ -16,7 +16,7 @@
 --   different truth object declares its own instance in its F layer.
 module F_Inferential.InferenceInterpretation () where
 
-import A_Categorical.Category.Monads.LogVec (LogVec)
+import A_Categorical.Monads.LogVec (LogVec)
 import B_Logical.Interpretations.TensorBool (logVecNLL, logVecPTrue)
 import F_Inferential.InferenceSignature (InferenceSignature (..))
 import F_Inferential.Library.Convex (convex)

@@ -8,7 +8,7 @@
 module MnistAddition.Definition (MnistAddition) where
 
 -- A (category) — REUSE shared: the LogVec monad (the truth object's carrier).
-import A_Categorical.Category.Monads.LogVec (LogVec)
+import A_Categorical.Monads.LogVec (LogVec)
 -- B (logic) — REUSE template: the library Boolean (the shared crisp-Bool truth algebra +
 --   the Dist quantifier) + TensorBool (only the LogVec quantifier for Bool).
 import B_Logical.Interpretations.Boolean ()

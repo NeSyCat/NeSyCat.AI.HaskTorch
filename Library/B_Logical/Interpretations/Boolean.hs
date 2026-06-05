@@ -23,7 +23,7 @@ module B_Logical.Interpretations.Boolean
   )
 where
 
-import A_Categorical.Category.Monads.Dist (Dist) -- the monad (+ its Monad instance)
+import A_Categorical.Monads.Dist (Dist) -- the monad (+ its Monad instance)
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))

@@ -16,8 +16,8 @@ module Binary.D_Grammatical.Interpretation
   )
 where
 
-import A_Categorical.Category.Monads.Dist (Dist)
-import A_Categorical.Category.Monads.LogVec (LogVec)
+import A_Categorical.Monads.Dist (Dist)
+import A_Categorical.Monads.LogVec (LogVec)
 import B_Logical.Interpretations.Boolean () -- A2MonBLat Dist Bool   (the fold quantifier)
 import B_Logical.Interpretations.TensorBool () -- A2MonBLat LogVec Bool (the batched quantifier)
 import Binary.C_Domain.Interpretation () -- the BinaryRel / BinaryKlRel instances
