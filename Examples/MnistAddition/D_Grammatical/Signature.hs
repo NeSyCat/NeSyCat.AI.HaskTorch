@@ -41,8 +41,7 @@ mnistFormula theta (x, y, n) =
     (.+) = plus
     (.=) = eqNat
     dig = digit @m theta
-   in
-    do
+   in do
       d1 <- dig x
       d2 <- dig y
       s <- n
