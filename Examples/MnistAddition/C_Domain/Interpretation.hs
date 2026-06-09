@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
 
 -- | Interpretation I_gamma for MNIST single-digit addition. The sorts are monad-invariant plain
---   types, so 'digit' is the only interpreted relation:
+--   types, so 'digit' is the only interpreted Kleisli function:
 --
 --     digit \@LogVec = LogLeaf [0..9] . cnn theta       -- raw logits as a LogVec leaf
 --     digit \@Dist   = decode . digit \@LogVec theta     -- the Dist reading is decode of that leaf
@@ -25,13 +25,13 @@ import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
 -- | The parameter space: the pure weights of 'cnnArch'.
 type Params = Weights
 
--- | Draw the initial theta_0 — fresh weights for 'cnnArch'.
+-- | Draw the initial theta_0 -- fresh weights for 'cnnArch'.
 initParams :: IO Params
 initParams = sampleWeights cnnArch
 
-instance MnistKlRel LogVec where
-  digit theta img = LogLeaf [0 .. 9] (cnn theta img) -- raw logits over 0..9 (no softmax)
+instance MnistKlFun LogVec where
+  digit theta img = LogLeaf [0 .. 9] (cnn theta img) -- raw logits over 0..9
 
-instance MnistKlRel Dist where
+instance MnistKlFun Dist where
   digit theta = decode . digit @LogVec theta
-    -- the Dist reading IS 'decode' of the LogVec leaf (an image is the same tensor; no bridge)
+    -- the Dist reading IS 'decode' of the LogVec leaf (an image is the same tensor)

@@ -10,7 +10,7 @@
 --     forall (x1,x2,y1,y2,n) in data.  n = number(x1,x2) + number(y1,y2)
 --                                         = (10*digit(x1)+digit(x2)) + (10*digit(y1)+digit(y2))
 --
---   The four digits are four calls of the SAME 'digit' relation; the observed sum enters as
+--   The four digits are four calls of the SAME 'digit' Kleisli function; the observed sum enters as
 --   @eta n :: m Natural@ (bound @s <- n@, exactly like the digits); @number@/@(+)@/@(=)@ are
 --   plain host functions on the bound values. Written ONCE; only the monad @m@ changes.
 --   Interpreted per monad in "MnistMultiDigit.D_Grammatical.Interpretation".
@@ -23,7 +23,7 @@ where
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)
 import B_Logical.Signature.TwoMonBLat (TwoMonBLat (..))
-import MnistMultiDigit.C_Domain.Signature (Image, MnistKlRel (..), Natural, Omega, eqNat, number, plus)
+import MnistMultiDigit.C_Domain.Signature (Image, MnistKlFun (..), Natural, Omega, eqNat, number, plus)
 import C_Domain.NeuralNets.DSL.Semantics (Weights)
 
 -- | The per-example FORMULA  @n = number(x1,x2) + number(y1,y2)@, monad-polymorphic over @m@. The
@@ -32,7 +32,7 @@ import C_Domain.NeuralNets.DSL.Semantics (Weights)
 --   total probability for @Dist@; the log-space convolution of the four digit leaves for @LogVec@).
 multiFormula ::
   forall m.
-  (MnistKlRel m) =>
+  (MnistKlFun m) =>
   Weights ->
   (Image, Image, Image, Image, m Natural) ->
   m Omega
@@ -53,7 +53,7 @@ multiFormula theta (x1, x2, y1, y2, n) =
 --   'bigWedge'.
 multiSentence ::
   forall m.
-  ( MnistKlRel m,
+  ( MnistKlFun m,
     TwoMonBLat Omega,
     A2MonBLat m Omega,
     Monad m

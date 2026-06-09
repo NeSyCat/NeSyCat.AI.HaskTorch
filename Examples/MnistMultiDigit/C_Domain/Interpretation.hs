@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
 
 -- | Interpretation for MNIST multi-digit addition. The sorts are monad-invariant plain types, so
---   'digit' is the only interpreted relation -- and it is EXACTLY the single-digit interpretation
+--   'digit' is the only interpreted Kleisli function -- and it is EXACTLY the single-digit interpretation
 --   (the same @cnnArch@ classifier, reused per image):
 --
 --     digit \@LogVec = LogLeaf [0..9] . cnn theta       -- raw logits as a LogVec leaf
@@ -30,8 +30,8 @@ type Params = Weights
 initParams :: IO Params
 initParams = sampleWeights cnnArch
 
-instance MnistKlRel LogVec where
+instance MnistKlFun LogVec where
   digit theta img = LogLeaf [0 .. 9] (cnn theta img) -- raw logits over 0..9 (no softmax)
 
-instance MnistKlRel Dist where
+instance MnistKlFun Dist where
   digit theta = decode . digit @LogVec theta

@@ -21,7 +21,7 @@ import A_Categorical.Monads.Dist (Dist)
 import A_Categorical.Monads.LogVec (LogVec)
 import B_Logical.Interpretations.Boolean () -- A2MonBLat Dist Bool   (the fold quantifier)
 import B_Logical.Interpretations.TensorBool () -- A2MonBLat LogVec Bool (the batched quantifier)
-import MnistAddition.C_Domain.Interpretation () -- the MnistKlRel instances
+import MnistAddition.C_Domain.Interpretation () -- the MnistKlFun instances
 import MnistAddition.C_Domain.Signature (Image, Natural) -- the sorts
 import MnistAddition.D_Grammatical.Signature (mnistSentence)
 import C_Domain.NeuralNets.DSL.Semantics (Weights)

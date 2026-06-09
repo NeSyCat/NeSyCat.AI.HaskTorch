@@ -133,14 +133,11 @@ logNumDenConv prog =
                                   logDen = foldr1 Torch.add [FI.logsumexp w 1 False | w <- lws]
                                in Just (logNum, logDen)
 
--- | Negative-log satisfaction @-log P(true) = logDen - logNum@ (a @[B]@ tensor) -- the LOSS
---   readout, pure log space (a difference of @logsumexp@s = the log-domain cross-entropy / the
---   log-space convolution). No @exp@, no clamp: confidently-wrong outcomes keep full gradient.
+-- | Negative-log satisfaction @-log P(true) = logDen - logNum@ (a @[B]@ tensor).
 logVecNLL :: LogVec Bool -> Torch.Tensor
 logVecNLL m = let (logNum, logDen) = logNumDen m in logDen `Torch.sub` logNum
 
--- | Satisfaction probability @P(true) = exp(logNum - logDen)@ (a @[B]@ tensor) -- the READING
---   readout (the @LogVec@ twin of @distPTrue@). Never used on the training path.
+-- | Satisfaction probability @P(true) = exp(logNum - logDen)@ (a @[B]@ tensor).
 logVecPTrue :: LogVec Bool -> Torch.Tensor
 logVecPTrue m = let (logNum, logDen) = logNumDen m in Torch.exp (logNum `Torch.sub` logDen)
 
