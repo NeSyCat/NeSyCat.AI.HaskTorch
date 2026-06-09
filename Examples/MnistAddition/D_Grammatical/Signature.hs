@@ -37,12 +37,10 @@ mnistFormula ::
   (Image, Image, m Natural) ->
   m Omega
 mnistFormula theta (x, y, n) =
-  let dig = digit theta
-   in do
-      d1 <- dig x
-      d2 <- dig y
-      s <- n
-      return (s == (d1 + d2))
+    do d1 <- digit theta x
+       d2 <- digit theta y
+       s <- n
+       return (s == (d1 + d2))
 
 -- | The SENTENCE  @forall (x,y,n) in data. n = digit(x) + digit(y)@ -- the whole quantified axiom,
 --   abstract over @m@. The guard @Guard m (Image, Image, m Natural)@ is the data quantified over

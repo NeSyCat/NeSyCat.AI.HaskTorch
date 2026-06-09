@@ -22,11 +22,13 @@
 --     * 'logVecPTrue' @= exp(logNum - logDen)@  -- the [0,1] probability, the READING readout
 --       (the @LogVec@ twin of @distPTrue@); never on the training path.
 --
---   'bigWedge' (the @forall@ over the batch) aggregates the per-element 'logVecNLL' in LOG space
---   (the mean = the product t-norm = @Dist@'s @bigWedge = product@) and returns the aggregate as
---   the sentence's truth: a Bernoulli leaf built directly in log space ('nllLeaf'), so the loss
---   reads it back exactly with no probability ever materialized. Reuses @Guard LogVec a = a@ and
---   the crisp @TwoMonBLat Bool@ from "Boolean".
+--   'bigWedge' (the @forall@ over the batch) takes the per-element @(logNum, logDen)@ marginal and
+--   MEANS each over the batch (the product t-norm = @Dist@'s @bigWedge = product@) -- a real mean in
+--   RAW log space (mean is linear, so @mean logDen - mean logNum =@ the mean NLL). The aggregate is
+--   carried verbatim as a raw 'A_Categorical.Monads.LogVec.LogReduced' degree, NOT a normalized
+--   Bernoulli, so no complement mass / @exp@ is ever formed on the training path; calibration to a
+--   probability stays at the 'logVecPTrue' readout. Reuses @Guard LogVec a = a@ and the crisp
+--   @TwoMonBLat Bool@ from "Boolean".
 module B_Logical.Interpretations.TensorBool
   ( logVecNLL,
     logVecPTrue,
@@ -54,10 +56,15 @@ type instance Guard LogVec a = a
 ------------------------------------------------------
 
 instance A2MonBLat LogVec Bool where
-  -- forall = product t-norm over the batch = mean of the per-element negative-log satisfaction,
-  -- all in LOG space (no exp-to-probability, no clamp). The aggregate is returned as the
-  -- sentence's truth Bernoulli, built in log space, so 'logVecNLL' reads it back exactly.
-  bigWedge _ g phi = nllLeaf (Torch.mean (logVecNLL (phi g)))
+  -- forall = product t-norm over the batch = mean of the per-element negative-log satisfaction. We
+  -- take the per-element @(logNum, logDen)@ marginal and MEAN each over the batch -- a real mean on
+  -- the RAW log-masses. Mean is linear, so @mean logDen - mean logNum = mean (logDen - logNum) =@
+  -- the mean NLL, with NO normalized Bernoulli and NO @exp@/complement on the training path. The
+  -- aggregate is carried verbatim as a raw 'LogReduced' degree; calibration to a probability happens
+  -- only at the 'logVecPTrue' readout (the decode boundary), never here.
+  bigWedge _ g phi =
+    let (logNum, logDen) = logNumDen (phi g)
+     in LogReduced (Torch.mean logNum) (Torch.mean logDen)
   bigVee _ _ _ = error "bigVee over LogVec Bool not yet supported in log space"
   bigOplus _ _ = error "bigOplus over LogVec Bool not yet supported"
   bigOtimes _ _ = error "bigOtimes over LogVec Bool not yet supported"
@@ -83,6 +90,7 @@ instance A2MonBLat LogVec Bool where
 --   correct, just not scalable. (Efficiency for non-separable STRUCTURED predicates is what
 --   knowledge compilation / arithmetic circuits, a la DeepProbLog, would add -- a separate engine.)
 logNumDen :: LogVec Bool -> (Torch.Tensor, Torch.Tensor)
+logNumDen (LogReduced logNum logDen) = (logNum, logDen) -- already marginalized: read the raw pair verbatim
 logNumDen prog = case logNumDenConv prog of
   Just r -> r
   Nothing -> marginalize prog (\vs -> Torch.asTensor [if v then 1.0 else 0.0 :: Float | v <- vs])
@@ -137,19 +145,8 @@ logNumDenConv prog =
 logVecNLL :: LogVec Bool -> Torch.Tensor
 logVecNLL m = let (logNum, logDen) = logNumDen m in logDen `Torch.sub` logNum
 
--- | Satisfaction probability @P(true) = exp(logNum - logDen)@ (a @[B]@ tensor).
+-- | Satisfaction probability @P(true) = exp(logNum - logDen)@ (a @[B]@ tensor). This is the ONLY
+--   place a probability is materialized from the @LogVec@ side (the calibration / decode boundary):
+--   never on the training path, which reads 'logVecNLL' (a raw log-mass difference) instead.
 logVecPTrue :: LogVec Bool -> Torch.Tensor
 logVecPTrue m = let (logNum, logDen) = logNumDen m in Torch.exp (logNum `Torch.sub` logDen)
-
--- | Encode a negative-log-satisfaction scalar @s@ as the sentence's truth Bernoulli, in log
---   space: @LogLeaf [True,False] [-s, log(1 - e^{-s})]@. Normalized by construction, so
---   @logVecNLL (nllLeaf s) = s@ exactly (and @logVecPTrue (nllLeaf s) = e^{-s}@), with no
---   @exp@ of the aggregate and no clamp.
-nllLeaf :: Torch.Tensor -> LogVec Bool
-nllLeaf s =
-  let ns = negate s
-   in LogLeaf [True, False] (Torch.reshape [1, 2] (Torch.stack (Torch.Dim 0) [ns, log1mexp ns]))
-
--- | @log(1 - exp x)@ for @x <= 0@ (the log-complement of a log-probability).
-log1mexp :: Torch.Tensor -> Torch.Tensor
-log1mexp x = Torch.log (Torch.onesLike x `Torch.sub` Torch.exp x)

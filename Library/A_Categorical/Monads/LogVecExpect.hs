@@ -32,6 +32,8 @@ import qualified Torch.Functional.Internal as FI
 collectLeaves :: LogVec a -> ([Torch.Tensor], [Int] -> a)
 collectLeaves (Pure x) = ([], const x)
 collectLeaves (LogLeaf xs lw) = ([lw], \is -> xs !! head is)
+collectLeaves (LogReduced _ _) =
+  error "collectLeaves: LogReduced is pre-marginalized -- read it via logNumDen, do not collect"
 collectLeaves (Bind m k) =
   let (lwsM, valsM) = collectLeaves m
       nM = length lwsM
