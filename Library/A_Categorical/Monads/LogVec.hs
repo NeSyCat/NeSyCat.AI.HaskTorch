@@ -36,8 +36,8 @@ data LogVec a where
   --   support, so it is a @(numerator, denominator)@ SUMMARY, not a leaf. It lets the @forall@
   --   aggregation ("B_Logical.Interpretations.TensorBool".@bigWedge@) hold the batch-meaned
   --   satisfaction in RAW log space, so no normalized Bernoulli / complement mass (@log1mexp@, an
-  --   @exp@) is ever formed on the training path -- calibration to a probability stays at the
-  --   readout (@logVecPTrue@) / 'A_Categorical.Monads.Bridge.decode'. Terminal: read out verbatim by
+  --   @exp@) is ever formed on the training path -- calibration to a probability stays at a readout
+  --   (the @decode@/@Dist@ bridge). Terminal: read out verbatim by
   --   @logNumDen@, never bound or @collectLeaves@d. (The one @Bool@-specific node in this otherwise
   --   polymorphic monad: a general @a@ reduces only to a full support vector, i.e. a 'LogLeaf'; the
   --   @(num, den)@ collapse is exactly the indicator/@Bool@ case.)

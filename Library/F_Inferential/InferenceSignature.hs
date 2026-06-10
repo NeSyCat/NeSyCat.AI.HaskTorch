@@ -7,8 +7,8 @@
 --     Loss                            the objective values (R)
 --   Function symbols:
 --     lossKnow : Omega -> Loss           knowledge loss (how unsatisfied is the axiom?)
---     lossData : Omega x Omega -> Loss   data loss (prediction vs label)
---     lossComb : Loss x Loss x lambda -> Loss   combined  J = lam*J_data + (1-lam)*J_know
+--     lossData : Omega x Omega -> Loss   data loss (prediction vs label) [optional]
+--     lossComb : Loss x Loss x lambda -> Loss   combined  J = lam*J_data + (1-lam)*J_know [optional]
 --
 --   Categorically the inference level works in Para(C_delta) (Gavranovic 2024),
 --   over the smooth category Diff (tensor spaces with differentiable maps): the
@@ -32,8 +32,16 @@ class InferenceSignature cat where
   -- | Sort symbol: the type of objective/loss values (R).
   type Loss cat :: Type
 
+  -- | Knowledge loss: how unsatisfied is the axiom? REQUIRED for every truth object.
   lossKnow :: cat -> Loss cat
 
+  -- | Data loss (prediction vs label): OPTIONAL. A purely knowledge-driven reading (e.g.
+  --   @LogVec Bool@, whose objective is @lossKnow . sat@) leaves it at the default, which errors
+  --   only if a supervised data loss is ever actually requested -- so no probability has to be
+  --   materialized for a loss that is never used.
   lossData :: cat -> cat -> Loss cat
+  lossData _ _ = error "lossData: no data-loss interpretation for this truth object"
 
+  -- | Convex combination of the data and knowledge losses: OPTIONAL, defaults with 'lossData'.
   lossComb :: Loss cat -> Loss cat -> cat -> Loss cat
+  lossComb _ _ _ = error "lossComb: no data-loss interpretation for this truth object"

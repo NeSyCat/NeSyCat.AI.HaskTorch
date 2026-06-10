@@ -21,7 +21,7 @@ import qualified Binary.D_Grammatical.Interpretation as D
 import qualified Binary.E_Data.Signature as E
 import qualified Binary.E_Data.Loader as EL
 -- F (inference) — REUSE template signature AND the library's shared probabilistic-truth loss
---   (instance InferenceSignature (LogVec Bool) = negLog . logVecPTrue); STANDALONE only for trainConfig.
+--   (instance InferenceSignature (LogVec Bool), lossKnow = negLogSat); STANDALONE only for trainConfig.
 import F_Inferential.InferenceSignature ()
 import F_Inferential.InferenceInterpretation ()
 import qualified Binary.F_Inferential.Interpretation as F

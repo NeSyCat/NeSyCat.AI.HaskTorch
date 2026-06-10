@@ -46,7 +46,7 @@ library
       F_Inferential.InferenceSignature
       F_Inferential.Library.Convex
       F_Inferential.Library.CrossEntropy
-      F_Inferential.Library.NegLog
+      F_Inferential.Library.NegLogSat
       F_Inferential.Library.OneMinus
       F_Inferential.Library.Softplus
       F_Inferential.Train

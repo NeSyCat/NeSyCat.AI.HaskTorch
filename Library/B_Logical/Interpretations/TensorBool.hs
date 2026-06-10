@@ -10,28 +10,26 @@
 --   universe-free @instance TwoMonBLat Bool@); this module adds only @A2MonBLat _ LogVec Bool@.
 --   So @LogVec@ mirrors @Dist@ one-for-one, same truth algebra, only the monad differs:
 --
---     @Dist Bool@  <->  @LogVec Bool@,   @distPTrue@  <->  'logVecPTrue',   @eqNat = (==)@.
+--     @Dist Bool@  <->  @LogVec Bool@,   marginalize via 'logNumDen',   @eqNat = (==)@.
 --
 --   This is the probabilistic (DeepProbLog-style) reading: the truth values are crisp, the
 --   marginalization (the law of total probability) is the 'LogVec' bind, and TRAINING STAYS IN
---   LOGITS. Both readouts come from the same log-space @(logNum, logDen)@ over the raw leaf
---   logits ('logNumDen'):
---
---     * 'logVecNLL' @= logDen - logNum@  -- the negative-log satisfaction, the LOSS readout.
---       Pure 'logsumexp' arithmetic on logits: no @exp@-to-probability, no clamp, full gradient.
---     * 'logVecPTrue' @= exp(logNum - logDen)@  -- the [0,1] probability, the READING readout
---       (the @LogVec@ twin of @distPTrue@); never on the training path.
+--   LOGITS. The ONE readout this module exposes is 'logNumDen' -- the log-space marginal
+--   @(logNum, logDen)@ of a @LogVec Bool@ formula over its raw leaf logits (pure 'logsumexp', no
+--   @exp@/clamp). Every consumer derives from it WHERE IT IS USED, not here: the negative-log
+--   satisfaction @logDen - logNum@ inside the @lossKnow@ instance (the F inference layer), the
+--   @[0,1]@ probability @exp(logNum - logDen)@ wherever a reading is wanted (the @decode@/@Dist@
+--   bridge). So nothing on the training path ever forms a probability.
 --
 --   'bigWedge' (the @forall@ over the batch) takes the per-element @(logNum, logDen)@ marginal and
 --   MEANS each over the batch (the product t-norm = @Dist@'s @bigWedge = product@) -- a real mean in
 --   RAW log space (mean is linear, so @mean logDen - mean logNum =@ the mean NLL). The aggregate is
 --   carried verbatim as a raw 'A_Categorical.Monads.LogVec.LogReduced' degree, NOT a normalized
 --   Bernoulli, so no complement mass / @exp@ is ever formed on the training path; calibration to a
---   probability stays at the 'logVecPTrue' readout. Reuses @Guard LogVec a = a@ and the crisp
+--   probability stays at the @decode@/@Dist@ bridge, never here. Reuses @Guard LogVec a = a@ and the crisp
 --   @TwoMonBLat Bool@ from "Boolean".
 module B_Logical.Interpretations.TensorBool
-  ( logVecNLL,
-    logVecPTrue,
+  ( logNumDen,
     module B_Logical.Signature.A2MonBLat,
   )
 where
@@ -61,7 +59,7 @@ instance A2MonBLat LogVec Bool where
   -- the RAW log-masses. Mean is linear, so @mean logDen - mean logNum = mean (logDen - logNum) =@
   -- the mean NLL, with NO normalized Bernoulli and NO @exp@/complement on the training path. The
   -- aggregate is carried verbatim as a raw 'LogReduced' degree; calibration to a probability happens
-  -- only at the 'logVecPTrue' readout (the decode boundary), never here.
+  -- only at a readout (the @decode@/@Dist@ bridge), never on this path.
   bigWedge _ g phi =
     let (logNum, logDen) = logNumDen (phi g)
      in LogReduced (Torch.mean logNum) (Torch.mean logDen)
@@ -140,13 +138,3 @@ logNumDenConv prog =
                                   logNum = FI.logsumexp (sumDist `Torch.add` obsW) 1 False
                                   logDen = foldr1 Torch.add [FI.logsumexp w 1 False | w <- lws]
                                in Just (logNum, logDen)
-
--- | Negative-log satisfaction @-log P(true) = logDen - logNum@ (a @[B]@ tensor).
-logVecNLL :: LogVec Bool -> Torch.Tensor
-logVecNLL m = let (logNum, logDen) = logNumDen m in logDen `Torch.sub` logNum
-
--- | Satisfaction probability @P(true) = exp(logNum - logDen)@ (a @[B]@ tensor). This is the ONLY
---   place a probability is materialized from the @LogVec@ side (the calibration / decode boundary):
---   never on the training path, which reads 'logVecNLL' (a raw log-mass difference) instead.
-logVecPTrue :: LogVec Bool -> Torch.Tensor
-logVecPTrue m = let (logNum, logDen) = logNumDen m in Torch.exp (logNum `Torch.sub` logDen)
