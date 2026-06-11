@@ -21,7 +21,7 @@ module C_Domain.NeuralNets.DSL.Semantics
   ( Weights,
     sampleWeights,
     runArch,
-    splitWeights,
+    segmentWeights,
   )
 where
 
@@ -95,12 +95,14 @@ runArch arch (Weights ws0) input = foldl' (flip ($)) input (snd (mapAccumL feed 
       (Just _, w : rest) -> (rest, runLayer layer (Just w)) -- parameterized: take a weight
       _ -> (ws, runLayer layer Nothing) -- parameter-free (or mismatch): take none
 
--- | Split θ after a PREFIX architecture: the weights the prefix consumes, and the rest.
---   Lets a NON-sequential model (e.g. a shared trunk feeding several heads, like the WAP
---   encoder) be sampled as ONE 'Arch' (one θ for the optimizer) and run piecewise with
---   'runArch' on its sequential segments.
-splitWeights :: Arch -> Weights -> (Weights, Weights)
-splitWeights prefix (Weights ws) =
-  let n = length (filter (isJust . sampleLayer) prefix)
-      (a, b) = splitAt n ws
-   in (Weights a, Weights b)
+-- | Split θ along a SEGMENTATION of an architecture (the segments, concatenated, are the
+--   architecture θ was sampled from). Lets a NON-sequential model (a DAG: e.g. a shared
+--   trunk feeding several heads, like the WAP encoder) be sampled as ONE 'Arch' (one θ for
+--   the optimizer) and run piecewise with 'runArch' on its sequential segments.
+segmentWeights :: [Arch] -> Weights -> [Weights]
+segmentWeights segs (Weights ws0) = go segs ws0
+  where
+    go [] _ = []
+    go (a : as) ws =
+      let (w, rest) = splitAt (length (filter (isJust . sampleLayer) a)) ws
+       in Weights w : go as rest

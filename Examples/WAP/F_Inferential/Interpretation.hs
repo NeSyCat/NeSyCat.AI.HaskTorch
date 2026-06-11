@@ -6,8 +6,8 @@
 --   reference's @-log P(query)@ cross-entropy).
 module WAP.F_Inferential.Interpretation (trainConfig) where
 
--- | (epochs, learning rate) -- the reference protocol (DeepProbLog's @wap.py@: Adam,
---   lr = 0.005, batch 10, 40 epochs). The loss converges by ~epoch 6, so ~12 epochs
---   suffice for a quick check.
+-- | (epochs, learning rate). 12 epochs for quick iteration (the loss converges by ~epoch
+--   6); the citable reference protocol is 40 (DeepProbLog's @wap.py@: Adam, lr = 0.005,
+--   batch 10, 40 epochs).
 trainConfig :: (Int, Float)
-trainConfig = (40, 0.005)
+trainConfig = (12, 0.005)
