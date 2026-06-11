@@ -21,24 +21,27 @@ module C_Domain.NeuralNets.DSL.Semantics
   ( Weights,
     sampleWeights,
     runArch,
+    splitWeights,
   )
 where
 
 import C_Domain.NeuralNets.DSL.Library.Activation.ELU (elu)
 import C_Domain.NeuralNets.DSL.Library.Activation.ReLU (relu)
 import C_Domain.NeuralNets.DSL.Library.Activation.Sigmoid (sigmoid)
+import C_Domain.NeuralNets.DSL.Library.Parameterized.BiGRU (BiGRUW, bigru, sampleBiGRU)
 import C_Domain.NeuralNets.DSL.Library.Parameterized.Conv2d (conv2d, sampleConv2d)
+import C_Domain.NeuralNets.DSL.Library.Parameterized.Embedding (EmbedW, embed, sampleEmbed)
 import C_Domain.NeuralNets.DSL.Library.Parameterized.Linear (linear, sampleLinear)
 import C_Domain.NeuralNets.DSL.Library.Shape.Flatten (flatten)
 import C_Domain.NeuralNets.DSL.Library.Shape.MaxPool (maxPool)
 import C_Domain.NeuralNets.DSL.Syntax (Arch, Layer (..))
 import Data.List (foldl', mapAccumL)
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, isJust)
 import GHC.Generics (Generic)
 import Torch (Conv2d, Linear, Parameterized (..), Tensor)
 
 -- | The sampled weights of one learnable layer (one constructor per learnable kind).
-data LayerWeight = LinearW Linear | Conv2dW Conv2d
+data LayerWeight = LinearW Linear | Conv2dW Conv2d | EmbW EmbedW | GruW BiGRUW
   deriving (Generic, Show, Parameterized)
 
 -- | θ — the PARAMETER SPACE: just the sampled weights, in architecture order.
@@ -56,6 +59,8 @@ instance Parameterized Weights where
 sampleLayer :: Layer -> Maybe (IO LayerWeight)
 sampleLayer (Linear i o) = Just (LinearW <$> sampleLinear i o)
 sampleLayer (Conv2d i o k) = Just (Conv2dW <$> sampleConv2d i o k)
+sampleLayer (Embedding v d) = Just (EmbW <$> sampleEmbed v d)
+sampleLayer (BiGRU i h) = Just (GruW <$> sampleBiGRU i h)
 sampleLayer _ = Nothing
 
 -- | FORWARD reading — each symbol ↦ its tensor function, given the weight it consumes
@@ -64,6 +69,8 @@ sampleLayer _ = Nothing
 runLayer :: Layer -> Maybe LayerWeight -> (Tensor -> Tensor)
 runLayer (Linear _ _) (Just (LinearW l)) = linear l
 runLayer (Conv2d _ _ _) (Just (Conv2dW c)) = conv2d c
+runLayer (Embedding _ _) (Just (EmbW e)) = embed e
+runLayer (BiGRU _ _) (Just (GruW g)) = bigru g
 runLayer ELU _ = elu
 runLayer ReLU _ = relu
 runLayer Sigmoid _ = sigmoid
@@ -87,3 +94,13 @@ runArch arch (Weights ws0) input = foldl' (flip ($)) input (snd (mapAccumL feed 
     feed ws layer = case (sampleLayer layer, ws) of
       (Just _, w : rest) -> (rest, runLayer layer (Just w)) -- parameterized: take a weight
       _ -> (ws, runLayer layer Nothing) -- parameter-free (or mismatch): take none
+
+-- | Split θ after a PREFIX architecture: the weights the prefix consumes, and the rest.
+--   Lets a NON-sequential model (e.g. a shared trunk feeding several heads, like the WAP
+--   encoder) be sampled as ONE 'Arch' (one θ for the optimizer) and run piecewise with
+--   'runArch' on its sequential segments.
+splitWeights :: Arch -> Weights -> (Weights, Weights)
+splitWeights prefix (Weights ws) =
+  let n = length (filter (isJust . sampleLayer) prefix)
+      (a, b) = splitAt n ws
+   in (Weights a, Weights b)

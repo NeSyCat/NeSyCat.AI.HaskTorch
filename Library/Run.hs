@@ -10,6 +10,7 @@ import System.Exit (die)
 import Binary.Definition (Binary)
 import MnistAddition.Definition (MnistAddition)
 import MnistMultiDigit.Definition (MnistMultiDigit)
+import WAP.Definition (WAP)
 
 runNeSyCat :: [String] -> IO ()
 runNeSyCat (name : rest) = case lookup name registry of
@@ -25,4 +26,5 @@ registry =
   [ ("Binary", runExample @Binary "Binary")
   , ("MnistAddition", runExample @MnistAddition "MnistAddition")
   , ("MnistMultiDigit", runExample @MnistMultiDigit "MnistMultiDigit")
+  , ("WAP", runExample @WAP "WAP")
   ]

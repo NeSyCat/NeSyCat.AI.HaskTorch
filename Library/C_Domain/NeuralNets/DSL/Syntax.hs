@@ -23,6 +23,8 @@ where
 data Layer
   = Linear Int Int -- in-features, out-features
   | Conv2d Int Int Int -- in-channels, out-channels, square kernel
+  | Embedding Int Int -- vocab-size, embedding-dim (Int64 indices [..] -> vectors [.., dim])
+  | BiGRU Int Int -- in-features, hidden (1-layer bidirectional; [B,L,i] -> [B,L,2h])
   | ELU
   | ReLU
   | Sigmoid

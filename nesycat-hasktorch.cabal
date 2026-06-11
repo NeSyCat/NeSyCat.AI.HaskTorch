@@ -33,7 +33,9 @@ library
       C_Domain.NeuralNets.DSL.Library.Activation.ELU
       C_Domain.NeuralNets.DSL.Library.Activation.ReLU
       C_Domain.NeuralNets.DSL.Library.Activation.Sigmoid
+      C_Domain.NeuralNets.DSL.Library.Parameterized.BiGRU
       C_Domain.NeuralNets.DSL.Library.Parameterized.Conv2d
+      C_Domain.NeuralNets.DSL.Library.Parameterized.Embedding
       C_Domain.NeuralNets.DSL.Library.Parameterized.Linear
       C_Domain.NeuralNets.DSL.Library.Shape.Flatten
       C_Domain.NeuralNets.DSL.Library.Shape.MaxPool
@@ -41,6 +43,7 @@ library
       C_Domain.NeuralNets.DSL.Syntax
       C_Domain.NeuralNets.MLP
       C_Domain.NeuralNets.MnistCNN
+      C_Domain.NeuralNets.WapRNN
       Example
       F_Inferential.InferenceInterpretation
       F_Inferential.InferenceSignature
@@ -85,6 +88,15 @@ library
       MnistMultiDigit.E_Data.Signature
       MnistMultiDigit.F_Inferential.Interpretation
       MnistMultiDigit.G_Statistical.Interpretation
+      WAP.C_Domain.Interpretation
+      WAP.C_Domain.Signature
+      WAP.D_Grammatical.Interpretation
+      WAP.D_Grammatical.Signature
+      WAP.Definition
+      WAP.E_Data.Loader
+      WAP.E_Data.Signature
+      WAP.F_Inferential.Interpretation
+      WAP.G_Statistical.Interpretation
   other-modules:
       Paths_nesycat_hasktorch
   hs-source-dirs:
