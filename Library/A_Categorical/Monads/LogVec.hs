@@ -26,10 +26,10 @@ import qualified Torch
 data LogVec a where
   Pure :: a -> LogVec a
   Bind :: LogVec x -> (x -> LogVec a) -> LogVec a
+  LogLeaf :: [a] -> Torch.Tensor -> LogVec a
   -- | @LogLeaf xs lw@: support @xs@ (length @k@) with per-batch log-weights
   --   @lw :: [B,k]@ (column @j@ is the unnormalized log-weight of @xs !! j@).
   --   Autograd lives in @lw@; @xs@ is host data (the enumerable index set).
-  LogLeaf :: [a] -> Torch.Tensor -> LogVec a
   -- | @LogReduced logNum logDen@: a @Bool@ sentence ALREADY marginalized to its raw log-masses --
   --   @logNum@ = log mass of the SAT outcomes, @logDen@ = log TOTAL mass (each a @[B]@ or scalar
   --   tensor). This is NOT a measure over @{True,False}@: @logDen@ counts mass off the enumerated
