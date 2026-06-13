@@ -1,0 +1,310 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amssymb,amsmath}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{codeback}{rgb}{0.97,0.97,0.95}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codeback},
+  breaklines=true,
+  keepspaces=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  frame=single,
+  framesep=4pt,
+  xleftmargin=2pt,
+}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Borrowing from Stochaskell --- design note \& deferred future work}
+\author{NeSyCat HaskTorch --- branch \texttt{stochaskell}}
+\date{2026-06}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{Status:} design only. Nothing here is implemented; this records \emph{what to
+steal, why, and how}, so we don't re-derive it. \textbf{Audience:} us, later, when we generalize the
+marginalization engine, add a continuous backend, or polish the surface syntax.
+
+\section*{What Stochaskell is, and why we care}
+
+Stochaskell (\url{https://davidar.github.io/stochaskell/}; David A. Roberts; \emph{Reversible Jump
+Probabilistic Programming}, Roberts, Gallagher \& Taimre, \textbf{AISTATS 2019},
+\url{https://proceedings.mlr.press/v89/roberts19a.html}) is a probabilistic programming EDSL embedded
+in Haskell. A model is ordinary monadic Haskell in the \code{P} monad; under the hood the \code{do}-block
+\textbf{reifies into a typed symbolic expression graph}, which backend modules then either (a) compile
+to external PPLs (\textbf{Stan, PyMC3, Edward, Church}) or (b) analyse to \textbf{automatically derive
+a reversible-jump MCMC sampler}.
+
+It is \textbf{not} an ancestor of NeSyCat and shares no lineage --- both are independent descendants of
+Moggi/Giry monadic probability in Haskell. But the \textbf{machinery} overlaps in three load-bearing
+ways, and that is exactly what makes a handful of its techniques worth lifting:
+
+\begin{center}
+\begin{tabular}{@{}p{0.32\textwidth}p{0.32\textwidth}p{0.28\textwidth}@{}}
+\toprule
+Stochaskell & NeSyCat analogue & The shared move \\
+\midrule
+\code{P} monad reifies to a typed expression-graph IR (\code{Data/Expression.hs}) &
+\code{Dist}/\code{Giry}/\code{LogVec} are free-monad GADTs (\code{A\_Categorical/Monads/}) &
+a \code{do}-block is \textbf{data}, not execution \\
+walks the IR to invert transforms \& derive RJ-MCMC &
+\code{logNumDenConv} \textbf{probes} the predicate to detect additive structure (\code{TensorBool.hs}) &
+\textbf{symbolic analysis of the reified bind chain} chooses the inference algorithm \\
+one model $\to$ Stan/PyMC3/Edward/Church/C++ via codegen &
+one monad-polymorphic formula $\to$ \code{@Dist}/\code{@LogVec}, ported to JAX/PyTorch &
+\textbf{one specification, many execution targets} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The difference in kind (worth remembering): Stochaskell is \emph{one semantics, many engines} (fixed
+Bayesian model, swap the sampler); NeSyCat is \emph{one syntax, many semantics} (the monad is a
+\textbf{parameter of the truth definition}). So we are not importing its philosophy --- only specific,
+reusable engineering.
+
+This note covers four candidate steals, in descending order of value-to-effort:
+
+\begin{enumerate}
+  \item \textbf{Symbolic IR analysis} to replace \code{logNumDenConv}'s black-box probing $\to$ feeds
+        the deferred general TVE engine. \emph{(highest value, design-only --- see also
+        \code{tensor-variable-elimination.md})}
+  \item \textbf{Stan/HMC code generation} for the dormant continuous \code{Giry} reading.
+  \item \textbf{Monad comprehensions $+$ guard-conditioning} as surface syntax and a soft-observation
+        generalization.
+  \item \textbf{MH / reversible-jump MCMC} as a complementary inference mode for the \code{Dist}/\code{Giry}
+        \emph{evaluation} readings.
+\end{enumerate}
+
+Each section states: \emph{what Stochaskell actually does}, \emph{the NeSyCat analogue today},
+\emph{what to build}, \emph{what it buys --- conceptually and efficiency-wise}, and \emph{where it
+should land} (Haskell prototype / JAX port / paper).
+
+\section*{How Stochaskell's IR actually works (the substrate the steals share)}
+
+Three real definitions, because every steal below leans on them.
+
+\textbf{The graph node types} (\code{Data/Expression.hs:175}, \code{:67}):
+
+\begin{lstlisting}
+data Node = Apply  { fName :: String, fArgs :: [NodeRef], typeNode :: Type }
+          | Array  { aShape :: [Interval NodeRef], aFunc :: Lambda NodeRef, typeNode :: Type }
+          | FoldScan { rScan :: FoldOrScan, rFunc :: Lambda NodeRef, ... }
+          | Case   { cHead :: NodeRef, cAlts :: [Lambda [NodeRef]], ... }
+          | ...
+data NodeRef = Var Id Type | Const ConstVal Type | Index NodeRef [NodeRef]
+             | Cond [(NodeRef,NodeRef)] Type      -- mutually-exclusive branches
+             | ...
+\end{lstlisting}
+
+\textbf{The DAG with hash-consing built in} (\code{:260}, \code{:285}, \code{:856}):
+
+\begin{lstlisting}
+data DAG   = DAG { dagLevel :: Level, inputsT :: [(Id,Type)], bimap :: Bimap.Bimap Node Pointer }
+newtype Block = Block [DAG]            -- nested scopes, one DAG per binder level
+hashcons :: Node -> State Block NodeRef  -- Bimap => identical nodes share one Pointer = CSE for free
+\end{lstlisting}
+
+\textbf{The program monad} (\code{Data/Program.hs:198}, \code{:163}):
+
+\begin{lstlisting}
+newtype P t = P { fromProg :: State PBlock t } deriving (Functor,Applicative,Monad)
+data PBlock = PBlock { definitions :: Block          -- the expression IR
+                     , actions     :: [PNode]        -- the distribution draws
+                     , constraints :: Map LVal (ConstVal, Type)  -- the conditioned/observed values
+                     , namespace   :: String }
+\end{lstlisting}
+
+The whole language is ``build a \code{Bimap}-deduplicated DAG in a \code{State} monad, then a backend
+folds it.'' That is the same shape as our \code{collectLeaves} flattening a \code{LogVec} bind chain
+--- except Stochaskell keeps the \textbf{structure} (typed nodes, sharing, scopes) where we collapse
+to an \emph{opaque} \code{([Tensor], [Int] -> a)} reconstructor. Recovering structure we threw away is
+the recurring theme.
+
+\section*{(1) Symbolic IR analysis --- replace black-box probing with a real factor graph}
+
+\textbf{What Stochaskell does.} To invert a transformation (needed for MH/RJMCMC density adjustments),
+Stochaskell \textbf{walks its expression graph and pattern-matches algebraic structure}, node by node.
+The simplifier/solver in \code{Data/Expression.hs} (the \code{Left}/\code{Right} rewrite cascade around
+\code{:1141--1220}) recognizes \code{Apply "+" [y, Const c]}, \code{Apply "*" [a,b]},
+\code{Apply "log" [j]}, \code{Apply "exp" [j]}, \dots\ and rewrites/inverts them symbolically. Because
+nodes are typed and hash-consed, this analysis sees the \emph{real} arithmetic structure.
+
+\textbf{The NeSyCat analogue today.} \code{logNumDenConv} (\code{TensorBool.hs:106}) does the same
+\emph{job} --- discover structure to pick a cheaper exact algorithm --- but \textbf{black-box}: it
+reconstructs the predicate from \code{collectLeaves} as an opaque closure, then \textbf{probes} it at
+corner index combinations to \emph{guess} that the formula is
+\code{observation == base + sum\_i c\_i(latent\_i)}. If the guess holds it routes to \code{logConvolve}
+(treewidth-1 variable elimination); otherwise it falls back to the $O(\prod k_i)$ full-joint
+\code{marginalize}. The probing is clever but fragile: it recognizes only the one additive class.
+
+\textbf{What to build (design only --- Haskell \emph{or} JAX port).} Replace ``flatten to an opaque
+reconstructor, then fingerprint'' with ``\textbf{extract a factor graph from the bind chain directly},''
+exactly as Stochaskell keeps typed nodes instead of a closure: a \code{FactorGraph} built by walking the
+\code{LogVec}/formula AST (not by probing a closure); a contraction-order chooser computed once per
+formula shape; dispatch becomes structured-low-treewidth $\to$ TVE, additive $\to$ \code{logConvolve},
+densely-coupled $\to$ \code{marginalize}.
+
+\textbf{What it buys.} \emph{Conceptually:} the inference algorithm stops being \emph{guessed from
+samples of a black box} and starts being \emph{read off the program's real structure}. It generalizes
+from the single additive class to any factorizable predicate (products, comparisons, pairwise
+constraints), and it composes. \emph{Efficiency:} non-separable-but-low-treewidth predicates drop from
+$O(\prod k_i)$ to $O(n \cdot d^{w+1})$ in the formula's true treewidth (the worked
+$z = d_1 d_2 + d_3 d_4$ case falls from $\approx$0.4\,GB peak to $\approx$1.5\,MB).
+
+\textbf{Where it lands.} This is the symbolic-analysis face of the already-deferred TVE engine. Per
+\code{tensor-variable-elimination.md} the \emph{engine} stays a JAX-port item. The contribution here is
+to name the \textbf{Stochaskell pattern} --- keep typed structure, analyse it symbolically, never probe
+a closure --- as the concrete blueprint for \code{FactorGraph} extraction. \textbf{No Haskell code now.}
+
+\section*{(2) Stan / HMC code generation for the continuous \texttt{Giry} reading}
+
+\textbf{What Stochaskell does.} \code{Language/Stan.hs} ($\approx$500 lines) is a clean AST$\to$Stan
+translator worth reading as a template: \code{stanNode :: Label -> Node -> String} (one IR node $\to$
+one Stan statement); \code{stanPNode} (one distribution draw $\to$ one \code{\textasciitilde} sampling
+statement); \code{stanProgram :: PBlock -> String} (\code{:300}) assembles \code{functions / data /
+parameters / model} blocks, where \textbf{the split is driven by the \code{constraints}/\code{given}
+map} (observed $\to$ \code{data}, latent $\to$ \code{parameters}); \code{runStan} (\code{:443}) writes
+\code{.stan} $+$ \code{.data} $+$ \code{.init}, shells out to CmdStan, and reads samples back.
+\code{hmcStan n prog} (\code{:493}) is the one-line user entry point.
+
+\textbf{The NeSyCat analogue today.} The \code{Giry} monad (\code{A\_Categorical/Monads/Giry.hs}) is a
+\textbf{fully specified lazy AST} for continuous/countable measures, with an evaluator \code{GiryExpect}
+doing exact expectation via Romberg quadrature. But it is \textbf{dead code}: no example exercises it,
+no \code{A2MonBLat Giry Bool}, no \code{Giry} domain instance, no neural$\to$measure bridge.
+
+\textbf{What to build (design only).} A \code{StanGen} backend that walks the lazy \code{Giry} AST and
+emits a Stan program, mirroring \code{stanProgram}'s block-splitting; plus a \code{hmcStan}-style runner.
+
+\textbf{What it buys.} \emph{Conceptually:} turns the dormant continuous reading into something runnable
+and validates ``the axioms are the source code'' in a second, non-tensor target. \emph{Efficiency:} for
+continuous latents, HMC/NUTS via Stan vastly beats \code{GiryExpect}'s Romberg quadrature (which does
+not scale past a handful of dimensions).
+
+\textbf{The honest caveat (do not skip).} Stan codegen is \textbf{one-way sampling}: gradients do
+\textbf{not} flow from Stan's HMC back to the neural parameters $\theta$. So a Stan backend serves the
+\code{Giry}/\code{Dist} \textbf{evaluation and posterior-inference reading}, \emph{not} end-to-end
+neural training. Frame it as ``make the continuous reference semantics executable,'' not ``train
+continuous NeSy models'' --- matching how Stochaskell itself uses Stan.
+
+\textbf{Where it lands.} JAX port or a standalone \code{StanGen.hs} --- but only if a concrete
+continuous example justifies it. Design recorded; build deferred.
+
+\section*{(3) Monad comprehensions + guard-conditioning}
+
+\textbf{What Stochaskell does.} Two distinct things, often conflated. \emph{(a) Comprehension syntax:}
+with \code{MonadComprehensions}, \code{posterior = [ z | (z,y) <- prior, y ==* observed ]} desugars to
+\code{prior >>= \textbackslash(z,y) -> guard (y ==* observed) >> return z}. \emph{(b) Guard semantics =
+conditioning by substitution:} the \code{MonadGuard P} instance (\code{Data/Program.hs:746}) pattern-matches
+\code{Apply "==" [Var j, Const a]} and \textbf{removes \code{j} from the latent set, pinning it to the
+observed value} (which is what later sends it to Stan's \code{data} block). Conditioning \emph{is} the
+deletion-and-pin.
+
+\textbf{The NeSyCat analogue today.} Formulas are plain \code{do}-notation; observations already enter as
+$\eta$-lifted certain values (a one-hot \code{encode} \code{LogVec} leaf, bound \code{s <- n}).
+\code{MonadComprehensions} etc.\ are all disabled.
+
+\textbf{What to build (design only).} Split into the cheap part and the new part. \emph{Surface sugar
+(cheap):} enable \code{MonadComprehensions} (one line; \textbf{avoid \code{RebindableSyntax}}); the MNIST
+axiom can then read \code{[ s == d1+d2 | d1 <- digit x, d2 <- digit y, s <- n ]}. Pure ergonomics ---
+desugars to the existing do-notation, changes no semantics. \emph{Soft conditioning (the real idea):}
+Stochaskell's \code{guard (x == c)} pins a \emph{certain} observation; the generalization worth stealing
+is \textbf{uncertain} observation --- a likelihood weight per element, which in \code{LogVec} is just
+\textbf{adding a log-likelihood vector into the leaf} (a one-line generalization of \code{encode}). That
+is what lets an observation itself be a network output (noisy/soft labels).
+
+\textbf{What it buys.} \emph{Conceptually:} unifies data and model and aligns the surface with the PPL
+tradition the paper cites. \emph{Efficiency:} essentially none --- this is expressiveness, not speed. Be
+honest about that.
+
+\textbf{Where it lands.} Surface sugar: trivial. Soft conditioning: a small, contained extension to
+\code{Guard}/\code{encode} --- worth a prototype when an example needs uncertain observations. Both
+respect the applicative-bind invariant.
+
+\section*{(4) Metropolis-Hastings / reversible-jump MCMC --- a complementary evaluation mode}
+
+\textbf{What Stochaskell does.} Native in-Haskell inference where \textbf{the proposal is itself a
+probabilistic program}: \code{mh} and \textbf{automatically derived reversible-jump MCMC} (\code{rjmc})
+for trans-dimensional models. The Jacobian acceptance-ratio adjustment is solved by the \textbf{same
+expression-graph inversion} as (1). Trans-dimensional models are enabled by \textbf{abstract arrays whose
+dimensions are random variables}.
+
+\textbf{The NeSyCat analogue today.} \textbf{None.} Exact marginalization only, feeding gradient descent;
+no sampling-based posterior inference; rectangular fixed-size \code{[B,k]} arrays.
+
+\textbf{What to build (design only).} An MH sampler over the \code{Dist}/\code{Giry} \emph{evaluation}
+readings, as an alternative to enumeration when the support explodes. RJ-MCMC would additionally require
+relaxing rectangularity toward random-dimension arrays --- which is \emph{also} the prerequisite the
+paper names for \textbf{infinitary / variable-arity quantification}, so the two future-work items share a
+substrate.
+
+\textbf{The honest caveat.} This is the \textbf{furthest from NeSyCat's core}: an MH/RJ-MCMC mode would
+be a \textbf{non-differentiable, non-training} inference path that does \emph{not} touch the gradient-based
+training loop. Lowest priority; record it, don't build it unless a benchmark forces it.
+
+\section*{Summary --- value vs effort}
+
+\begin{center}
+\begin{tabular}{@{}p{0.20\textwidth}p{0.22\textwidth}p{0.20\textwidth}p{0.13\textwidth}p{0.15\textwidth}@{}}
+\toprule
+Steal & Conceptual win & Efficiency win & Effort/risk & Land where \\
+\midrule
+1. Symbolic IR analysis & inference read off real structure, not guessed & $O(\prod k_i) \to O(n d^{w+1})$ on factorizable predicates & medium & JAX port (design here $+$ TVE note) \\
+2. Stan codegen for \code{Giry} & dormant continuous reading runnable; 2nd target & HMC $\gg$ Romberg in $>2$-$3$ dims & medium; \textbf{one-way, no training} & gated on a real continuous example \\
+3. Comprehensions $+$ soft cond. & unifies data/model; aligns with PPL tradition & $\approx$none (ergonomics) & low & prototype when an example needs uncertain obs \\
+4. MH / RJ-MCMC & 3rd inference mode; path to infinitary quantification & scales evaluation past enumeration wall & high; \textbf{off the training path} & deferred; record only \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Two ideas pay off most and share one substrate:} keep typed structure and analyse it
+symbolically (1), and relax the rectangular-array invariant toward random-dimension arrays
+($4 \Rightarrow$ infinitary quantification). Both are \emph{the same lesson} --- \textbf{don't throw
+away the program's structure; the inference algorithm lives in it.}
+
+\section*{Paper edits (NeSy 2026 --- \texttt{nesy2026-paper.tex})}
+
+The paper should acknowledge this lineage (it currently cites only Staton 2017 and Pyro for PPL, and
+\emph{none} of the Haskell monadic-probability library tradition). Two cheap, defensible edits:
+
+\begin{enumerate}
+  \item \textbf{Related Work --- one sentence:} acknowledge monadic probabilistic programming embedded
+        in Haskell --- \textbf{Ramsey \& Pfeffer 2002} and \textbf{\'Scibior et al.\ (monad-bayes)} as
+        the canonical references, with \textbf{Stochaskell} (Roberts, Gallagher \& Taimre, AISTATS 2019,
+        PMLR 89:634--643) as the multi-backend ``common platform'' representative --- then the
+        differentiator: those systems target Bayesian posterior inference by sampling and have no logic
+        layer, neural symbols, or differentiable training-path semantics. \emph{Get the author list
+        right: the third author is \textbf{Taimre}, not ``Varghese.''} If only one Haskell-PPL citation
+        fits, choose \'Scibior et al.\ over Stochaskell. Do \textbf{not} cite it in the semantics or
+        training sections.
+  \item \textbf{Future Work --- ground two items:} point the \code{Giry}/continuous item at a Stan-style
+        code-generation backend (\S2) and the marginalization-engine item at symbolic factor-graph
+        analysis (\S1 $+$ \code{tensor-variable-elimination.md}). Turns vague ``future work'' into a
+        credible roadmap at near-zero length cost.
+\end{enumerate}
+
+\section*{References}
+
+\begin{itemize}
+  \item \textbf{Stochaskell / RJ-PP:} Roberts, Gallagher \& Taimre, \emph{Reversible Jump Probabilistic
+        Programming}, AISTATS 2019 (\url{https://proceedings.mlr.press/v89/roberts19a.html}); project
+        page \url{https://davidar.github.io/stochaskell/}; source
+        \url{https://github.com/davidar/stochaskell} (\code{Data/Expression.hs}, \code{Data/Program.hs},
+        \code{Language/Stan.hs}).
+  \item \textbf{Haskell monadic-probability lineage (for the citation):} Ramsey \& Pfeffer,
+        \emph{Stochastic Lambda Calculus and Monads of Probability Distributions}, POPL 2002; \'Scibior,
+        Kammar, Ghahramani et al., \emph{monad-bayes}, POPL 2018; Erwig \& Kollmansberger, \emph{PFP}.
+  \item \textbf{The TVE substrate (steal 1):} see \code{tensor-variable-elimination.md} (Obermeyer et
+        al.\ ICML 2019; \code{opt\_einsum}; \code{torch\_semiring\_einsum}; cotengra).
+  \item \textbf{PPL semantics the paper already cites:} Staton, ESOP 2017; Bingham et al., \emph{Pyro},
+        JMLR 2019; Obermeyer et al., ICML 2019.
+\end{itemize}
+
+\end{document}
