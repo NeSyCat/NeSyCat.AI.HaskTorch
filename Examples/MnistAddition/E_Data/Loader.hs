@@ -85,13 +85,13 @@ loadData = loadMnistDataset
 batches :: Int -> MnistDataset -> [(Torch.Tensor, Torch.Tensor, LogVec Int)]
 batches epoch ds =
   let (xs, ys, obs) = trainBatch ds
-      n = head (Torch.shape xs)
+      total = head (Torch.shape xs)
       mults = [997, 1031, 1033, 1039, 1049, 1051, 1061, 1063, 1069, 1087, 1091, 1093, 1097, 1103, 1109, 1117]
-      a = mults !! (epoch `mod` length mults) -- coprime to n (prime > 5), so the map is a bijection
-      perm = [(a * i + 137 * epoch) `mod` n | i <- [0 .. n - 1]]
+      a = mults !! (epoch `mod` length mults) -- coprime to total (prime > 5), so the map is a bijection
+      perm = [(a * i + 137 * epoch) `mod` total | i <- [0 .. total - 1]]
       gather t = Torch.indexSelect' 0 perm t -- shuffle the images (tensors) ...
       obsG = mapLeafWeights (Torch.indexSelect' 0 perm) obs -- ... and the observation leaf, in lockstep
       (xs', ys') = (gather xs, gather ys)
-      bs = 64
-      slice t s = Torch.sliceDim 0 s (min (s + bs) n) 1 t
-   in [(slice xs' s, slice ys' s, mapLeafWeights (\lw -> slice lw s) obsG) | s <- [0, bs .. n - 1]]
+      batchSize = 64
+      slice t start = Torch.sliceDim 0 start (min (start + batchSize) total) 1 t
+   in [(slice xs' start, slice ys' start, mapLeafWeights (\lw -> slice lw start) obsG) | start <- [0, batchSize .. total - 1]]
