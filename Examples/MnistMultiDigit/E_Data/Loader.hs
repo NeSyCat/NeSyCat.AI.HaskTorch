@@ -43,7 +43,7 @@ loadMultiDataset = do
     die ("MNIST data not found in " ++ mnistDir ++ "/. Run:  Examples/MnistAddition/E_Data/get-mnist.sh")
   (trainMD, testMD) <- V.initMnist mnistDir
   let nTr = 1500 -- LTN's small-data multi-digit setting (Table 2 "1500" column)
-      nTe = 1000
+      nTe = 2500 -- DeepProbLog's multi-digit test size (all 10000 t10k images / 4 = 2500 quadruples)
       buildQuads md nQuads =
         let idxAt off = [4 * i + off | i <- [0 .. nQuads - 1]]
             (x1i, x2i, y1i, y2i) = (idxAt 0, idxAt 1, idxAt 2, idxAt 3)
@@ -94,7 +94,7 @@ batches epoch ds =
       gather t = Torch.indexSelect' 0 perm t
       obsG = mapLeafWeights (Torch.indexSelect' 0 perm) obs
       (g1, g2, g3, g4) = (gather xs1, gather xs2, gather ys1, gather ys2)
-      bs = 64
+      bs = 32
       slice t s = Torch.sliceDim 0 s (min (s + bs) n) 1 t
    in [ (slice g1 s, slice g2 s, slice g3 s, slice g4 s, mapLeafWeights (\lw -> slice lw s) obsG)
         | s <- [0, bs .. n - 1]

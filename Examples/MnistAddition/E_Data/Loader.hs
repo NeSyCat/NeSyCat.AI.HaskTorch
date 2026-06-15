@@ -92,7 +92,7 @@ batches epoch ds =
       gather t = Torch.indexSelect' 0 perm t -- shuffle the images (tensors) ...
       obsG = mapLeafWeights (Torch.indexSelect' 0 perm) obs -- ... and the observation leaf, in lockstep
       (xs', ys') = (gather xs, gather ys)
-      batchSize = 64
+      batchSize = 32
       slice t start = Torch.sliceDim 0 start (min (start + batchSize) total) 1 t
    in [(pure (slice xs' start), pure (slice ys' start), mapLeafWeights (\lw -> slice lw start) obsG) | start <- [0, batchSize .. total - 1]]
       -- images are encoded at load: each batch carries them as @eta x = pure x :: LogVec Image@ (a certain leaf)

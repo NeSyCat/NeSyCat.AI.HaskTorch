@@ -20,18 +20,20 @@ import A_Categorical.Monads.Bridge (decode)
 import A_Categorical.Monads.Dist (Dist)
 import A_Categorical.Monads.LogVec (LogVec (..))
 import MnistMultiDigit.C_Domain.Signature
-import C_Domain.NeuralNets.MnistCNN (cnn, cnnArch)
+-- DPL-matched net (120 / ReLU, raw logits) for the DeepProbLog benchmark.
+-- For the LTN-matched comparison, swap cnnDPL/cnnArchDPL -> cnn/cnnArch (both exported from MnistCNN).
+import C_Domain.NeuralNets.MnistCNN (cnnDPL, cnnArchDPL)
 import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
 
--- | The parameter space: the pure weights of 'cnnArch' (one shared digit CNN for all four images).
+-- | The parameter space: the pure weights of 'cnnArchDPL' (one shared digit CNN for all four images).
 type Params = Weights
 
--- | Draw the initial theta_0 -- fresh weights for 'cnnArch'.
+-- | Draw the initial theta_0 -- fresh weights for 'cnnArchDPL'.
 initParams :: IO Params
-initParams = sampleWeights cnnArch
+initParams = sampleWeights cnnArchDPL
 
 instance MnistKlFun LogVec where
-  digit theta img = LogLeaf [0 .. 9] (cnn theta img) -- raw logits over 0..9 (no softmax)
+  digit theta img = LogLeaf [0 .. 9] (cnnDPL theta img) -- raw logits over 0..9 (no softmax)
 
 instance MnistKlFun Dist where
   digit theta = decode . digit @LogVec theta

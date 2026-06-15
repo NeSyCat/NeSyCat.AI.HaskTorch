@@ -9,6 +9,9 @@ module G_Statistical.Report
   ( Report (..),
     printReport,
     averageReports,
+    summarizeReports,
+    printSummary,
+    meanStd,
     runAverage,
     evaluate,
     runMetrics,
@@ -39,8 +42,36 @@ averageReports rs@(Report ms0 : _) =
   where
     n = fromIntegral (length rs)
 
+-- | Sample mean and (n-1) standard deviation -- the ONE reusable stat behind every
+--   "mean +/- std" the framework prints (seed-averaged metrics here; reusable for step-timing).
+meanStd :: [Double] -> (Double, Double)
+meanStd [] = (0, 0)
+meanStd xs = (m, s)
+  where
+    nn = fromIntegral (length xs)
+    m = sum xs / nn
+    s
+      | length xs < 2 = 0
+      | otherwise = sqrt (sum [(x - m) ^ (2 :: Int) | x <- xs] / (nn - 1))
+
+-- | Per-metric @(label, mean, std)@ over several reports, matched by metric position.
+summarizeReports :: [Report] -> [(String, Double, Double)]
+summarizeReports [] = []
+summarizeReports rs@(Report ms0 : _) =
+  [ (k, m, s)
+  | (i, (k, _)) <- zip [0 ..] ms0,
+    let (m, s) = meanStd [snd (ms !! i) | Report ms <- rs]
+  ]
+
+-- | Print a @label: mean +/- std@ block under a title.
+printSummary :: String -> [(String, Double, Double)] -> IO ()
+printSummary title rows = do
+  putStrLn ""
+  putStrLn (title ++ ":")
+  mapM_ (\(k, m, s) -> printf "  %-16s %.4f +/- %.4f\n" (k ++ ":") m s) rows
+
 -- | Run an experiment @n@ times: for n=1 print the single report, else a compact
---   per-run line then the field-wise average.
+--   per-run line then the field-wise mean +/- std (the seed-averaged report).
 runAverage :: String -> Int -> IO Report -> IO ()
 runAverage title 1 experiment = experiment >>= printReport title
 runAverage title n experiment = do
@@ -49,7 +80,7 @@ runAverage title n experiment = do
     r <- experiment
     printf "  Run %2d:  %s\n" (i :: Int) (summaryLine r)
     return r
-  printReport (title ++ printf " - average over %d runs" n) (averageReports reports)
+  printSummary (title ++ printf " - mean +/- std over %d runs" n) (summarizeReports reports)
   where
     summaryLine (Report ms) = intercalate "  " [printf "%s=%.4f" k v | (k, v) <- ms]
 
