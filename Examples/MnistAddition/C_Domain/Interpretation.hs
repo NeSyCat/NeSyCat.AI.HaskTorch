@@ -3,11 +3,13 @@
 -- | Interpretation I_gamma for MNIST single-digit addition. The sorts are monad-invariant plain
 --   types, so 'digit' is the only interpreted Kleisli function:
 --
---     digit \@LogVec = LogLeaf [0..9] . cnn theta       -- raw logits as a LogVec leaf
---     digit \@Dist   = decode . digit \@LogVec theta     -- the Dist reading is decode of that leaf
+--     digit \@LogVec theta = (>>= \img -> LogLeaf [0..9] (cnn theta img))   -- Kleisli extension (two-sided)
+--     digit \@Dist   theta = decode . digit \@LogVec theta . encDist          -- decode . dig^LogVec . encode (square 2)
 --
---   The observed sum @n@ is NOT interpreted here -- it enters the formula as a certain @m Natural@
---   (= @eta n@), provided by the D interpretation (the encode = batched @eta@).
+--   'digit' is now genuinely two-sided  (m)Image -> (m)Digit: the image enters as the certain
+--   monadic value @eta x@ (the encode = @pure@), exactly like the observed sum @eta n@, and the bind
+--   supplies the lift. On a certain image @eta x@ the left-unit law collapses this to the same
+--   @LogLeaf [0..9] (cnn theta x)@ as before, so the computation (and cost) is unchanged.
 module MnistAddition.C_Domain.Interpretation
   ( module MnistAddition.C_Domain.Signature,
     Params,
@@ -15,7 +17,7 @@ module MnistAddition.C_Domain.Interpretation
   )
 where
 
-import A_Categorical.Monads.Bridge (decode)
+import A_Categorical.Monads.Bridge (decode, encDist)
 import A_Categorical.Monads.Dist (Dist)
 import A_Categorical.Monads.LogVec (LogVec (..))
 import MnistAddition.C_Domain.Signature
@@ -30,8 +32,9 @@ initParams :: IO Params
 initParams = sampleWeights cnnArch
 
 instance MnistKlFun LogVec where
-  digit theta img = LogLeaf [0 .. 9] (cnn theta img) -- raw logits over 0..9
+  digit theta = (>>= (LogLeaf [0 .. 9] . cnn theta))   -- bind-lift of the image->digit classifier
+                                                       -- (its Image is a whole batch; the plate is the [B,_] axis)
 
 instance MnistKlFun Dist where
-  digit theta = decode . digit @LogVec theta
-    -- the Dist reading IS 'decode' of the LogVec leaf (an image is the same tensor)
+  -- Square 2 verbatim:  decode . (digit @LogVec) . encode,  encode = encDist (the Dist => LogVec section).
+  digit theta = decode . digit @LogVec theta . encDist

@@ -29,4 +29,7 @@ type Omega = Bool         -- the truth object
 -- | The neural digit classifier: the ONE monad-dependent symbol (its distribution monad @m@ is
 --   @Dist@ for the probability reading, @LogVec@ for the differentiable one).
 class (Monad m) => MnistKlFun m where
-  digit :: Weights -> Image -> m Digit
+  -- Two-sided ('NeSy') symbol  (m)Image -> (m)Digit: the image enters as a certain monadic
+  -- value @eta x@ (the encode), exactly like the sum @eta n@; 'digit' is the Kleisli extension
+  -- of the per-image CNN arrow.
+  digit :: Weights -> m Image -> m Digit

@@ -82,7 +82,7 @@ loadData = loadMnistDataset
 -- | Mini-batches of the training pairs (batch 64), re-SHUFFLED each epoch by a pure
 --   per-epoch permutation @i \mapsto (a_e i + c_e) \bmod n@ (with @a_e@ coprime to @n@),
 --   gathered via 'Torch.indexSelect''. Good SGD hygiene; deterministic in @epoch@ (no RNG).
-batches :: Int -> MnistDataset -> [(Torch.Tensor, Torch.Tensor, LogVec Int)]
+batches :: Int -> MnistDataset -> [(LogVec Torch.Tensor, LogVec Torch.Tensor, LogVec Int)]
 batches epoch ds =
   let (xs, ys, obs) = trainBatch ds
       total = head (Torch.shape xs)
@@ -94,4 +94,5 @@ batches epoch ds =
       (xs', ys') = (gather xs, gather ys)
       batchSize = 64
       slice t start = Torch.sliceDim 0 start (min (start + batchSize) total) 1 t
-   in [(slice xs' start, slice ys' start, mapLeafWeights (\lw -> slice lw start) obsG) | start <- [0, batchSize .. total - 1]]
+   in [(pure (slice xs' start), pure (slice ys' start), mapLeafWeights (\lw -> slice lw start) obsG) | start <- [0, batchSize .. total - 1]]
+      -- images are encoded at load: each batch carries them as @eta x = pure x :: LogVec Image@ (a certain leaf)

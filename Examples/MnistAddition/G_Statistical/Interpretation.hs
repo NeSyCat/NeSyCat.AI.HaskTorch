@@ -17,7 +17,7 @@ import qualified Torch
 
 predDigits :: Weights -> Torch.Tensor -> [Int]
 predDigits theta imgs =
-  Torch.asValue (Torch.argmax (Torch.Dim 1) Torch.RemoveDim (logVecLeafTensor (digit @LogVec theta imgs)))
+  Torch.asValue (Torch.argmax (Torch.Dim 1) Torch.RemoveDim (logVecLeafTensor (digit @LogVec theta (pure imgs))))
 
 fracEq :: [Int] -> [Int] -> Double
 fracEq a b = fromIntegral (length (filter id (zipWith (==) a b))) / fromIntegral (max 1 (length a))

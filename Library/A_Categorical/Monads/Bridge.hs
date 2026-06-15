@@ -18,6 +18,7 @@
 module A_Categorical.Monads.Bridge
   ( decode,
     encode,
+    encDist,
   )
 where
 
@@ -45,3 +46,14 @@ encode xs probs =
   let eps = 1e-13 :: Float
       clamped = (probs `Torch.mul` Torch.asTensor (1 - eps :: Float)) `Torch.add` Torch.asTensor (eps :: Float)
    in LV.LogLeaf xs (Torch.log clamped)
+
+-- | The @Dist => LogVec@ section as a monad morphism (the 'enc' of the section--retraction square):
+--   transport the free-monad structure, a finite distribution to its log-weight leaf. On a certain
+--   value @eta x = pure x@ it is just @pure x@ in 'LogVec' -- the case used by a two-sided neural
+--   symbol  @decode . dig\@LogVec theta . encDist@.
+encDist :: Dist a -> LogVec a
+encDist (Pure x)        = LV.Pure x
+encDist (Bind m k)      = LV.Bind (encDist m) (encDist . k)
+encDist (FiniteSupp xs) = encode (map fst xs) (Torch.asTensor [map (realToFrac . snd) xs :: [Float]])
+encDist (FinUniform xs) =
+  let k = length xs in encode xs (Torch.asTensor [replicate k (1 / fromIntegral k) :: [Float]])

@@ -36,7 +36,7 @@ data MnistAddition
 instance Example MnistAddition where
   type Params MnistAddition = C.Params
   type Data MnistAddition = E.Dataset
-  type Batch MnistAddition = (Torch.Tensor, Torch.Tensor, LogVec Int)
+  type Batch MnistAddition = (LogVec Torch.Tensor, LogVec Torch.Tensor, LogVec Int)
   type Truth MnistAddition = LogVec Bool
   initParams = C.initParams
   loadData = EL.loadData

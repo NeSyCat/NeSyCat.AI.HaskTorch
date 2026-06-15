@@ -108,6 +108,7 @@ marginalize prog satMask =
 --   digit-accuracy metric). Errors if not a 'LogLeaf'.
 logVecLeafTensor :: LogVec a -> Torch.Tensor
 logVecLeafTensor (LogLeaf _ lw) = lw
+logVecLeafTensor (Bind (Pure x) f) = logVecLeafTensor (f x) -- reduce a trivial (eta) bind: the left-unit law
 logVecLeafTensor _ = error "logVecLeafTensor: not a LogLeaf"
 
 -- | Apply a tensor map to a leaf's @[B,k]@ weights, keeping its support (e.g. to gather/slice a

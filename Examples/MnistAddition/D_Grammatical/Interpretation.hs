@@ -31,10 +31,10 @@ import C_Domain.NeuralNets.DSL.Semantics (Weights)
 --   'mnistAxiomTens'; the report reads per-pair via 'mnistFormula' directly.)
 mnistAxiomData :: Weights -> [(Image, Image, Natural)] -> Dist Bool
 mnistAxiomData theta dataset =
-  mnistSentence @Dist () [(x, y, pure n) | (x, y, n) <- dataset] theta
+  mnistSentence @Dist () [(pure x, pure y, pure n) | (x, y, n) <- dataset] theta
 
 -- | The @LogVec@ reading (differentiable training, the 'sat'): a pure pass-through. The batch
 --   ALREADY carries the observed sum as @eta n@ (a @LogVec Natural@ leaf, built by the E layer),
 --   so there is no lifting here -- just read the sentence at @\@LogVec@ over the batch.
-mnistAxiomTens :: Weights -> (Image, Image, LogVec Natural) -> LogVec Bool
+mnistAxiomTens :: Weights -> (LogVec Image, LogVec Image, LogVec Natural) -> LogVec Bool
 mnistAxiomTens theta batch = mnistSentence @LogVec () batch theta

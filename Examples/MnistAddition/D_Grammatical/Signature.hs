@@ -34,10 +34,10 @@ mnistFormula ::
   forall m.
   (MnistKlFun m) =>
   Weights ->
-  (Image, Image, m Natural) ->
+  (m Image, m Image, m Natural) ->
   m Omega
 mnistFormula theta (x, y, n) =
-    do d1 <- digit theta x
+    do d1 <- digit theta x   -- x, y, n all arrive encoded (eta) from the data
        d2 <- digit theta y
        s <- n
        return (s == (d1 + d2))
@@ -53,7 +53,7 @@ mnistSentence ::
     Monad m
   ) =>
   ParamsLogic Omega ->
-  Guard m (Image, Image, m Natural) ->
+  Guard m (m Image, m Image, m Natural) ->
   Weights ->
   m Omega
 mnistSentence lp guard theta =
