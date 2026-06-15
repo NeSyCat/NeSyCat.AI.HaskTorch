@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE InstanceSigs #-}
 
 -- | Interpretation I_gamma for MNIST single-digit addition. The sorts are monad-invariant plain
 --   types, so 'digit' is the only interpreted Kleisli function:
@@ -32,9 +33,9 @@ initParams :: IO Params
 initParams = sampleWeights cnnArch
 
 instance MnistKlFun LogVec where
-  digit theta = (>>= (LogLeaf [0 .. 9] . cnn theta))   -- bind-lift of the image->digit classifier
-                                                       -- (its Image is a whole batch; the plate is the [B,_] axis)
-
+  digit :: Weights -> LogVec Image -> LogVec Digit
+  digit theta = (>>= (LogLeaf [0 .. 9] . cnn theta))
+                                  
 instance MnistKlFun Dist where
-  -- Square 2 verbatim:  decode . (digit @LogVec) . encode,  encode = encDist (the Dist => LogVec section).
+  digit :: Weights -> Dist Image -> Dist Digit
   digit theta = decode . digit @LogVec theta . encDist
