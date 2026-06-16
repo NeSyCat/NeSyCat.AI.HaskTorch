@@ -3,7 +3,7 @@
 -- | Data layer (E) — the LOADER for the Binary example: produces a 'BinaryDataset'
 --   (the format from "Binary.E_Data.Signature"), prepared independently of any
 --   training or loss. Points are sampled and labelled by the domain's own
---   @labelA \@LogVec@ (the circle-in-square concept) -- data preparation, not training.
+--   @labelA \@LogTens@ (the circle-in-square concept) -- data preparation, not training.
 module Binary.E_Data.Loader
   ( generateBinaryDataset,
     loadData,

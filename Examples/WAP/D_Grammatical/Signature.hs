@@ -15,7 +15,7 @@
 --   m (Numbers, Answer)@, bound @(ns, y) <- obs@ exactly like the sketch decisions;
 --   'evalSketch' and @(==)@ are plain host ops on the bound values. Written ONCE; only the
 --   monad @m@ changes. The bind supplies the marginalization (the law of total probability
---   for @Dist@; the joint mask readout for @LogVec@ -- the sketch is non-separable, so the
+--   for @Dist@; the joint mask readout for @LogTens@ -- the sketch is non-separable, so the
 --   engine's exact fallback applies over the tiny 192 x |support| joint).
 module WAP.D_Grammatical.Signature
   ( wapFormula,
@@ -47,7 +47,7 @@ wapFormula theta (s, obs) = do
   return (evalSketch p o1 w o2 ns == Just y)
 
 -- | The SENTENCE: the whole quantified axiom, abstract over @m@. The guard is the data
---   quantified over (a list of pairs in @Dist@, the batched pair in @LogVec@); the
+--   quantified over (a list of pairs in @Dist@, the batched pair in @LogTens@); the
 --   universal is 'bigWedge'.
 wapSentence ::
   forall m.

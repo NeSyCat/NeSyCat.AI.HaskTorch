@@ -7,7 +7,7 @@
 -- | Grammatical layer (D) — SIGNATURE for the Binary example: the abstract binary
 --   classification formula (the axiom), monad-polymorphic over @m@. Uses
 --   bigWedge from A2MonBLat for quantification; this single formula is
---   read in both monads in 'Binary.D_Grammatical.Interpretation' (@Dist@ / @LogVec@).
+--   read in both monads in 'Binary.D_Grammatical.Interpretation' (@Dist@ / @LogTens@).
 module Binary.D_Grammatical.Signature
   ( binaryPredicate,
     binarySentence,

@@ -6,8 +6,8 @@
 --   types (a point is a tensor in both readings), so there is no per-monad sort assignment
 --   and no @encPoint@ bridge. The only monad-dependent content is the two Kleisli relations:
 --
---     classifierA \@LogVec = LogLeaf [True,False] . mlp theta    -- raw logits over {True,False}
---     classifierA \@Dist   = decode . classifierA \@LogVec theta  -- the Dist reading is decode of that
+--     classifierA \@LogTens = LogLeaf [True,False] . mlp theta    -- raw logits over {True,False}
+--     classifierA \@Dist   = decode . classifierA \@LogTens theta  -- the Dist reading is decode of that
 --     labelA       = the circle test as a CERTAIN distribution (delta) -- 'encode' of an observation
 module Binary.C_Domain.Interpretation
   ( module Binary.C_Domain.Signature,
@@ -18,7 +18,7 @@ where
 
 import A_Categorical.Monads.Bridge (decode, encode)
 import A_Categorical.Monads.Dist (Dist)
-import A_Categorical.Monads.LogVec (LogVec (..))
+import A_Categorical.Monads.LogTens (LogTens (..))
 import Binary.C_Domain.Signature (BinaryKlRel (..), BinaryRel (..))
 import C_Domain.NeuralNets.MLP (mlp, mlpArch)
 import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
@@ -44,8 +44,8 @@ circleTest pt =
 instance BinaryRel Dist where
   labelA pt = pure (circleTest pt) -- a certain distribution on the ground-truth label
 
-instance BinaryRel LogVec where
-  -- the label as a batched CERTAIN distribution: a one-hot delta per batch row (the @LogVec@
+instance BinaryRel LogTens where
+  -- the label as a batched CERTAIN distribution: a one-hot delta per batch row (the @LogTens@
   -- analogue of MNIST's observed sum); the circle test over the whole [B,2] batch, then the
   -- bridge 'encode' (the @encode@ of the observation).
   labelA pt =
@@ -58,10 +58,10 @@ instance BinaryRel LogVec where
      in encode [True, False] oneHot
 
 instance BinaryKlRel Dist where
-  -- the Dist reading IS 'decode' of the LogVec leaf (a point is the same tensor; reshape the
+  -- the Dist reading IS 'decode' of the LogTens leaf (a point is the same tensor; reshape the
   -- single [2] point to [1,2] for the net).
-  classifierA theta pt = decode (classifierA @LogVec theta (Torch.reshape [1, 2] pt))
+  classifierA theta pt = decode (classifierA @LogTens theta (Torch.reshape [1, 2] pt))
 
-instance BinaryKlRel LogVec where
-  -- the classifier as a Bernoulli over {True,False}: the net's two raw logits as a LogVec leaf.
+instance BinaryKlRel LogTens where
+  -- the classifier as a Bernoulli over {True,False}: the net's two raw logits as a LogTens leaf.
   classifierA theta = LogLeaf [True, False] . mlp theta -- [B,2] raw logits

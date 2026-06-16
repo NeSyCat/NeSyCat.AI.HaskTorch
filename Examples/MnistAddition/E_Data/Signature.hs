@@ -1,6 +1,6 @@
 -- | Data layer (E) — SIGNATURE for the MNIST example: the fixed FORMAT of the
 --   data. @trainBatch@ is the differentiable training input (images x, images y, and the observed
---   sum already as @eta n@ -- a @LogVec Int@ leaf over [0..18], the distributional format the axiom
+--   sum already as @eta n@ -- a @LogTens Int@ leaf over [0..18], the distributional format the axiom
 --   binds); the @*Img@/@*Lab@/@*Sums@ fields back the (argmax) accuracy report. What the data IS,
 --   independent of how it is loaded (loading is the Loader's job, "MnistAddition.E_Data.Loader").
 module MnistAddition.E_Data.Signature
@@ -9,12 +9,12 @@ module MnistAddition.E_Data.Signature
   )
 where
 
-import A_Categorical.Monads.LogVec (LogVec)
+import A_Categorical.Monads.LogTens (LogTens)
 import qualified Torch
 
--- | A dataset of MNIST image pairs and their observed sums (the sum as a @LogVec Int@ leaf).
+-- | A dataset of MNIST image pairs and their observed sums (the sum as a @LogTens Int@ leaf).
 data MnistDataset = MnistDataset
-  { trainBatch :: (Torch.Tensor, Torch.Tensor, LogVec Int),
+  { trainBatch :: (Torch.Tensor, Torch.Tensor, LogTens Int),
     trainXImg :: Torch.Tensor,
     trainYImg :: Torch.Tensor,
     trainSums :: [Int],

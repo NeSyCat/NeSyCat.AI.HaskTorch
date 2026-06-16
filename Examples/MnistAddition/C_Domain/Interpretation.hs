@@ -4,8 +4,8 @@
 -- | Interpretation I_gamma for MNIST single-digit addition. The sorts are monad-invariant plain
 --   types, so 'digit' is the only interpreted Kleisli function:
 --
---     digit \@LogVec theta = (>>= \img -> LogLeaf [0..9] (cnn theta img))   -- Kleisli extension (two-sided)
---     digit \@Dist   theta = decode . digit \@LogVec theta . encDist          -- decode . dig^LogVec . encode (square 2)
+--     digit \@LogTens theta = (>>= \img -> LogLeaf [0..9] (cnn theta img))   -- Kleisli extension (two-sided)
+--     digit \@Dist   theta = decode . digit \@LogTens theta . encDist          -- decode . dig^LogTens . encode (square 2)
 --
 --   'digit' is now genuinely two-sided  (m)Image -> (m)Digit: the image enters as the certain
 --   monadic value @eta x@ (the encode = @pure@), exactly like the observed sum @eta n@, and the bind
@@ -20,7 +20,7 @@ where
 
 import A_Categorical.Monads.Bridge (decode, encDist)
 import A_Categorical.Monads.Dist (Dist)
-import A_Categorical.Monads.LogVec (LogVec (..))
+import A_Categorical.Monads.LogTens (LogTens (..))
 import MnistAddition.C_Domain.Signature
 import C_Domain.NeuralNets.MnistCNN (cnn, cnnArch)
 import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
@@ -32,10 +32,10 @@ type Params = Weights
 initParams :: IO Params
 initParams = sampleWeights cnnArch
 
-instance MnistKlFun LogVec where
-  digit :: Weights -> LogVec Image -> LogVec Digit
+instance MnistKlFun LogTens where
+  digit :: Weights -> LogTens Image -> LogTens Digit
   digit theta = (>>= (LogLeaf [0 .. 9] . cnn theta))
                                   
 instance MnistKlFun Dist where
   digit :: Weights -> Dist Image -> Dist Digit
-  digit theta = decode . digit @LogVec theta . encDist
+  digit theta = decode . digit @LogTens theta . encDist

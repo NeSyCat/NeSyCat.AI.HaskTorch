@@ -12,7 +12,7 @@ module WAP.E_Data.Loader
 where
 
 import A_Categorical.Monads.Bridge (encode)
-import A_Categorical.Monads.LogVec (LogVec)
+import A_Categorical.Monads.LogTens (LogTens)
 import Control.Monad (unless)
 import Data.Char (isDigit)
 import Data.List (nub)
@@ -69,11 +69,11 @@ loadData = loadWapDataset
 -- | Mini-batches of the training problems (batch 10, the reference DataLoader size),
 --   re-SHUFFLED each epoch by a pure per-epoch permutation @i \mapsto (a_e i + c_e) \bmod n@
 --   (with @a_e@ coprime to @n@) -- the same deterministic SGD hygiene as the MNIST examples.
---   Each batch carries its observation as @\eta (ns, y)@: a one-hot @LogVec@ leaf over the
+--   Each batch carries its observation as @\eta (ns, y)@: a one-hot @LogTens@ leaf over the
 --   batch's DISTINCT (numbers, answer) pairs (the @encode@ of the certain observation --
 --   the distributional format the axiom binds, built HERE so the D interpretation is a pure
 --   pass-through, exactly the MNIST pattern).
-batches :: Int -> WapDataset -> [([Problem], LogVec (Numbers, Answer))]
+batches :: Int -> WapDataset -> [([Problem], LogTens (Numbers, Answer))]
 batches epoch ds =
   let items = trainItems ds
       n = length items

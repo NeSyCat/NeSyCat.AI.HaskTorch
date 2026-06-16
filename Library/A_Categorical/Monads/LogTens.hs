@@ -1,9 +1,9 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE InstanceSigs #-}
 
--- | The LogVec monad: the log-space sibling of 'Dist'. A free monad
+-- | The LogTens monad: the log-space sibling of 'Dist'. A free monad
 --   whose leaves carry a batched, log-weighted finite support -- i.e. the
---   function-space / free-module functor  @Vec a = (a -> R)@  realized over the LOG
+--   function-space / free-module functor  @Tens a = (a -> R)@  realized over the LOG
 --   semiring @(R, +, LogSumExp)@ with the weights kept as a 'Torch.Tensor' so autograd
 --   survives. Its Kleisli BIND is the (log-space) convolution / law of total
 --   probability: this is what lets the do-notation lift @plus = (+)@ to the
@@ -11,11 +11,11 @@
 --
 --   Finiteness is NOT intrinsic to the monad -- the construction @a |-> (a -> R)@ is
 --   the representable functor for ANY @a@. It is only what the interpreter
---   ("A_Categorical.Monads.LogVecExpect") needs to MATERIALIZE the bind as a
+--   ("A_Categorical.Monads.LogTensExpect") needs to MATERIALIZE the bind as a
 --   dense tensor (a finite sum = the discrete convolution). The continuous case
 --   (an integral = the general convolution) is the 'Giry' monad.
-module A_Categorical.Monads.LogVec
-  ( LogVec (..),
+module A_Categorical.Monads.LogTens
+  ( LogTens (..),
   )
 where
 
@@ -23,10 +23,10 @@ import Control.Monad (ap)
 import qualified Torch
 
 -- | A finitely-supported, batched, log-weighted distribution as a free monad.
-data LogVec a where
-  Pure :: a -> LogVec a
-  Bind :: LogVec x -> (x -> LogVec a) -> LogVec a
-  LogLeaf :: [a] -> Torch.Tensor -> LogVec a
+data LogTens a where
+  Pure :: a -> LogTens a
+  Bind :: LogTens x -> (x -> LogTens a) -> LogTens a
+  LogLeaf :: [a] -> Torch.Tensor -> LogTens a
   -- | @LogLeaf xs lw@: support @xs@ (length @k@) with per-batch log-weights
   --   @lw :: [B,k]@ (column @j@ is the unnormalized log-weight of @xs !! j@).
   --   Autograd lives in @lw@; @xs@ is host data (the enumerable index set).
@@ -41,22 +41,22 @@ data LogVec a where
   --   @logNumDen@, never bound or @collectLeaves@d. (The one @Bool@-specific node in this otherwise
   --   polymorphic monad: a general @a@ reduces only to a full support vector, i.e. a 'LogLeaf'; the
   --   @(num, den)@ collapse is exactly the indicator/@Bool@ case.)
-  LogReduced :: Torch.Tensor -> Torch.Tensor -> LogVec Bool
+  LogReduced :: Torch.Tensor -> Torch.Tensor -> LogTens Bool
 
-instance Functor LogVec where
-  fmap :: (a -> b) -> LogVec a -> LogVec b
+instance Functor LogTens where
+  fmap :: (a -> b) -> LogTens a -> LogTens b
   fmap f m = Bind m (Pure . f)
 
-instance Applicative LogVec where
-  pure :: a -> LogVec a
+instance Applicative LogTens where
+  pure :: a -> LogTens a
   pure = Pure
 
-  (<*>) :: LogVec (a -> b) -> LogVec a -> LogVec b
+  (<*>) :: LogTens (a -> b) -> LogTens a -> LogTens b
   (<*>) = ap
 
-instance Monad LogVec where
-  return :: a -> LogVec a
+instance Monad LogTens where
+  return :: a -> LogTens a
   return = pure
 
-  (>>=) :: LogVec a -> (a -> LogVec b) -> LogVec b
+  (>>=) :: LogTens a -> (a -> LogTens b) -> LogTens b
   (>>=) = Bind

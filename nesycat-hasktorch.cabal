@@ -20,8 +20,8 @@ library
       A_Categorical.Monads.DistExpect
       A_Categorical.Monads.Giry
       A_Categorical.Monads.GiryExpect
-      A_Categorical.Monads.LogVec
-      A_Categorical.Monads.LogVecExpect
+      A_Categorical.Monads.LogTens
+      A_Categorical.Monads.LogTensExpect
       B_Logical.Interpretations.Boolean
       B_Logical.Interpretations.TensorBool
       B_Logical.Library.PMean

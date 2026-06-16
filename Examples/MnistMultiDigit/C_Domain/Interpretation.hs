@@ -4,8 +4,8 @@
 --   'digit' is the only interpreted Kleisli function -- and it is EXACTLY the single-digit interpretation
 --   (the same @cnnArch@ classifier, reused per image):
 --
---     digit \@LogVec = LogLeaf [0..9] . cnn theta       -- raw logits as a LogVec leaf
---     digit \@Dist   = decode . digit \@LogVec theta     -- the Dist reading is decode of that leaf
+--     digit \@LogTens = LogLeaf [0..9] . cnn theta       -- raw logits as a LogTens leaf
+--     digit \@Dist   = decode . digit \@LogTens theta     -- the Dist reading is decode of that leaf
 --
 --   The observed sum @n@ is NOT interpreted here -- it enters the formula as a certain @m Natural@
 --   (= @eta n@), provided by the E layer (the @encode@ = batched @eta@).
@@ -18,7 +18,7 @@ where
 
 import A_Categorical.Monads.Bridge (decode)
 import A_Categorical.Monads.Dist (Dist)
-import A_Categorical.Monads.LogVec (LogVec (..))
+import A_Categorical.Monads.LogTens (LogTens (..))
 import MnistMultiDigit.C_Domain.Signature
 -- DPL-matched net (120 / ReLU, raw logits) for the DeepProbLog benchmark.
 -- For the LTN-matched comparison, swap cnnDPL/cnnArchDPL -> cnn/cnnArch (both exported from MnistCNN).
@@ -32,8 +32,8 @@ type Params = Weights
 initParams :: IO Params
 initParams = sampleWeights cnnArchDPL
 
-instance MnistKlFun LogVec where
+instance MnistKlFun LogTens where
   digit theta img = LogLeaf [0 .. 9] (cnnDPL theta img) -- raw logits over 0..9 (no softmax)
 
 instance MnistKlFun Dist where
-  digit theta = decode . digit @LogVec theta
+  digit theta = decode . digit @LogTens theta

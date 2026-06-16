@@ -2,7 +2,7 @@
 
 -- | Data layer (E) — the LOADER for the MNIST multi-digit example: reads the IDX files and forms
 --   the 'MultiDataset'. Image QUADRUPLES (x1,x2 = a two-digit number A; y1,y2 = a two-digit number
---   B), the observed sums @N = number A + number B@ in [0..198] as @eta n@ (a @LogVec Int@ leaf over
+--   B), the observed sums @N = number A + number B@ in [0..198] as @eta n@ (a @LogTens Int@ leaf over
 --   [0..198], the distributional format the axiom binds), and the per-digit labels used to score
 --   accuracy. Only sums are "observed". Reuses the IDX files shipped with the single-digit example
 --   (@Examples/MnistAddition/E_Data/@).
@@ -14,8 +14,8 @@ module MnistMultiDigit.E_Data.Loader
 where
 
 import A_Categorical.Monads.Bridge (encode)
-import A_Categorical.Monads.LogVec (LogVec)
-import A_Categorical.Monads.LogVecExpect (mapLeafWeights)
+import A_Categorical.Monads.LogTens (LogTens)
+import A_Categorical.Monads.LogTensExpect (mapLeafWeights)
 import Control.Monad (unless)
 import MnistMultiDigit.E_Data.Signature (Dataset, MultiDataset (..))
 import System.Directory (doesFileExist)
@@ -57,7 +57,7 @@ loadMultiDataset = do
          in (imgs x1i, imgs x2i, imgs y1i, imgs y2i, l1, l2, l3, l4, sums)
       (trX1, trX2, trY1, trY2, _, _, _, _, trS) = buildQuads trainMD nTr
       (teX1, teX2, teY1, teY2, te1, te2, te3, te4, teS) = buildQuads testMD nTe
-      -- the observed sums, already in the right (distributional) format: @eta n@ as a LogVec leaf
+      -- the observed sums, already in the right (distributional) format: @eta n@ as a LogTens leaf
       -- over [0..198] (one-hot, encoded). Built ONCE here; mini-batched by 'batches'.
       oneHot ss = Torch.asTensor [[if s == k then 1.0 else 0.0 :: Float | k <- [0 .. 198]] | s <- ss]
       obsAll = encode [0 .. 198] (oneHot trS)
@@ -84,7 +84,7 @@ loadData = loadMultiDataset
 -- | Mini-batches of the training quadruples (batch 64), re-SHUFFLED each epoch by a pure per-epoch
 --   permutation (a bijection; deterministic in @epoch@, no RNG). The four image tensors and the
 --   observation leaf are gathered/sliced in lockstep.
-batches :: Int -> MultiDataset -> [(Torch.Tensor, Torch.Tensor, Torch.Tensor, Torch.Tensor, LogVec Int)]
+batches :: Int -> MultiDataset -> [(Torch.Tensor, Torch.Tensor, Torch.Tensor, Torch.Tensor, LogTens Int)]
 batches epoch ds =
   let (xs1, xs2, ys1, ys2, obs) = trainBatch ds
       n = head (Torch.shape xs1)

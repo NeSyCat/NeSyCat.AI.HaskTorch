@@ -6,13 +6,13 @@
 --   encoder ('C_Domain.NeuralNets.WapRNN') and the per-problem representations are stacked
 --   to @[B, 4096]@. The trunk is a DETERMINISTIC computational Fun symbol; its \eta-lift
 --   'repS' is the class DEFAULT (defined once in the signature), so the instances assign
---   only the heads -- each its raw logits as a @LogVec@ leaf over the bound representation:
+--   only the heads -- each its raw logits as a @LogTens@ leaf over the bound representation:
 --
 --     repF             = stack . map (gather . bigru . embed)   -- the trunk (Fun, monad-free)
---     permuteS \@LogVec = LogLeaf [0..5]       . head_0          -- [B, 6] raw logits
---     op1S     \@LogVec = LogLeaf [0..3]       . head_1          -- [B, 4]
---     swapS    \@LogVec = LogLeaf [False,True] . head_2          -- [B, 2]
---     op2S     \@LogVec = LogLeaf [0..3]       . head_3          -- [B, 4]
+--     permuteS \@LogTens = LogLeaf [0..5]       . head_0          -- [B, 6] raw logits
+--     op1S     \@LogTens = LogLeaf [0..3]       . head_1          -- [B, 4]
+--     swapS    \@LogTens = LogLeaf [False,True] . head_2          -- [B, 2]
+--     op2S     \@LogTens = LogLeaf [0..3]       . head_3          -- [B, 4]
 --
 --   and the @Dist@ readings are 'decode' of the corresponding leaves on a singleton batch,
 --   exactly as @digit \@Dist@ is for MNIST.
@@ -25,7 +25,7 @@ where
 
 import A_Categorical.Monads.Bridge (decode)
 import A_Categorical.Monads.Dist (Dist)
-import A_Categorical.Monads.LogVec (LogVec (..))
+import A_Categorical.Monads.LogTens (LogTens (..))
 import C_Domain.NeuralNets.DSL.Semantics (Weights, sampleWeights)
 import C_Domain.NeuralNets.WapRNN (wapArch, wapHeadLogits, wapRep)
 import WAP.C_Domain.Signature
@@ -58,14 +58,14 @@ instance WapFun where
   repF theta ps = Torch.stack (Torch.Dim 0) (map (wapRep theta) ps)
 
 -- 'repS' = the class default (the \eta-lift of 'repF'); the instances supply the heads.
-instance WapKlFun LogVec where
+instance WapKlFun LogTens where
   permuteS theta r = LogLeaf [0 .. 5] (wapHeadLogits 0 theta r)
   op1S theta r = LogLeaf [0 .. 3] (wapHeadLogits 1 theta r)
   swapS theta r = LogLeaf [False, True] (wapHeadLogits 2 theta r)
   op2S theta r = LogLeaf [0 .. 3] (wapHeadLogits 3 theta r)
 
 instance WapKlFun Dist where
-  permuteS theta = decode . permuteS @LogVec theta
-  op1S theta = decode . op1S @LogVec theta
-  swapS theta = decode . swapS @LogVec theta
-  op2S theta = decode . op2S @LogVec theta
+  permuteS theta = decode . permuteS @LogTens theta
+  op1S theta = decode . op1S @LogTens theta
+  swapS theta = decode . swapS @LogTens theta
+  op2S theta = decode . op2S @LogTens theta

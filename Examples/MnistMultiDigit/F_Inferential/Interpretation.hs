@@ -1,6 +1,6 @@
 -- | Inference layer (F) — INTERPRETATION for the MNIST multi-digit example: ONLY the training
---   hyper-parameters. The satisfaction is a @LogVec Bool@, so it REUSES the library's shared
---   @instance InferenceSignature (LogVec Bool)@ (in "F_Inferential.InferenceInterpretation") --
+--   hyper-parameters. The satisfaction is a @LogTens Bool@, so it REUSES the library's shared
+--   @instance InferenceSignature (LogTens Bool)@ (in "F_Inferential.InferenceInterpretation") --
 --   there is no instance to declare here. The generic objective @lossKnow . sat@ (in "Example")
 --   penalizes the @sat@ exported by D.
 module MnistMultiDigit.F_Inferential.Interpretation (trainConfig) where

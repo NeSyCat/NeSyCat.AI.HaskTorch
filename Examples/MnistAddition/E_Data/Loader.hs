@@ -3,7 +3,7 @@
 -- | Data layer (E) — the LOADER for the MNIST example: reads the IDX files and
 --   forms the 'MnistDataset' format (from "MnistAddition.E_Data.Signature"),
 --   prepared independently of any training or loss. Image pairs (x, y), the
---   observed sums as @eta n@ (a LogVec leaf over [0..18], the distributional format the axiom binds),
+--   observed sums as @eta n@ (a LogTens leaf over [0..18], the distributional format the axiom binds),
 --   and the per-pair sums/labels used to score accuracy. Only sums are "observed"; digit labels build the sums
 --   and score afterwards. The raw IDX files sit beside this module in @E_Data/@
 --   (see @Examples/MnistAddition/E_Data/get-mnist.sh@).
@@ -15,8 +15,8 @@ module MnistAddition.E_Data.Loader
 where
 
 import A_Categorical.Monads.Bridge (encode)
-import A_Categorical.Monads.LogVec (LogVec)
-import A_Categorical.Monads.LogVecExpect (mapLeafWeights)
+import A_Categorical.Monads.LogTens (LogTens)
+import A_Categorical.Monads.LogTensExpect (mapLeafWeights)
 import Control.Monad (unless)
 import MnistAddition.E_Data.Signature (Dataset, MnistDataset (..))
 import System.Directory (doesFileExist)
@@ -57,7 +57,7 @@ loadMnistDataset = do
          in (imgs xIdx, imgs yIdx, xLab, yLab, zipWith (+) xLab yLab)
       (trX, trY, _, _, trS) = buildPairs trainMD nTr
       (teX, teY, teXL, teYL, teS) = buildPairs testMD nTe
-      -- the observed sums, already in the right (distributional) format: @eta n@ as a LogVec leaf
+      -- the observed sums, already in the right (distributional) format: @eta n@ as a LogTens leaf
       -- over [0..18] (one-hot, encoded). Built ONCE here; mini-batched by 'batches'. The D layer
       -- then just binds it (@s <- n@) -- no lifting in the interpretation.
       oneHot ss = Torch.asTensor [[if s == k then 1.0 else 0.0 :: Float | k <- [0 .. 18]] | s <- ss]
@@ -82,7 +82,7 @@ loadData = loadMnistDataset
 -- | Mini-batches of the training pairs (batch 64), re-SHUFFLED each epoch by a pure
 --   per-epoch permutation @i \mapsto (a_e i + c_e) \bmod n@ (with @a_e@ coprime to @n@),
 --   gathered via 'Torch.indexSelect''. Good SGD hygiene; deterministic in @epoch@ (no RNG).
-batches :: Int -> MnistDataset -> [(LogVec Torch.Tensor, LogVec Torch.Tensor, LogVec Int)]
+batches :: Int -> MnistDataset -> [(LogTens Torch.Tensor, LogTens Torch.Tensor, LogTens Int)]
 batches epoch ds =
   let (xs, ys, obs) = trainBatch ds
       total = head (Torch.shape xs)
@@ -95,4 +95,4 @@ batches epoch ds =
       batchSize = 32
       slice t start = Torch.sliceDim 0 start (min (start + batchSize) total) 1 t
    in [(pure (slice xs' start), pure (slice ys' start), mapLeafWeights (\lw -> slice lw start) obsG) | start <- [0, batchSize .. total - 1]]
-      -- images are encoded at load: each batch carries them as @eta x = pure x :: LogVec Image@ (a certain leaf)
+      -- images are encoded at load: each batch carries them as @eta x = pure x :: LogTens Image@ (a certain leaf)

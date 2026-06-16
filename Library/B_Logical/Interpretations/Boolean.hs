@@ -39,7 +39,7 @@ type instance Guard Dist a = [a]
 ------------------------------------------------------
 -- TwoMonBLat: the connective interpretation (Boolean lattice + the two monoids). Universe-free
 -- -- this crisp @Bool@ truth algebra is shared by every interpretation (the @Dist Bool@
--- and @LogVec Bool@ readings); only the quantifiers ('A2MonBLat', below for Dist) pick a monad.
+-- and @LogTens Bool@ readings); only the quantifiers ('A2MonBLat', below for Dist) pick a monad.
 ------------------------------------------------------
 
 instance TwoMonBLat Bool where

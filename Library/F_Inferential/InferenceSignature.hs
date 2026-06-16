@@ -36,7 +36,7 @@ class InferenceSignature cat where
   lossKnow :: cat -> Loss cat
 
   -- | Data loss (prediction vs label): OPTIONAL. A purely knowledge-driven reading (e.g.
-  --   @LogVec Bool@, whose objective is @lossKnow . sat@) leaves it at the default, which errors
+  --   @LogTens Bool@, whose objective is @lossKnow . sat@) leaves it at the default, which errors
   --   only if a supervised data loss is ever actually requested -- so no probability has to be
   --   materialized for a loss that is never used.
   lossData :: cat -> cat -> Loss cat

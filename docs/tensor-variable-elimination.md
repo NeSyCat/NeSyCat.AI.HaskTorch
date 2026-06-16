@@ -9,7 +9,7 @@
 
 The Haskell prototype's marginalization engine is **already optimal for everything we run**:
 
-- The additive / separable class (MNIST addition, multi-digit, weighted sums, counts, Binary's `iff`) routes through **`logConvolve`** (`Library/A_Categorical/Monads/LogVecExpect.hs`) — exact log-space **variable elimination on a treewidth-1 chain**. Peak `[B, maxSum+1]`, fully differentiable, normalized.
+- The additive / separable class (MNIST addition, multi-digit, weighted sums, counts, Binary's `iff`) routes through **`logConvolve`** (`Library/A_Categorical/Monads/LogTensExpect.hs`) — exact log-space **variable elimination on a treewidth-1 chain**. Peak `[B, maxSum+1]`, fully differentiable, normalized.
 - Genuinely non-separable predicates fall back to the full-joint **`marginalize`** (kept as the correctness oracle), which is `O(∏ kᵢ)` and explodes.
 
 A **general Tensor Variable Elimination engine** is the right way to handle non-separable-but-low-treewidth predicates exactly. But building it **in Haskell is overkill right now**:
@@ -37,9 +37,9 @@ loss = -log P( predicate(latents) == observation | inputs )
 
 | Haskell artifact | role | TVE interpretation |
 |---|---|---|
-| `logScatter` (`LogVecExpect.hs`) | per-bin logsumexp scatter | **one log-semiring contraction step** |
-| `logConvolve` (`LogVecExpect.hs`) | fold additive leaves → `[B,maxSum+1]` | **TVE on a treewidth-1 chain** (the optimal order for `+`) |
-| `marginalize` (`LogVecExpect.hs`) | full `[B, k₀…kₙ]` joint + logsumexp | **TVE at the worst order** (one dense factor over all vars) |
+| `logScatter` (`LogTensExpect.hs`) | per-bin logsumexp scatter | **one log-semiring contraction step** |
+| `logConvolve` (`LogTensExpect.hs`) | fold additive leaves → `[B,maxSum+1]` | **TVE on a treewidth-1 chain** (the optimal order for `+`) |
+| `marginalize` (`LogTensExpect.hs`) | full `[B, k₀…kₙ]` joint + logsumexp | **TVE at the worst order** (one dense factor over all vars) |
 | `logNumDenConv` probe (`TensorBool.hs`) | detect `obs == base + Σ cᵢ(xᵢ)` | recovers the additive (chain) factor structure |
 | `logNumDen` dispatch (`TensorBool.hs`) | `Just`→convolve / `Nothing`→marginalize | where a TVE branch would slot in |
 
@@ -97,7 +97,7 @@ result:  z == p1 + p2                       # ADDITIVE residual → ordinary con
 
 This is also the general lesson: **TVE = contract the tightly-coupled sub-factors first (products), leaving a low-treewidth residual (the sum) for the cheap path.** The polynomial is the smallest example that shows it.
 
-> Note: in the Haskell prototype this was fully designed and validated (the `mergeWith` pre-merge makes the residual pass the existing additive probe → routes to `logConvolve` with no dispatch change). It was **not implemented** — deferred here on purpose. The validation lives in the conversation/plan history; the primitive body is `git show new-seqop:Library/A_Categorical/DSL/Sem.hs` (the `SemMonad LogVec.seqop` binary case).
+> Note: in the Haskell prototype this was fully designed and validated (the `mergeWith` pre-merge makes the residual pass the existing additive probe → routes to `logConvolve` with no dispatch change). It was **not implemented** — deferred here on purpose. The validation lives in the conversation/plan history; the primitive body is `git show new-seqop:Library/A_Categorical/DSL/Sem.hs` (the `SemMonad LogTens.seqop` binary case).
 
 ---
 

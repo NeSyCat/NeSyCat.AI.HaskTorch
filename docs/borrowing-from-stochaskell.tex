@@ -53,13 +53,13 @@ ways, and that is exactly what makes a handful of its techniques worth lifting:
 Stochaskell & NeSyCat analogue & The shared move \\
 \midrule
 \code{P} monad reifies to a typed expression-graph IR (\code{Data/Expression.hs}) &
-\code{Dist}/\code{Giry}/\code{LogVec} are free-monad GADTs (\code{A\_Categorical/Monads/}) &
+\code{Dist}/\code{Giry}/\code{LogTens} are free-monad GADTs (\code{A\_Categorical/Monads/}) &
 a \code{do}-block is \textbf{data}, not execution \\
 walks the IR to invert transforms \& derive RJ-MCMC &
 \code{logNumDenConv} \textbf{probes} the predicate to detect additive structure (\code{TensorBool.hs}) &
 \textbf{symbolic analysis of the reified bind chain} chooses the inference algorithm \\
 one model $\to$ Stan/PyMC3/Edward/Church/C++ via codegen &
-one monad-polymorphic formula $\to$ \code{@Dist}/\code{@LogVec}, ported to JAX/PyTorch &
+one monad-polymorphic formula $\to$ \code{@Dist}/\code{@LogTens}, ported to JAX/PyTorch &
 \textbf{one specification, many execution targets} \\
 \bottomrule
 \end{tabular}
@@ -123,7 +123,7 @@ data PBlock = PBlock { definitions :: Block          -- the expression IR
 \end{lstlisting}
 
 The whole language is ``build a \code{Bimap}-deduplicated DAG in a \code{State} monad, then a backend
-folds it.'' That is the same shape as our \code{collectLeaves} flattening a \code{LogVec} bind chain
+folds it.'' That is the same shape as our \code{collectLeaves} flattening a \code{LogTens} bind chain
 --- except Stochaskell keeps the \textbf{structure} (typed nodes, sharing, scopes) where we collapse
 to an \emph{opaque} \code{([Tensor], [Int] -> a)} reconstructor. Recovering structure we threw away is
 the recurring theme.
@@ -148,7 +148,7 @@ corner index combinations to \emph{guess} that the formula is
 \textbf{What to build (design only --- Haskell \emph{or} JAX port).} Replace ``flatten to an opaque
 reconstructor, then fingerprint'' with ``\textbf{extract a factor graph from the bind chain directly},''
 exactly as Stochaskell keeps typed nodes instead of a closure: a \code{FactorGraph} built by walking the
-\code{LogVec}/formula AST (not by probing a closure); a contraction-order chooser computed once per
+\code{LogTens}/formula AST (not by probing a closure); a contraction-order chooser computed once per
 formula shape; dispatch becomes structured-low-treewidth $\to$ TVE, additive $\to$ \code{logConvolve},
 densely-coupled $\to$ \code{marginalize}.
 
@@ -208,7 +208,7 @@ observed value} (which is what later sends it to Stan's \code{data} block). Cond
 deletion-and-pin.
 
 \textbf{The NeSyCat analogue today.} Formulas are plain \code{do}-notation; observations already enter as
-$\eta$-lifted certain values (a one-hot \code{encode} \code{LogVec} leaf, bound \code{s <- n}).
+$\eta$-lifted certain values (a one-hot \code{encode} \code{LogTens} leaf, bound \code{s <- n}).
 \code{MonadComprehensions} etc.\ are all disabled.
 
 \textbf{What to build (design only).} Split into the cheap part and the new part. \emph{Surface sugar
@@ -216,7 +216,7 @@ $\eta$-lifted certain values (a one-hot \code{encode} \code{LogVec} leaf, bound 
 axiom can then read \code{[ s == d1+d2 | d1 <- digit x, d2 <- digit y, s <- n ]}. Pure ergonomics ---
 desugars to the existing do-notation, changes no semantics. \emph{Soft conditioning (the real idea):}
 Stochaskell's \code{guard (x == c)} pins a \emph{certain} observation; the generalization worth stealing
-is \textbf{uncertain} observation --- a likelihood weight per element, which in \code{LogVec} is just
+is \textbf{uncertain} observation --- a likelihood weight per element, which in \code{LogTens} is just
 \textbf{adding a log-likelihood vector into the leaf} (a one-line generalization of \code{encode}). That
 is what lets an observation itself be a network output (noisy/soft labels).
 

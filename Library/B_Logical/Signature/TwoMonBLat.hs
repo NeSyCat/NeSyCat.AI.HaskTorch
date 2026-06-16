@@ -9,7 +9,7 @@
 --   monoids), identical in every interpretation; there is only one Haskell category, and the
 --   truth algebra lives in it regardless of how a formula is read. The monad enters only
 --   at the QUANTIFIERS ('A2MonBLat'), whose aggregation is the Kleisli bind of the monad
---   @m@ (the law of total probability for @Dist@, the convolution for @LogVec@).
+--   @m@ (the law of total probability for @Dist@, the convolution for @LogTens@).
 module B_Logical.Signature.TwoMonBLat (TwoMonBLat (..)) where
 
 import Data.Kind (Type)

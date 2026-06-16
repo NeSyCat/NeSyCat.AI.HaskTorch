@@ -1,6 +1,6 @@
 -- | Inference layer (F) — INTERPRETATION for the Binary example: ONLY the training
---   hyper-parameters. Binary's satisfaction is a @LogVec Bool@, so it REUSES the library's shared
---   @instance InferenceSignature (LogVec Bool)@ (@lossKnow = negLogSat@, in
+--   hyper-parameters. Binary's satisfaction is a @LogTens Bool@, so it REUSES the library's shared
+--   @instance InferenceSignature (LogTens Bool)@ (@lossKnow = negLogSat@, in
 --   "F_Inferential.InferenceInterpretation"), so there is no instance to declare here.
 --   The generic objective @lossKnow . sat@ (in "Example") penalizes the @sat@ from D.
 module Binary.F_Inferential.Interpretation (trainConfig) where

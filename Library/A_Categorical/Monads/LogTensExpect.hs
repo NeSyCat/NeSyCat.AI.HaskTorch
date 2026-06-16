@@ -1,6 +1,6 @@
 {-# LANGUAGE GADTs #-}
 
--- | Interpreters for 'LogVec'. The bind is folded in the LOG semiring: index
+-- | Interpreters for 'LogTens'. The bind is folded in the LOG semiring: index
 --   enumeration is host-side (cheap, over the finite support), the weight combination
 --   is batched Torch ops, so the result is differentiable.
 --
@@ -10,26 +10,26 @@
 --   elimination), so the @O(prod k_i)@ joint NEVER materializes -- only @O(n * k * maxSum)@
 --   work. 'marginalize' (the old full-joint reduction) is kept as a correctness oracle /
 --   fallback for non-additive predicates.
-module A_Categorical.Monads.LogVecExpect
+module A_Categorical.Monads.LogTensExpect
   ( collectLeaves,
     logConvolve,
     marginalize,
     mapLeafWeights,
-    logVecLeafTensor,
+    logTensLeafTensor,
   )
 where
 
-import A_Categorical.Monads.LogVec (LogVec (..))
+import A_Categorical.Monads.LogTens (LogTens (..))
 import Data.List (foldl')
 import qualified Torch
 import qualified Torch.Functional.Internal as FI
 
--- | Collect the leaf weight-tensors of an /applicative/ 'LogVec' chain -- each a @[B,k]@
+-- | Collect the leaf weight-tensors of an /applicative/ 'LogTens' chain -- each a @[B,k]@
 --   tensor -- together with a reconstructor from a chosen index-combo (one index per leaf,
 --   in order) to the final value. Assumes the chain is applicative: each leaf's structure
 --   is independent of the earlier bound values (the final value may depend on all of them),
 --   which holds for the monad-polymorphic formulas here.
-collectLeaves :: LogVec a -> ([Torch.Tensor], [Int] -> a)
+collectLeaves :: LogTens a -> ([Torch.Tensor], [Int] -> a)
 collectLeaves (Pure x) = ([], const x)
 collectLeaves (LogLeaf xs lw) = ([lw], \is -> xs !! head is)
 collectLeaves (LogReduced _ _) =
@@ -87,7 +87,7 @@ logConvolve maxSum base leaves =
 --   for predicates that are not an equality against an additive function of the leaves (the
 --   convolution handles those; see 'B_Logical.Interpretations.TensorBool.logNumDen'). Builds the
 --   joint @[B, k_0, ..., k_{n-1}]@ and returns @(logNum, logDen)@ via @logsumexp@.
-marginalize :: LogVec a -> ([a] -> Torch.Tensor) -> (Torch.Tensor, Torch.Tensor)
+marginalize :: LogTens a -> ([a] -> Torch.Tensor) -> (Torch.Tensor, Torch.Tensor)
 marginalize prog satMask =
   let (lws, vals) = collectLeaves prog
       n = length lws
@@ -106,14 +106,14 @@ marginalize prog satMask =
 
 -- | The raw @[B,k]@ log-weight tensor of a leaf (for argmax-style decoding, e.g. the
 --   digit-accuracy metric). Errors if not a 'LogLeaf'.
-logVecLeafTensor :: LogVec a -> Torch.Tensor
-logVecLeafTensor (LogLeaf _ lw) = lw
-logVecLeafTensor (Bind (Pure x) f) = logVecLeafTensor (f x) -- reduce a trivial (eta) bind: the left-unit law
-logVecLeafTensor _ = error "logVecLeafTensor: not a LogLeaf"
+logTensLeafTensor :: LogTens a -> Torch.Tensor
+logTensLeafTensor (LogLeaf _ lw) = lw
+logTensLeafTensor (Bind (Pure x) f) = logTensLeafTensor (f x) -- reduce a trivial (eta) bind: the left-unit law
+logTensLeafTensor _ = error "logTensLeafTensor: not a LogLeaf"
 
 -- | Apply a tensor map to a leaf's @[B,k]@ weights, keeping its support (e.g. to gather/slice a
 --   batched observation leaf along the batch dim 0 -- mini-batching the data without leaving the
 --   monad). Errors on a non-leaf (a batched observation is always a single 'LogLeaf').
-mapLeafWeights :: (Torch.Tensor -> Torch.Tensor) -> LogVec a -> LogVec a
+mapLeafWeights :: (Torch.Tensor -> Torch.Tensor) -> LogTens a -> LogTens a
 mapLeafWeights f (LogLeaf xs lw) = LogLeaf xs (f lw)
 mapLeafWeights _ _ = error "mapLeafWeights: expected a single LogLeaf"

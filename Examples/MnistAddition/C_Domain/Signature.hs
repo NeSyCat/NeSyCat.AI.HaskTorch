@@ -3,10 +3,10 @@
 -- | Non-logical signature for MNIST single-digit addition.
 --
 --   The sorts are monad-invariant plain types. The ONLY monad-dependent symbol is the neural
---   Kleisli function 'digit' (its monad is @Dist@ or @LogVec@); @(+)@ and @(==)@ are plain Prelude
+--   Kleisli function 'digit' (its monad is @Dist@ or @LogTens@); @(+)@ and @(==)@ are plain Prelude
 --   functions used directly in the formula. The observed sum @n@
 --   enters the formula as a CERTAIN monadic value @m Natural@ (= @eta n@: @pure n@ in @Dist@, the
---   batched one-hot leaf in @LogVec@), bound like the digits -- so @(+)@ and @(=)@ are host ops
+--   batched one-hot leaf in @LogTens@), bound like the digits -- so @(+)@ and @(=)@ are host ops
 --   on three bound values, and the marginalization (the @Sigma@) is the monad's bind.
 module MnistAddition.C_Domain.Signature
   ( Image,
@@ -27,7 +27,7 @@ type Natural = Int        -- a sum index 0..18
 type Omega = Bool         -- the truth object
 
 -- | The neural digit classifier: the ONE monad-dependent symbol (its distribution monad @m@ is
---   @Dist@ for the probability reading, @LogVec@ for the differentiable one).
+--   @Dist@ for the probability reading, @LogTens@ for the differentiable one).
 class (Monad m) => MnistKlFun m where
   -- Two-sided ('NeSy') symbol  (m)Image -> (m)Digit: the image enters as a certain monadic
   -- value @eta x@ (the encode), exactly like the sum @eta n@; 'digit' is the Kleisli extension

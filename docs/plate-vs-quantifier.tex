@@ -45,7 +45,7 @@ structurally different realizations} of that quantifier:
 \begin{itemize}
   \item \code{Dist}: \textbf{enumerate-and-meet} --- traverse the (finite, listed) domain and fold with
         the lattice meet. The \emph{exact} universal: ``does the axiom hold for \emph{every} sample?''
-  \item \code{LogVec}: \textbf{vectorize-and-mean} --- apply the formula once to the batched carrier and
+  \item \code{LogTens}: \textbf{vectorize-and-mean} --- apply the formula once to the batched carrier and
         mean the batch axis. The \emph{training surrogate}: the NLL $=$ product t-norm in log space.
 \end{itemize}
 
@@ -58,7 +58,7 @@ unifying them}. Split into two honestly-named reducers, which lets the type fami
   \item \textbf{Delete} \code{Guard} (type family) and \code{A2MonBLat} (the class whose 4 methods are
         all this one quantifier, 3 of them dead \code{error} stubs).
   \item \textbf{Add} two small reducers: \code{forallExact} (the \code{Dist} enumerate-and-meet) and
-        \code{plateMean} (the \code{LogVec} vectorize-and-mean / NLL). \emph{Only the \code{LogVec} one is
+        \code{plateMean} (the \code{LogTens} vectorize-and-mean / NLL). \emph{Only the \code{LogTens} one is
         a ``plate''}; the \code{Dist} one is exact enumeration, not batching.
   \item The \textbf{per-sample formula is untouched} --- it is a genuine monad comprehension and is the
         real shared, monad-polymorphic content. The \code{bigWedge} ``sharing'' was a false symmetry over
@@ -86,7 +86,7 @@ But the \emph{body} it resolves to is a \textbf{different operation in each read
 reading & \code{bigWedge} body & what it is \\
 \midrule
 \code{Dist}   & \code{do \{ os <- mapM phi guard; return (foldl (wedge ()) True os) \}} & \textbf{enumerate-and-meet} (exact $\forall$) \\
-\code{LogVec} & \code{let (ln,ld)=logNumDen (phi g) in LogReduced (mean ln) (mean ld)} & \textbf{vectorize-and-mean} (NLL) \\
+\code{LogTens} & \code{let (ln,ld)=logNumDen (phi g) in LogReduced (mean ln) (mean ld)} & \textbf{vectorize-and-mean} (NLL) \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -99,19 +99,19 @@ wrongly called the \code{Dist} side ``the plate''):
   \item \textbf{The shared thing is the \emph{domain}, not batching.} Both readings quantify over the
         same domain --- the data, $\forall(x,y,n)\in\text{data}$. That domain is ``plate-like'' only in the
         weak sense of i.i.d.\ replicated structure. \emph{Batching} --- fusing the domain into a tensor
-        axis --- is a \code{LogVec}-only implementation detail. \code{Dist} does \textbf{not} batch; it
-        iterates the dataset as a list. So ``plate'' correctly describes only the \code{LogVec} training
+        axis --- is a \code{LogTens}-only implementation detail. \code{Dist} does \textbf{not} batch; it
+        iterates the dataset as a list. So ``plate'' correctly describes only the \code{LogTens} training
         reading (where the i.i.d.\ mean $=$ empirical risk $=$ the plate-mean), \emph{not} the \code{Dist}
         reading (an exact hard $\forall$).
   \item \textbf{The aggregation differs, and that is the real conflation.} \code{Dist} computes the exact
-        lattice meet (a hard Boolean: holds-for-all); \code{LogVec} computes the mean log-score (the
+        lattice meet (a hard Boolean: holds-for-all); \code{LogTens} computes the mean log-score (the
         differentiable NLL). These are \emph{related} --- the NLL is the relaxation of the product t-norm
         --- but they are not the same operation. One name \code{bigWedge} hides that one is exact and one is
         a training surrogate.
 \end{itemize}
 
 \noindent The \code{Guard} type family is the seam between the two shapes:
-\code{Guard Dist a = [a]} (a list to traverse) vs \code{Guard LogVec a = a} (the fused \code{[B,k]} batch
+\code{Guard Dist a = [a]} (a list to traverse) vs \code{Guard LogTens a = a} (the fused \code{[B,k]} batch
 to vectorize, \code{TensorBool.hs:48}). It is a type-level ``list-or-tensor'' switch that exists purely to
 let the single \code{bigWedge} signature typecheck in both readings.
 
@@ -125,9 +125,9 @@ Three facts, verified against the source:
   \item \textbf{Inner choices are already handled by \code{<-}, not by a nested quantifier.} Every latent
         choice --- the digits, WAP's four sketch decisions, Binary's classifier$+$label --- is a monadic
         bind, marginalized by the monad's \emph{own} \code{>>=} (law of total probability for \code{Dist},
-        log-space convolution for \code{LogVec}).
+        log-space convolution for \code{LogTens}).
   \item \textbf{Three of the four quantifier methods are dead.} \code{bigVee}, \code{bigOplus},
-        \code{bigOtimes} are \code{error "...not supported"} on the \code{LogVec} training path
+        \code{bigOtimes} are \code{error "...not supported"} on the \code{LogTens} training path
         (\code{TensorBool.hs:66-68}).
 \end{enumerate}
 
@@ -173,7 +173,7 @@ categorically separate from the monad's \code{>>=}. Concretely:
         \code{do \{ os <- mapM phi guard; return (foldl (wedge ()) True os) \}} --- precisely because the
         domain is a finite list you can \code{mapM} over and the fold runs on the pure bound \code{os}.
         \emph{For a finite domain, the quantifier is ``comprehension $+$ a host fold.''}
-  \item In \code{LogVec} there is \textbf{no traversal at all}: \code{logNumDen (phi g)} applies the formula
+  \item In \code{LogTens} there is \textbf{no traversal at all}: \code{logNumDen (phi g)} applies the formula
         \emph{once} to the whole batched carrier \code{g}, then \code{Torch.mean} reduces the batch axis.
         That is vectorize-then-tensor-reduce --- \emph{not} a comprehension; a comprehension would force
         per-element iteration and destroy the vectorization.
@@ -181,7 +181,7 @@ categorically separate from the monad's \code{>>=}. Concretely:
 
 \noindent\textbf{Net:} comprehensions express the \textbf{body} (and, for a finite domain, the
 \textbf{domain traversal}). They never express the \textbf{aggregation/fold} --- that is always the extra
-\code{TwoMonBLat} operator $\Int(Q)$ --- and in the \code{LogVec} reading they cannot even express the
+\code{TwoMonBLat} operator $\Int(Q)$ --- and in the \code{LogTens} reading they cannot even express the
 traversal. (This is also why Stochaskell's comprehensions do not help: its
 \code{[z | (z,y) <- prior, y == obs]} is a \emph{filter} --- \code{mfilter}/\code{MonadPlus}, conditioning,
 again an extra operator beyond plain \code{>>=} --- not a $\forall$-aggregation. Same lesson, different
@@ -201,7 +201,7 @@ mnistSentence :: (MnistKlFun m, TwoMonBLat Omega, A2MonBLat m Omega, Monad m)
 mnistSentence lp guard theta = bigWedge lp guard (mnistFormula @m theta)
 
 -- Interpretation.hs:
-mnistAxiomTens theta batch   = mnistSentence @LogVec () batch theta
+mnistAxiomTens theta batch   = mnistSentence @LogTens () batch theta
 mnistAxiomData theta dataset = mnistSentence @Dist   () [(x,y,pure n) | (x,y,n) <- dataset] theta
 \end{lstlisting}
 
@@ -219,9 +219,9 @@ mnistFormula theta (x, y, n) =
 -- (no mnistSentence / bigWedge / Guard / A2MonBLat)
 
 -- Interpretation.hs -- realize the quantifier per reading:
--- LogVec (the 'sat', differentiable training) -- vectorize-and-mean over the batch:
-mnistAxiomTens :: Weights -> (Image, Image, LogVec Natural) -> LogVec Bool
-mnistAxiomTens theta batch = plateMean (mnistFormula @LogVec theta batch)
+-- LogTens (the 'sat', differentiable training) -- vectorize-and-mean over the batch:
+mnistAxiomTens :: Weights -> (Image, Image, LogTens Natural) -> LogTens Bool
+mnistAxiomTens theta batch = plateMean (mnistFormula @LogTens theta batch)
 
 -- Dist (probability reading; not on the training path) -- enumerate-and-meet over the dataset:
 mnistAxiomData :: Weights -> [(Image, Image, Natural)] -> Dist Bool
@@ -231,8 +231,8 @@ mnistAxiomData theta ds = forallExact [ mnistFormula @Dist theta (x,y,pure n) | 
 \begin{lstlisting}
 -- Library/B_Logical/Aggregate.hs (NEW, ~12 lines) -- the two reducers, named for what they are:
 
--- LogVec: vectorize-and-mean. The 'plate' (i.i.d. batch mean) = the NLL = product t-norm (log space).
-plateMean :: LogVec Bool -> LogVec Bool
+-- LogTens: vectorize-and-mean. The 'plate' (i.i.d. batch mean) = the NLL = product t-norm (log space).
+plateMean :: LogTens Bool -> LogTens Bool
 plateMean prog =
   let (logNum, logDen) = logNumDen prog                  -- marginalize -> [B],[B] (the un-reduced vmap output)
    in LogReduced (Torch.mean logNum) (Torch.mean logDen) -- mean over B = NLL
@@ -242,7 +242,7 @@ forallExact :: [Dist Bool] -> Dist Bool
 forallExact progs = foldl (&&) True <$> sequence progs
 \end{lstlisting}
 
-\code{plateMean} is a verbatim move of the old \code{LogVec} \code{bigWedge} body, so \textbf{autograd and
+\code{plateMean} is a verbatim move of the old \code{LogTens} \code{bigWedge} body, so \textbf{autograd and
 numbers are bit-identical}. \code{logNumDen} alone now reads as exactly the paper's \code{ev\_i}/vmap output
 (per-sample truth values, un-reduced); \code{plateMean} is the inert outer mean over $B$. \code{forallExact}
 is the \code{Dist} \code{bigWedge} body with the connective-fold made explicit. The code now \emph{says}
@@ -254,7 +254,7 @@ what the \code{Semantics} definition \emph{means}: a comprehension body, then $\
   \item \textbf{Add} \code{Library/B\_Logical/Aggregate.hs} (\code{plateMean}, \code{forallExact} --- bodies
         copied verbatim from the deleted instances, with the connective-fold made explicit).
   \item \textbf{Edit} \code{TensorBool.hs}: drop the \code{Guard} import, delete
-        \code{type instance Guard LogVec a = a} and the whole \code{instance A2MonBLat LogVec Bool} (incl.\
+        \code{type instance Guard LogTens a = a} and the whole \code{instance A2MonBLat LogTens Bool} (incl.\
         the 3 \code{error} stubs). \textbf{Keep \code{logNumDen}/\code{logNumDenConv} exactly} --- they are
         the real marginalization engine.
   \item \textbf{Edit} \code{Boolean.hs}: drop the \code{Guard} import $+$ \code{A2MonBLat} re-export, delete
@@ -267,11 +267,11 @@ what the \code{Semantics} definition \emph{means}: a comprehension body, then $\
         function $+$ its \code{Guard}/\code{A2MonBLat} imports; \textbf{keep every
         \code{*Formula}/\code{*Predicate} body 100\% unchanged}.
   \item \textbf{Edit} the four \code{Examples/*/D\_Grammatical/Interpretation.hs}:
-        \code{*AxiomTens = plateMean (*Formula @LogVec theta batch)} and
+        \code{*AxiomTens = plateMean (*Formula @LogTens theta batch)} and
         \code{*AxiomData = forallExact [ *Formula @Dist theta s | s <- ds ]}.
   \item \textbf{Untouched (verify, don't edit):} \code{NegLogSat.hs}, \code{InferenceInterpretation.hs},
         \code{Example.hs:68} (\code{lossKnow (sat @e t b)}), all of \code{A\_Categorical/Monads/*}, and
-        \code{TwoMonBLat.hs}. \code{sat} still returns \code{LogVec Bool}, so the objective
+        \code{TwoMonBLat.hs}. \code{sat} still returns \code{LogTens Bool}, so the objective
         $\mathrm{mean}_{B}(\code{logDen} - \code{logNum})$ is preserved bit-for-bit.
   \item \textbf{Verify:} build all four examples; numerically diff one training step's loss against the
         pre-refactor value (must be identical).
@@ -300,7 +300,7 @@ integral.
 
 \begin{itemize}
   \item \textbf{Reader-monad transformer $B \circ m$} (18/30, most paper-faithful): models the plate as
-        \code{PlateT m a = BatchIx -> m a}, the literal $B \circ m$. But its \code{LogVec} instance is a
+        \code{PlateT m a = BatchIx -> m a}, the literal $B \circ m$. But its \code{LogTens} instance is a
         \textbf{degenerate reader that discards its index and runs once} (because $B$ is fused into the
         leaves), so you pay $\approx$40 lines of \code{PlateT}/\code{ask}/\code{lift}/\code{BatchIx}
         boilerplate for an abstraction that is inert \emph{exactly where the system trains}.
@@ -318,7 +318,7 @@ integral.
         monad-polymorphic comprehension body) stays shared and is now the \emph{sole}, clean polymorphism
         boundary.
   \item \textbf{Dist path is dead code today:} \code{*AxiomData} is documented ``not called at runtime'';
-        the only live consumer of the deleted \code{A2MonBLat} was the \code{LogVec}/training path. Grep for
+        the only live consumer of the deleted \code{A2MonBLat} was the \code{LogTens}/training path. Grep for
         \code{*AxiomData} callers before deleting (low risk).
   \item \textbf{Apparent double-mean:} \code{plateMean} returns already-meaned scalars and \code{negLogSat}
         means again (a no-op on scalars). Keep the batch-mean in exactly one place (\code{plateMean}),

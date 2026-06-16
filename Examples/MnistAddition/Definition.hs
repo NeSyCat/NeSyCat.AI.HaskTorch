@@ -7,21 +7,21 @@
 --   the template signature while supplying their own interpretation.
 module MnistAddition.Definition (MnistAddition) where
 
--- A (category) — REUSE shared: the LogVec monad (the truth object's carrier).
-import A_Categorical.Monads.LogVec (LogVec)
+-- A (category) — REUSE shared: the LogTens monad (the truth object's carrier).
+import A_Categorical.Monads.LogTens (LogTens)
 -- B (logic) — REUSE template: the library Boolean (the shared crisp-Bool truth algebra +
---   the Dist quantifier) + TensorBool (only the LogVec quantifier for Bool).
+--   the Dist quantifier) + TensorBool (only the LogTens quantifier for Bool).
 import B_Logical.Interpretations.Boolean ()
 import B_Logical.Interpretations.TensorBool ()
 -- C (domain) — STANDALONE: MNIST's own sorts/symbols + model (Params/initParams).
 import qualified MnistAddition.C_Domain.Interpretation as C
--- D (grammatical) — STANDALONE: the axiom in both monads (one file); 'sat' = the LogVec reading.
+-- D (grammatical) — STANDALONE: the axiom in both monads (one file); 'sat' = the LogTens reading.
 import qualified MnistAddition.D_Grammatical.Interpretation as D
 -- E (data) — STANDALONE: MNIST's own data format + loader (exports the data + the batches).
 import qualified MnistAddition.E_Data.Signature as E
 import qualified MnistAddition.E_Data.Loader as EL
 -- F (inference) — REUSE template signature AND the library's shared
---   @instance InferenceSignature (LogVec Bool)@ (lossKnow = negLogSat); STANDALONE only for trainConfig.
+--   @instance InferenceSignature (LogTens Bool)@ (lossKnow = negLogSat); STANDALONE only for trainConfig.
 import F_Inferential.InferenceSignature ()
 import F_Inferential.InferenceInterpretation ()
 import qualified MnistAddition.F_Inferential.Interpretation as F
@@ -36,8 +36,8 @@ data MnistAddition
 instance Example MnistAddition where
   type Params MnistAddition = C.Params
   type Data MnistAddition = E.Dataset
-  type Batch MnistAddition = (LogVec Torch.Tensor, LogVec Torch.Tensor, LogVec Int)
-  type Truth MnistAddition = LogVec Bool
+  type Batch MnistAddition = (LogTens Torch.Tensor, LogTens Torch.Tensor, LogTens Int)
+  type Truth MnistAddition = LogTens Bool
   initParams = C.initParams
   loadData = EL.loadData
   trainConfig = F.trainConfig

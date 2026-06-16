@@ -29,7 +29,7 @@ import C_Domain.NeuralNets.DSL.Semantics (Weights)
 -- | The per-example FORMULA  @n = number(x1,x2) + number(y1,y2)@, monad-polymorphic over @m@. The
 --   observed sum @n :: m Natural@ is bound (@s <- n@) exactly like the digits; @number@/@(.+)@/@(.=)@
 --   are plain host ops on the five bound values; the bind supplies the marginalization (the law of
---   total probability for @Dist@; the log-space convolution of the four digit leaves for @LogVec@).
+--   total probability for @Dist@; the log-space convolution of the four digit leaves for @LogTens@).
 multiFormula ::
   forall m.
   (MnistKlFun m) =>

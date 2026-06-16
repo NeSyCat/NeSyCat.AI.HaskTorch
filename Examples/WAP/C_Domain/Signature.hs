@@ -38,7 +38,7 @@ import qualified Torch
 type Problem = ([Int], [Int])
 
 -- | The batched carrier of 'Problem' (a list -- the @Dist@ reading passes a singleton,
---   the @LogVec@ reading the whole mini-batch; the symbol's interpretation collates).
+--   the @LogTens@ reading the whole mini-batch; the symbol's interpretation collates).
 type Problems = [Problem]
 
 -- | The trunk representation of a problem (monad-invariant, like @Image@ for MNIST: a

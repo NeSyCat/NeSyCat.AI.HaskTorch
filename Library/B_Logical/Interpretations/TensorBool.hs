@@ -4,18 +4,18 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
--- | Logical interpretation: the @LogVec@ QUANTIFIER for the crisp @Bool@ truth algebra -- the
+-- | Logical interpretation: the @LogTens@ QUANTIFIER for the crisp @Bool@ truth algebra -- the
 --   differentiable sibling of @Dist@'s quantifier in "B_Logical.Interpretations.Boolean".
 --   The truth object is just @Bool@, SHARED with @Dist@ (the connectives live in Boolean's
---   universe-free @instance TwoMonBLat Bool@); this module adds only @A2MonBLat _ LogVec Bool@.
---   So @LogVec@ mirrors @Dist@ one-for-one, same truth algebra, only the monad differs:
+--   universe-free @instance TwoMonBLat Bool@); this module adds only @A2MonBLat _ LogTens Bool@.
+--   So @LogTens@ mirrors @Dist@ one-for-one, same truth algebra, only the monad differs:
 --
---     @Dist Bool@  <->  @LogVec Bool@,   marginalize via 'logNumDen',   @eqNat = (==)@.
+--     @Dist Bool@  <->  @LogTens Bool@,   marginalize via 'logNumDen',   @eqNat = (==)@.
 --
 --   This is the probabilistic (DeepProbLog-style) reading: the truth values are crisp, the
---   marginalization (the law of total probability) is the 'LogVec' bind, and TRAINING STAYS IN
+--   marginalization (the law of total probability) is the 'LogTens' bind, and TRAINING STAYS IN
 --   LOGITS. The ONE readout this module exposes is 'logNumDen' -- the log-space marginal
---   @(logNum, logDen)@ of a @LogVec Bool@ formula over its raw leaf logits (pure 'logsumexp', no
+--   @(logNum, logDen)@ of a @LogTens Bool@ formula over its raw leaf logits (pure 'logsumexp', no
 --   @exp@/clamp). Every consumer derives from it WHERE IT IS USED, not here: the negative-log
 --   satisfaction @logDen - logNum@ inside the @lossKnow@ instance (the F inference layer), the
 --   @[0,1]@ probability @exp(logNum - logDen)@ wherever a reading is wanted (the @decode@/@Dist@
@@ -24,9 +24,9 @@
 --   'bigWedge' (the @forall@ over the batch) takes the per-element @(logNum, logDen)@ marginal and
 --   MEANS each over the batch (the product t-norm = @Dist@'s @bigWedge = product@) -- a real mean in
 --   RAW log space (mean is linear, so @mean logDen - mean logNum =@ the mean NLL). The aggregate is
---   carried verbatim as a raw 'A_Categorical.Monads.LogVec.LogReduced' degree, NOT a normalized
+--   carried verbatim as a raw 'A_Categorical.Monads.LogTens.LogReduced' degree, NOT a normalized
 --   Bernoulli, so no complement mass / @exp@ is ever formed on the training path; calibration to a
---   probability stays at the @decode@/@Dist@ bridge, never here. Reuses @Guard LogVec a = a@ and the crisp
+--   probability stays at the @decode@/@Dist@ bridge, never here. Reuses @Guard LogTens a = a@ and the crisp
 --   @TwoMonBLat Bool@ from "Boolean".
 module B_Logical.Interpretations.TensorBool
   ( logNumDen,
@@ -34,26 +34,26 @@ module B_Logical.Interpretations.TensorBool
   )
 where
 
-import A_Categorical.Monads.LogVec (LogVec (..))
-import A_Categorical.Monads.LogVecExpect (collectLeaves, logConvolve, marginalize)
+import A_Categorical.Monads.LogTens (LogTens (..))
+import A_Categorical.Monads.LogTensExpect (collectLeaves, logConvolve, marginalize)
 import B_Logical.Interpretations.Boolean () -- reuse: the universe-free @instance TwoMonBLat Bool@
 import B_Logical.Signature.A2MonBLat (A2MonBLat (..))
 import B_Logical.Signature.Guard (Guard)
 import qualified Torch
 import qualified Torch.Functional.Internal as FI
 
--- | In the @LogVec@ reading the guard IS the batched data itself: the vectorized predicate is
+-- | In the @LogTens@ reading the guard IS the batched data itself: the vectorized predicate is
 --   applied to the whole batch and reduced (polymorphic in the point type, mirroring
 --   @Guard Dist a = [a]@).
-type instance Guard LogVec a = a
+type instance Guard LogTens a = a
 
 ------------------------------------------------------
--- A2MonBLat: the @LogVec@ quantifier interpretation for the crisp @Bool@ truth object --
+-- A2MonBLat: the @LogTens@ quantifier interpretation for the crisp @Bool@ truth object --
 -- polymorphic in the point type @a@ (apply the vectorized predicate to the batched guard,
 -- read out, reduce over the batch). The connectives come from Boolean's @TwoMonBLat Bool@.
 ------------------------------------------------------
 
-instance A2MonBLat LogVec Bool where
+instance A2MonBLat LogTens Bool where
   -- forall = product t-norm over the batch = mean of the per-element negative-log satisfaction. We
   -- take the per-element @(logNum, logDen)@ marginal and MEAN each over the batch -- a real mean on
   -- the RAW log-masses. Mean is linear, so @mean logDen - mean logNum = mean (logDen - logNum) =@
@@ -63,15 +63,15 @@ instance A2MonBLat LogVec Bool where
   bigWedge _ g phi =
     let (logNum, logDen) = logNumDen (phi g)
      in LogReduced (Torch.mean logNum) (Torch.mean logDen)
-  bigVee _ _ _ = error "bigVee over LogVec Bool not yet supported in log space"
-  bigOplus _ _ = error "bigOplus over LogVec Bool not yet supported"
-  bigOtimes _ _ = error "bigOtimes over LogVec Bool not yet supported"
+  bigVee _ _ _ = error "bigVee over LogTens Bool not yet supported in log space"
+  bigOplus _ _ = error "bigOplus over LogTens Bool not yet supported"
+  bigOtimes _ _ = error "bigOtimes over LogTens Bool not yet supported"
 
 ------------------------------------------------------
 -- Readouts: one log-space marginalization, two views of it.
 ------------------------------------------------------
 
--- | The log-space marginalization of a 'LogVec Bool' formula, as a pair @(logNum, logDen)@
+-- | The log-space marginalization of a 'LogTens Bool' formula, as a pair @(logNum, logDen)@
 --   (each a @[B]@ tensor): @logDen = logsumexp@ over ALL outcome-combos, @logNum = logsumexp@
 --   over the SAT-true ones.
 --
@@ -87,13 +87,13 @@ instance A2MonBLat LogVec Bool where
 --   conjunction) fails the probe and falls back to the general full-joint 'marginalize' -- still
 --   correct, just not scalable. (Efficiency for non-separable STRUCTURED predicates is what
 --   knowledge compilation / arithmetic circuits, a la DeepProbLog, would add -- a separate engine.)
-logNumDen :: LogVec Bool -> (Torch.Tensor, Torch.Tensor)
+logNumDen :: LogTens Bool -> (Torch.Tensor, Torch.Tensor)
 logNumDen (LogReduced logNum logDen) = (logNum, logDen) -- already marginalized: read the raw pair verbatim
 logNumDen prog = case logNumDenConv prog of
   Just r -> r
   Nothing -> marginalize prog (\vs -> Torch.asTensor [if v then 1.0 else 0.0 :: Float | v <- vs])
 
--- | The convolution reading of a 'LogVec Bool' formula of the shape
+-- | The convolution reading of a 'LogTens Bool' formula of the shape
 --   @return (obs .= additiveFunctionOf latents)@: the observation is the LAST bound leaf, and the
 --   predicate is an equality between the observation index and an additive combination of the
 --   other (latent) leaves' indices. Returns @(logNum, logDen)@ folded by 'logConvolve' (no joint),
@@ -103,7 +103,7 @@ logNumDen prog = case logNumDenConv prog of
 --   @logDen@ factorizes over the independent leaves (@sum_i logsumexp(leaf_i)@); @logNum =
 --   logsumexp_v (sumDist[v] + obs[v])@ where @sumDist@ is the latent leaves convolved onto the
 --   observation's value axis. Bit-identical to 'marginalize' (verified on single-digit).
-logNumDenConv :: LogVec Bool -> Maybe (Torch.Tensor, Torch.Tensor)
+logNumDenConv :: LogTens Bool -> Maybe (Torch.Tensor, Torch.Tensor)
 logNumDenConv prog =
   let (lws, vals) = collectLeaves prog
       n = length lws
